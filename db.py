@@ -428,6 +428,18 @@ def update_product(product_id: int, updates: dict[str, Any]):
     return get_product_by_id(product_id)
 
 
+def get_product_image_paths(product_id: int) -> list[str]:
+    """Return all local image paths for a product (main + extra)."""
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT image, images_json FROM products WHERE id = ?", (product_id,)
+        ).fetchone()
+    if not row:
+        return []
+    paths = [row["image"]] + json_loads(row["images_json"] or "[]", [])
+    return [p for p in paths if p and p.startswith("/static/uploads/")]
+
+
 def delete_product(product_id: int) -> bool:
     with get_connection() as conn:
         conn.execute("DELETE FROM order_items WHERE product_id = ?", (product_id,))

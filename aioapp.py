@@ -35,6 +35,7 @@ from db import (
     deactivate_product,
     delete_category,
     delete_product,
+    get_product_image_paths,
     get_active_products,
     get_all_products,
     get_categories,
@@ -87,7 +88,7 @@ def _parse_admin_ids() -> set[int]:
 ADMIN_CHAT_IDS: set[int] = _parse_admin_ids()
 
 DB_PATH = BASE_DIR / "shop.db"
-BACKUP_INTERVAL_SEC = 86400  # 24 часа
+BACKUP_HOUR_MSK = 22  # час отправки бэкапа по МСК (UTC+3)
 
 # =========================================================
 # Bot, dispatcher, router, Flask app
@@ -596,12 +597,19 @@ def api_admin_show_product(product_id: int):
 
 @app.route("/api/admin/products/<int:product_id>/delete", methods=["POST"])
 def api_admin_delete_product(product_id: int):
-    """Delete product from admin panel."""
+    """Delete product and its uploaded images from disk."""
     try:
         require_admin_context()
+        image_paths = get_product_image_paths(product_id)
         ok = delete_product(product_id)
         if not ok:
             return json_error("Product not found", 404)
+        for rel_path in image_paths:
+            abs_path = BASE_DIR / rel_path.lstrip("/")
+            try:
+                abs_path.unlink(missing_ok=True)
+            except OSError:
+                pass
         return jsonify({"ok": True})
     except PermissionError as exc:
         return json_error(str(exc), 403)
@@ -836,11 +844,17 @@ async def send_db_backup() -> None:
 
 
 async def _backup_scheduler() -> None:
-    """Send a daily backup and then repeat every BACKUP_INTERVAL_SEC."""
-    await asyncio.sleep(60)  # подождать старта бота
+    """Wait until 22:00 MSK, send backup, then repeat daily."""
+    msk_offset = 3 * 3600
     while True:
+        now_utc = datetime.now(timezone.utc).timestamp()
+        now_msk_sec = (now_utc + msk_offset) % 86400
+        target_msk_sec = BACKUP_HOUR_MSK * 3600
+        seconds_until = (target_msk_sec - now_msk_sec) % 86400
+        if seconds_until == 0:
+            seconds_until = 86400
+        await asyncio.sleep(seconds_until)
         await send_db_backup()
-        await asyncio.sleep(BACKUP_INTERVAL_SEC)
 
 
 # =========================================================
