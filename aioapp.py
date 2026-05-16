@@ -38,6 +38,7 @@ from db import (
     get_product_image_paths,
     get_active_products,
     get_all_products,
+    get_all_user_ids,
     get_categories,
     get_order,
     get_order_status_keys,
@@ -48,6 +49,7 @@ from db import (
     list_orders,
     update_order_status,
     update_product,
+    upsert_user,
 )
 
 # =========================================================
@@ -694,6 +696,56 @@ def api_admin_upload_image():
         return json_error(str(exc), 400)
 
 
+@app.route("/api/admin/broadcast", methods=["POST"])
+def api_admin_broadcast():
+    """Send a drop announcement to all registered users."""
+    try:
+        require_admin_context()
+
+        text = (request.form.get("text") or "").strip()
+        photo_file = request.files.get("photo")
+        photo_bytes: bytes | None = None
+        photo_name: str | None = None
+        if photo_file and photo_file.filename:
+            photo_bytes = photo_file.read()
+            photo_name = photo_file.filename
+
+        if not text and not photo_bytes:
+            return json_error("text or photo required", 400)
+
+        if BOT_LOOP is None or not BOT_LOOP.is_running():
+            return json_error("Bot loop is not running", 503)
+
+        future = asyncio.run_coroutine_threadsafe(
+            _broadcast(text, photo_bytes, photo_name), BOT_LOOP
+        )
+        result = future.result(timeout=180)
+        return jsonify({"ok": True, **result})
+    except Exception as exc:
+        return json_error(str(exc), 500)
+
+
+async def _broadcast(text: str, photo_bytes: bytes | None, photo_name: str | None) -> dict:
+    user_ids = get_all_user_ids()
+    sent = 0
+    failed = 0
+    for uid in user_ids:
+        try:
+            if photo_bytes:
+                await bot.send_photo(
+                    int(uid),
+                    BufferedInputFile(photo_bytes, filename=photo_name or "photo.jpg"),
+                    caption=text or None,
+                )
+            else:
+                await bot.send_message(int(uid), text)
+            sent += 1
+        except Exception:
+            failed += 1
+        await asyncio.sleep(0.05)
+    return {"sent": sent, "failed": failed, "total": len(user_ids)}
+
+
 # =========================================================
 # Aiogram bot command handlers
 # =========================================================
@@ -704,6 +756,12 @@ async def start_handler(message: Message):
     """Show welcome message and main reply keyboard."""
     admin = is_admin_chat(message.chat.id)
     reply_markup = build_admin_keyboard() if admin else build_user_keyboard()
+
+    upsert_user(
+        str(message.from_user.id),
+        message.from_user.username,
+        message.from_user.first_name,
+    )
 
     text = "Добро пожаловать в магазин."
     if admin:

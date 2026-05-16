@@ -95,6 +95,13 @@ def init_db() -> None:
 
             CREATE INDEX IF NOT EXISTS idx_orders_telegram_user_id
                 ON orders (telegram_user_id);
+
+            CREATE TABLE IF NOT EXISTS users (
+                telegram_user_id TEXT PRIMARY KEY,
+                username TEXT,
+                first_name TEXT,
+                first_seen TEXT NOT NULL
+            );
             """)
         conn.commit()
 
@@ -631,3 +638,24 @@ def get_user_orders(
             ).fetchall()
 
     return [get_order(int(row["order_number"])) for row in rows]
+
+
+def upsert_user(user_id: str, username: str | None = None, first_name: str | None = None) -> None:
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO users (telegram_user_id, username, first_name, first_seen)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(telegram_user_id) DO UPDATE SET
+                username = excluded.username,
+                first_name = excluded.first_name
+            """,
+            (str(user_id), username, first_name, now_iso()),
+        )
+        conn.commit()
+
+
+def get_all_user_ids() -> list[str]:
+    with get_connection() as conn:
+        rows = conn.execute("SELECT telegram_user_id FROM users").fetchall()
+    return [row["telegram_user_id"] for row in rows]
