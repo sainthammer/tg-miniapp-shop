@@ -47,16 +47,22 @@
 
   body {
     font-family: var(--fn-body);
+    background: none;
+    min-height: 100vh;
+    color: var(--silver);
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
     background-image:
       var(--scratch-a), var(--scratch-b), var(--scratch-c),
       linear-gradient(rgba(8,8,8,0.78), rgba(8,8,8,0.78)),
       url(/static/metal-bg.jpg);
     background-size: auto, auto, auto, cover, cover;
-    background-attachment: fixed;
     background-position: center;
-    min-height: 100vh;
-    color: var(--silver);
-    -webkit-font-smoothing: antialiased;
   }
 
   /* ── Metal panel ── */

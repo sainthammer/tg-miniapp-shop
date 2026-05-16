@@ -48,16 +48,22 @@
 
   body {
     font-family: var(--fn-body);
+    background: none;
+    min-height: 100vh;
+    color: var(--silver);
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
     background-image:
       var(--scratch-a), var(--scratch-b), var(--scratch-c),
       linear-gradient(rgba(8,8,8,0.78), rgba(8,8,8,0.78)),
       url(/static/metal-bg.jpg);
     background-size: auto, auto, auto, cover, cover;
-    background-attachment: fixed;
     background-position: center;
-    min-height: 100vh;
-    color: var(--silver);
-    -webkit-font-smoothing: antialiased;
   }
 
   /* ── Metal panel ── */
@@ -124,16 +130,55 @@
     font-family: var(--fn-body);
     font-size: 11px; font-weight: 700;
     letter-spacing: 0.14em; text-transform: uppercase;
-    color: #0a0c14;
-    background: linear-gradient(rgba(255,255,255,0.06), rgba(0,0,0,0.18)), url(/static/button-bg.jpg) center/cover;
-    border: 1px solid rgba(255,255,255,0.20);
-    border-top-color: rgba(255,255,255,0.42);
-    border-bottom-color: rgba(0,0,0,0.28);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.30), inset 0 -1px 0 rgba(0,0,0,0.18);
+    color: #1a1c24;
+    background: url(/static/button-bg.jpg) center/cover;
+    border: 1px solid rgba(130,132,136,0.22);
+    border-top-color: rgba(228,232,238,0.34);
+    border-bottom-color: rgba(0,0,0,0.55);
+    box-shadow:
+      inset 0 2px 6px rgba(0,0,0,0.52),
+      inset 0 -1px 0 rgba(0,0,0,0.42),
+      0 1px 0 rgba(255,255,255,0.04);
     border-radius: 3px; cursor: pointer;
     transition: filter .12s ease;
+    position: relative;
+    overflow: hidden;
   }
-  .btn-cta:active { filter: brightness(0.88); }
+  .btn-cta::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(220,226,238,0.18) 8%,
+      rgba(235,240,250,0.68) 30%,
+      rgba(242,246,254,0.88) 50%,
+      rgba(235,240,250,0.68) 70%,
+      rgba(220,226,238,0.18) 92%,
+      transparent 100%
+    );
+    z-index: 3;
+  }
+  .btn-cta::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    left: -60%; width: 55%;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      rgba(255,255,255,0.000) 38%,
+      rgba(255,255,255,0.028) 50%,
+      rgba(255,255,255,0.000) 62%,
+      transparent 100%
+    );
+    transform: skewX(-18deg);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .btn-cta:hover { filter: brightness(1.08); border-top-color: rgba(242,246,254,0.52); }
+  .btn-cta:active { filter: brightness(0.82); }
 
   /* ── Catalog skeleton loader ── */
   .skeleton-card {
