@@ -1,4 +1,5 @@
 import asyncio
+import html
 import io
 import json
 import os
@@ -726,6 +727,7 @@ def api_admin_broadcast():
 
 
 async def _broadcast(text: str, photo_bytes: bytes | None, photo_name: str | None) -> dict:
+    safe_text = html.escape(text) if text else ""
     user_ids = get_all_user_ids()
     sent = 0
     failed = 0
@@ -735,10 +737,11 @@ async def _broadcast(text: str, photo_bytes: bytes | None, photo_name: str | Non
                 await bot.send_photo(
                     int(uid),
                     BufferedInputFile(photo_bytes, filename=photo_name or "photo.jpg"),
-                    caption=text or None,
+                    caption=safe_text or None,
+                    parse_mode=ParseMode.HTML,
                 )
             else:
-                await bot.send_message(int(uid), text)
+                await bot.send_message(int(uid), safe_text, parse_mode=ParseMode.HTML)
             sent += 1
         except Exception:
             failed += 1
