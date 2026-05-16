@@ -3,124 +3,336 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Панель администрирования</title>
+  <title>XTINCT — Управление</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* ── XTINCT Metal Redesign ── */
-    body {
-      background-image:
-        linear-gradient(rgba(8,8,12,0.48), rgba(8,8,12,0.48)),
-        url(/static/metal-bg.jpg);
-      background-size: cover;
-      background-attachment: fixed;
-      background-position: center;
-      min-height: 100vh;
-    }
-    .glass {
-      background: rgba(18,18,24,0.82);
-      backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
-      border: 1px solid rgba(180,180,192,0.22);
-    }
-    .nav-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      min-width: 76px;
-      height: 62px;
-      border-radius: 8px;
-      color: rgba(200,200,212,0.50);
-      transition: all .18s ease;
-      position: relative;
-    }
-    .nav-btn.active {
-      color: #e8e8ee;
-      background: rgba(50,50,60,0.95);
-      border: 1px solid rgba(180,180,194,0.35);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.10);
-    }
-    .nav-icon { width: 22px; height: 22px; display: block; }
-    .nav-label { font-size: 11px; line-height: 1; font-weight: 600; letter-spacing: 0.06em; }
-    .line-clamp-2 {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
+  /* ══════════════════════════════════════════
+     XTINCT Admin — Scratched Metal Design System
+  ══════════════════════════════════════════ */
 
-    /* ── Metal overrides for Tailwind utilities ── */
+  :root {
+    --m-black:   #090909;
+    --m-dark:    #101010;
+    --m-mid:     #161616;
+    --m-surf:    #1c1c1c;
+    --m-border:  rgba(155,157,160,0.15);
+    --m-top:     rgba(218,220,224,0.22);
+    --m-shine:   rgba(255,255,255,0.06);
+    --m-shadow:  rgba(0,0,0,0.58);
+    --silver:    #ccd0da;
+    --silver-dim: rgba(165,168,176,0.68);
+    --silver-faint: rgba(148,150,158,0.44);
+    --brass:     #dce4f0;
+    --brass-dim: rgba(208,218,240,0.58);
+    --danger-bd: rgba(210,70,70,0.32);
+    --fn-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    --fn-body:    'Barlow', 'Arial', sans-serif;
 
-    .rounded-\[22px\], .rounded-\[24px\] { border-radius: 8px !important; }
-    .rounded-2xl { border-radius: 8px !important; }
-    .rounded-xl  { border-radius: 6px !important; }
+    --scratch-a: repeating-linear-gradient(
+      17deg, transparent 0, transparent 1.6px,
+      rgba(255,255,255,0.027) 1.6px, rgba(255,255,255,0.027) 2px);
+    --scratch-b: repeating-linear-gradient(
+      -9deg, transparent 0, transparent 4px,
+      rgba(255,255,255,0.013) 4px, rgba(255,255,255,0.013) 4.4px);
+    --scratch-c: repeating-linear-gradient(
+      76deg, transparent 0, transparent 9px,
+      rgba(255,255,255,0.006) 9px, rgba(255,255,255,0.006) 9.5px);
+  }
 
-    .bg-white.text-slate-900 {
-      background: linear-gradient(
-        180deg,
-        rgba(75,75,88,0.95) 0%,
-        rgba(38,38,48,0.98) 55%,
-        rgba(58,58,70,0.95) 100%
-      ) !important;
-      border: 1px solid rgba(160,160,178,0.5) !important;
-      border-top-color: rgba(220,220,238,0.65) !important;
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.14),
-        inset 0 -1px 0 rgba(0,0,0,0.28),
-        0 2px 10px rgba(0,0,0,0.55),
-        0 1px 3px rgba(0,0,0,0.35) !important;
-      color: #dcdce8 !important;
-      letter-spacing: 0.08em !important;
-      text-transform: uppercase !important;
-      font-size: 12px !important;
-      font-weight: 700 !important;
-    }
+  *, *::before, *::after { box-sizing: border-box; }
 
-    .bg-red-500\/80, .bg-red-700\/70 {
-      background: rgba(135,22,22,0.78) !important;
-      border: 1px solid rgba(200,70,70,0.32) !important;
-      color: #f2c0c0 !important;
-    }
+  body {
+    font-family: var(--fn-body);
+    background-image:
+      var(--scratch-a), var(--scratch-b), var(--scratch-c),
+      linear-gradient(rgba(8,8,8,0.78), rgba(8,8,8,0.78)),
+      url(/static/metal-bg.jpg);
+    background-size: auto, auto, auto, cover, cover;
+    background-attachment: fixed;
+    background-position: center;
+    min-height: 100vh;
+    color: var(--silver);
+    -webkit-font-smoothing: antialiased;
+  }
 
-    input:not([type=file]), textarea, select {
-      background: rgba(22,22,28,0.92) !important;
-      border-color: rgba(160,160,172,0.30) !important;
-      color: #e4e4ee !important;
-    }
-    select option { background: #18181f; color: #e4e4ee; }
+  /* ── Metal panel ── */
+  .glass {
+    background:
+      var(--scratch-a), var(--scratch-b),
+      linear-gradient(160deg, #1e1e1e 0%, #181818 45%, #1a1a1a 100%);
+    border: 1px solid var(--m-border);
+    border-top-color: var(--m-top);
+    border-left-color: rgba(192,194,197,0.18);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.05),
+      inset 0 -1px 0 rgba(0,0,0,0.40);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 
-    /* ── Header banner ── */
-    .header-banner {
-      background-image:
-        linear-gradient(rgba(8,8,14,0.55), rgba(8,8,14,0.55)),
-        url(/static/xtinct-logo.jpg);
-      background-size: cover;
-      background-position: center;
-      border: 1px solid rgba(180,180,192,0.25);
-      border-radius: 8px;
-      overflow: hidden;
-      -webkit-mask-image: -webkit-radial-gradient(white, black);
-      height: 110px;
-      position: relative;
-    }
-    .header-admin-label {
-      position: absolute;
-      bottom: 12px;
-      left: 14px;
-      font-size: 10px;
-      letter-spacing: 0.22em;
-      color: rgba(200,200,210,0.5);
-      text-transform: uppercase;
-      font-weight: 600;
-    }
+  /* ── Border-radius ── */
+  .rounded-\[22px\],.rounded-\[24px\],.rounded-\[28px\] { border-radius: 4px !important; }
+  .rounded-2xl { border-radius: 4px !important; }
+  .rounded-xl  { border-radius: 3px !important; }
+  .rounded-full { border-radius: 3px !important; }
+  .rounded-lg  { border-radius: 3px !important; }
+
+  /* ── Primary buttons ── */
+  .bg-white.text-slate-900 {
+    background:
+      var(--scratch-a),
+      linear-gradient(180deg, #2e2e2e 0%, #1e1e1e 55%, #242424 100%) !important;
+    border: 1px solid rgba(140,141,143,0.40) !important;
+    border-top-color: rgba(218,220,224,0.55) !important;
+    border-bottom-color: rgba(0,0,0,0.48) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.07),
+      inset 0 -1px 0 rgba(0,0,0,0.28) !important;
+    color: var(--silver) !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+    font-weight: 700 !important;
+    font-family: var(--fn-body) !important;
+    font-size: 11px !important;
+    transition: filter .12s ease !important;
+  }
+  .bg-white.text-slate-900:active { filter: brightness(0.86) !important; }
+
+  /* ── Danger buttons ── */
+  .bg-red-500\/80, .bg-red-700\/70 {
+    background:
+      var(--scratch-a),
+      linear-gradient(180deg, #5e1414 0%, #3c0c0c 100%) !important;
+    border: 1px solid var(--danger-bd) !important;
+    border-top-color: rgba(218,75,75,0.42) !important;
+    color: #f0b2b2 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.09em !important;
+    font-weight: 700 !important;
+    font-family: var(--fn-body) !important;
+    font-size: 11px !important;
+  }
+
+  /* ── Form inputs ── */
+  input:not([type=file]), textarea, select {
+    background:
+      repeating-linear-gradient(17deg, transparent 0, transparent 3px,
+        rgba(255,255,255,0.006) 3px, rgba(255,255,255,0.006) 3.4px),
+      linear-gradient(to bottom, #0c0c0c, #101010) !important;
+    border-color: rgba(140,141,143,0.24) !important;
+    border-bottom-color: rgba(192,194,198,0.14) !important;
+    color: #dcdeed !important;
+    font-family: var(--fn-body) !important;
+    font-size: 15px !important;
+    letter-spacing: 0.04em !important;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.36) !important;
+  }
+  input::placeholder, textarea::placeholder {
+    color: rgba(155,155,180,0.38) !important;
+    letter-spacing: 0.06em;
+  }
+  select option { background: #141414; color: #dcdce4; }
+
+  /* ── Site header (shared with client) ── */
+  .site-header {
+    background:
+      repeating-linear-gradient(180deg, transparent 0, transparent 1px, rgba(255,255,255,0.018) 1px, rgba(255,255,255,0.018) 2px),
+      repeating-linear-gradient(12deg, transparent 0, transparent 2.8px, rgba(255,255,255,0.022) 2.8px, rgba(255,255,255,0.022) 3px),
+      repeating-linear-gradient(-7deg, transparent 0, transparent 5px, rgba(255,255,255,0.011) 5px, rgba(255,255,255,0.011) 5.3px),
+      linear-gradient(100deg, #1a1a1a 0%, #212121 18%, #1d1d1d 35%, #232323 52%, #1c1c1c 68%, #202020 82%, #1b1b1b 100%);
+    border: 1px solid rgba(130,132,136,0.22);
+    border-top-color: rgba(228,232,238,0.34);
+    border-bottom-color: rgba(0,0,0,0.55);
+    box-shadow:
+      inset 0 2px 6px rgba(0,0,0,0.52),
+      inset 0 -1px 0 rgba(0,0,0,0.42),
+      0 1px 0 rgba(255,255,255,0.04);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .site-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(220,226,238,0.18) 8%, rgba(235,240,250,0.68) 30%, rgba(242,246,254,0.88) 50%, rgba(235,240,250,0.68) 70%, rgba(220,226,238,0.18) 92%, transparent 100%);
+    z-index: 3;
+  }
+  .site-header::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; left: -60%; width: 55%;
+    background: linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.000) 38%, rgba(255,255,255,0.028) 50%, rgba(255,255,255,0.000) 62%, transparent 100%);
+    transform: skewX(-18deg);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .site-header__inner {
+    position: relative; z-index: 1;
+    height: 96px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px;
+  }
+  .site-header__logo {
+    height: 110px;
+    width: auto;
+    filter: invert(1);
+    mix-blend-mode: screen;
+    flex-shrink: 0;
+    pointer-events: none;
+    user-select: none;
+  }
+  /* ── Header action button ── */
+  .mgr-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 8px 13px 8px 11px;
+    font-family: var(--fn-body);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--silver-dim);
+    background:
+      repeating-linear-gradient(180deg, transparent 0, transparent 1px, rgba(255,255,255,0.012) 1px, rgba(255,255,255,0.012) 2px),
+      linear-gradient(175deg, #1c1c1c 0%, #141414 55%, #181818 100%);
+    border: 1px solid rgba(130,132,138,0.28);
+    border-top-color: rgba(200,208,224,0.30);
+    border-bottom-color: rgba(0,0,0,0.44);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.04),
+      inset 0 -1px 0 rgba(0,0,0,0.28),
+      inset 1px 0 0 rgba(255,255,255,0.02);
+    border-radius: 3px; cursor: pointer;
+    transition: filter .14s ease, box-shadow .14s ease;
+    white-space: nowrap;
+  }
+  .mgr-btn:hover {
+    color: var(--silver);
+    border-top-color: rgba(210,220,240,0.42);
+    filter: brightness(1.08);
+  }
+  .mgr-btn:active {
+    filter: brightness(0.82);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.42), inset 0 -1px 0 rgba(0,0,0,0.20);
+  }
+
+  /* ── Bottom nav ── */
+  .nav-wrap {
+    position: fixed;
+    bottom: 0; left: 0; right: 0; z-index: 50;
+    padding: 0 12px max(14px, env(safe-area-inset-bottom));
+  }
+  .nav-inner {
+    max-width: 72rem;
+    margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-around;
+    background:
+      var(--scratch-a),
+      linear-gradient(0deg, #0a0a0a 0%, #141414 100%);
+    border: 1px solid var(--m-border);
+    border-top-color: var(--m-top);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.04),
+      0 -3px 20px rgba(0,0,0,0.68);
+    border-radius: 4px;
+    padding: 6px 8px;
+  }
+  .nav-btn {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 4px;
+    min-width: 72px; height: 58px;
+    border-radius: 3px;
+    color: rgba(148,148,172,0.38);
+    transition: all .16s ease;
+    position: relative;
+    background: none; border: none; cursor: pointer;
+    font-family: var(--fn-body);
+  }
+  .nav-btn.active {
+    color: var(--silver);
+    background:
+      var(--scratch-a),
+      linear-gradient(180deg, #222222 0%, #181818 100%);
+    border: 1px solid rgba(195,210,240,0.22);
+    border-top-color: rgba(208,222,244,0.38);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+  }
+  .nav-btn.active::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 50%;
+    transform: translateX(-50%);
+    width: 28px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--brass) 35%, var(--brass) 65%, transparent);
+    border-radius: 0 0 2px 2px;
+  }
+  .nav-icon { width: 22px; height: 22px; display: block; }
+  .nav-label {
+    font-size: 10px; line-height: 1;
+    font-weight: 700; letter-spacing: 0.10em;
+    text-transform: uppercase;
+  }
+
+  /* ── Section form panel ── */
+  .form-panel {
+    background:
+      var(--scratch-a), var(--scratch-b),
+      linear-gradient(160deg, #1e1e1e 0%, #181818 100%);
+    border: 1px solid var(--m-border);
+    border-top-color: var(--m-top);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    border-radius: 4px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .form-title {
+    font-family: var(--fn-display);
+    font-size: 22px; font-weight: 800; letter-spacing: 0.08em;
+    color: var(--silver); line-height: 1;
+    margin-bottom: 4px;
+  }
+  .form-sub {
+    font-family: var(--fn-body);
+    font-size: 12px; color: var(--silver-faint);
+    letter-spacing: 0.04em; margin-bottom: 14px;
+  }
+
+  /* ── Engraved label ── */
+  .engraved {
+    font-family: var(--fn-body);
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--silver-faint);
+  }
+
+  /* ── Scrollbar ── */
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ── line-clamp ── */
+  .line-clamp-2 {
+    display: -webkit-box; -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical; overflow: hidden;
+  }
   </style>
 </head>
-<body class="text-white">
-  <div class="max-w-6xl mx-auto px-4 pt-4 pb-36">
-    <header class="header-banner sticky top-4 z-30 mb-4">
-      <span class="header-admin-label">УПРАВЛЕНИЕ</span>
+<body>
+  <div class="max-w-6xl mx-auto px-3 pt-3 pb-36">
+
+    <header class="site-header mb-4">
+      <div class="site-header__inner">
+        <img src="/static/xtinct-logo.png" class="site-header__logo" alt="XTINCT" />
+        <button id="openStoreBtn" class="mgr-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M3 10.5 12 3l9 7.5"></path>
+            <path d="M5 9.5V20h14V9.5"></path>
+          </svg>
+          Магазин
+        </button>
+      </div>
     </header>
 
     <section id="ordersScreen">
@@ -128,11 +340,9 @@
     </section>
 
     <section id="productsScreen" class="hidden">
-      <div class="glass rounded-[24px] p-4 mb-4 space-y-3">
-        <div>
-          <div class="text-lg font-semibold">Добавить товар</div>
-          <div class="text-sm text-white/50 mt-1">Заполни карточку и сохрани товар в каталог.</div>
-        </div>
+      <div class="form-panel">
+        <div class="form-title">Добавить товар</div>
+        <div class="form-sub">Заполни карточку и сохрани товар в каталог.</div>
 
         <div class="grid md:grid-cols-2 gap-3">
           <input id="newProductTitle" class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Название" />
@@ -143,26 +353,35 @@
           <input id="newProductSizes" class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Размеры через запятую, например S,M,L" />
         </div>
 
-        <textarea id="newProductDescription" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[110px]" placeholder="Описание"></textarea>
-
-        <div>
-          <div id="newImageList" class="space-y-2 mb-2"></div>
-          <input id="newProductImageFile" type="file" accept="image/*" class="hidden" />
-          <button id="addImageBtn" class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold">+ Добавить фото</button>
+        <div style="margin-top:12px;">
+          <textarea id="newProductDescription" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[110px]" placeholder="Описание"></textarea>
         </div>
 
-        <button id="addProductBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">
-          Добавить товар
-        </button>
+        <div style="margin-top:12px;">
+          <div id="newImageList" class="space-y-2 mb-2"></div>
+          <input id="newProductImageFile" type="file" accept="image/*" class="hidden" />
+          <button id="addImageBtn" class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold"
+            style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--silver-dim);background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.22);border-top-color:rgba(192,195,198,0.26);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);border-radius:3px;cursor:pointer;">
+            + Добавить фото
+          </button>
+        </div>
+
+        <div style="margin-top:14px;">
+          <button id="addProductBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">
+            Добавить товар
+          </button>
+        </div>
       </div>
 
       <div id="productsList" class="space-y-3"></div>
     </section>
 
     <section id="categoriesScreen" class="hidden">
-      <div class="glass rounded-[24px] p-4 mb-4">
+      <div class="form-panel">
+        <div class="form-title">Категории</div>
+        <div class="form-sub">Добавь новую категорию товаров.</div>
         <div class="flex flex-col sm:flex-row gap-3">
-          <input id="newCategoryName" class="flex-1 rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Новая категория" />
+          <input id="newCategoryName" class="flex-1 rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Название категории" />
           <button id="addCategoryBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">Добавить</button>
         </div>
       </div>
@@ -170,18 +389,16 @@
     </section>
   </div>
 
-  <div id="bottomNavWrap" class="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4">
-    <div class="max-w-6xl mx-auto glass rounded-[24px] p-2 shadow-2xl flex items-center justify-between">
+  <!-- Bottom nav -->
+  <div id="bottomNavWrap" class="nav-wrap">
+    <div class="nav-inner">
       <button id="navOrders" class="nav-btn active">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
           <path d="M6 4h12v16H6z"></path>
-          <path d="M9 8h6"></path>
-          <path d="M9 12h6"></path>
-          <path d="M9 16h4"></path>
+          <path d="M9 8h6"></path><path d="M9 12h6"></path><path d="M9 16h4"></path>
         </svg>
         <span class="nav-label">Заказы</span>
       </button>
-
       <button id="navProducts" class="nav-btn">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
           <path d="M12 3 4 7l8 4 8-4-8-4Z"></path>
@@ -190,30 +407,27 @@
         </svg>
         <span class="nav-label">Товары</span>
       </button>
-
       <button id="navCategories" class="nav-btn">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
           <circle cx="6" cy="6" r="2"></circle>
           <circle cx="18" cy="6" r="2"></circle>
           <circle cx="6" cy="18" r="2"></circle>
           <circle cx="18" cy="18" r="2"></circle>
-          <path d="M8 6h8"></path>
-          <path d="M6 8v8"></path>
-          <path d="M18 8v8"></path>
-          <path d="M8 18h8"></path>
+          <path d="M8 6h8"></path><path d="M6 8v8"></path>
+          <path d="M18 8v8"></path><path d="M8 18h8"></path>
         </svg>
         <span class="nav-label">Категории</span>
       </button>
     </div>
   </div>
 
-  <div id="editProductModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] p-4 overflow-auto">
+  <!-- Edit product modal -->
+  <div id="editProductModal" class="hidden fixed inset-0 z-[60] p-4 overflow-auto" style="background:rgba(4,4,8,0.74);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);">
     <div class="max-w-lg mx-auto mt-6 mb-28 glass rounded-[28px] p-5 shadow-2xl">
-      <div class="flex items-center justify-between gap-3 mb-4">
-        <h2 class="text-2xl font-bold">Редактирование товара</h2>
-        <button id="closeEditProductModal" class="text-white/60 hover:text-white text-xl">✕</button>
+      <div class="flex items-center justify-between gap-3 mb-5">
+        <h2 style="font-family:var(--fn-display);font-size:26px;letter-spacing:0.10em;color:var(--silver);line-height:1;">Редактирование товара</h2>
+        <button id="closeEditProductModal" style="color:var(--silver-dim);font-size:20px;background:none;border:none;cursor:pointer;padding:4px;">✕</button>
       </div>
-
       <div class="space-y-3">
         <input id="editProductTitle" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Название" />
         <input id="editProductPrice" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Цена" />
@@ -224,33 +438,38 @@
         <div>
           <div id="editImageList" class="space-y-2 mb-2"></div>
           <input id="editProductImageFile" type="file" accept="image/*" class="hidden" />
-          <button id="editAddImageBtn" class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold">+ Добавить фото</button>
+          <button id="editAddImageBtn"
+            style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--silver-dim);background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.22);border-top-color:rgba(192,195,198,0.26);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);border-radius:3px;cursor:pointer;padding:10px 14px;">
+            + Добавить фото
+          </button>
         </div>
         <textarea id="editProductDescription" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[110px]" placeholder="Описание"></textarea>
       </div>
-
       <div class="mt-5 grid grid-cols-2 gap-3">
         <button id="saveEditProductBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">Сохранить</button>
-        <button id="cancelEditProductBtn" class="rounded-2xl bg-white/10 px-5 py-3 font-semibold">Отмена</button>
+        <button id="cancelEditProductBtn" class="rounded-2xl bg-white/10 px-5 py-3 font-semibold"
+          style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--silver-dim);background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.22);border-radius:3px;cursor:pointer;">Отмена</button>
       </div>
     </div>
   </div>
 
-  <div id="orderDetailsModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] p-4 overflow-auto">
+  <!-- Order details modal -->
+  <div id="orderDetailsModal" class="hidden fixed inset-0 z-[60] p-4 overflow-auto" style="background:rgba(4,4,8,0.74);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);">
     <div class="max-w-2xl mx-auto mt-6 mb-28 glass rounded-[28px] p-5 shadow-2xl">
-      <div class="flex items-center justify-between gap-3 mb-4">
-        <h2 class="text-2xl font-bold">Детали заказа</h2>
-        <button id="closeOrderDetailsModal" class="text-white/60 hover:text-white text-xl">✕</button>
+      <div class="flex items-center justify-between gap-3 mb-5">
+        <h2 style="font-family:var(--fn-display);font-size:26px;letter-spacing:0.10em;color:var(--silver);line-height:1;">Детали заказа</h2>
+        <button id="closeOrderDetailsModal" style="color:var(--silver-dim);font-size:20px;background:none;border:none;cursor:pointer;padding:4px;">✕</button>
       </div>
-
-      <div id="orderDetailsContent" class="space-y-4"></div>
-
+      <div id="orderDetailsContent" class="space-y-3"></div>
       <div class="mt-5 grid grid-cols-2 md:grid-cols-5 gap-2">
         <button onclick="changeStatusFromModal('confirmed')" class="rounded-xl bg-white text-slate-900 px-4 py-3 text-sm font-semibold">Подтвердить</button>
-        <button onclick="changeStatusFromModal('processing')" class="rounded-xl bg-white/10 px-4 py-3 text-sm font-medium">В обработку</button>
-        <button onclick="changeStatusFromModal('shipped')" class="rounded-xl bg-white/10 px-4 py-3 text-sm font-medium">Отправлен</button>
-        <button onclick="changeStatusFromModal('done')" class="rounded-xl bg-white/10 px-4 py-3 text-sm font-medium">Завершен</button>
-        <button onclick="changeStatusFromModal('cancelled')" class="rounded-xl bg-red-500/80 px-4 py-3 text-sm font-medium">Отменен</button>
+        <button onclick="changeStatusFromModal('processing')" class="rounded-xl bg-white/10 px-4 py-3 text-sm font-medium"
+          style="font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--silver-dim);background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.20);border-radius:3px;cursor:pointer;">В обработку</button>
+        <button onclick="changeStatusFromModal('shipped')" class="rounded-xl bg-white/10 px-4 py-3 text-sm font-medium"
+          style="font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--silver-dim);background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.20);border-radius:3px;cursor:pointer;">Отправлен</button>
+        <button onclick="changeStatusFromModal('done')" class="rounded-xl bg-white/10 px-4 py-3 text-sm font-medium"
+          style="font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--silver-dim);background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.20);border-radius:3px;cursor:pointer;">Завершён</button>
+        <button onclick="changeStatusFromModal('cancelled')" class="rounded-xl bg-red-500/80 px-4 py-3 text-sm font-medium">Отменён</button>
       </div>
     </div>
   </div>
@@ -259,6 +478,10 @@
     const tg = window.Telegram?.WebApp;
     tg?.ready();
     tg?.expand();
+
+    document.getElementById('openStoreBtn').addEventListener('click', () => {
+      window.location.href = '/';
+    });
 
     function esc(str) {
       return String(str ?? '')
@@ -271,10 +494,10 @@
 
     if (!tg?.initData) {
       document.body.innerHTML = `
-        <div class="max-w-xl mx-auto px-4 pt-10 text-white">
+        <div class="max-w-xl mx-auto px-4 pt-10" style="color:var(--silver);">
           <div class="glass rounded-[24px] p-6">
-            <div class="text-2xl font-bold mb-3">Нет Telegram initData</div>
-            <div class="text-white/70">
+            <div style="font-family:var(--fn-display);font-size:26px;letter-spacing:0.10em;color:var(--silver);margin-bottom:12px;">Нет Telegram initData</div>
+            <div style="font-family:var(--fn-body);font-size:14px;color:var(--silver-dim);letter-spacing:0.03em;">
               Открой админку только через кнопку бота в Telegram. Не открывай /admin вручную и не обновляй страницу как обычный сайт.
             </div>
           </div>
@@ -317,11 +540,9 @@
       const result = {
         "X-Telegram-Init-Data": tg.initData
       };
-
       if (isJson) {
         result["Content-Type"] = "application/json";
       }
-
       return result;
     }
 
@@ -400,20 +621,35 @@
     function renderOrders() {
       const root = document.getElementById('ordersList');
 
-      root.innerHTML = state.orders.map(order => `
-        <article class="glass rounded-[22px] p-4">
-          <div class="flex items-start justify-between gap-4 flex-col md:flex-row">
-            <button onclick="openOrderDetails(${order.order_number})" class="text-left min-w-0 flex-1">
-              <div class="text-lg font-bold">Заказ #${order.order_number}</div>
-              <div class="text-white/60 mt-1">${esc(order.customer_name || 'Не указано')}</div>
-              <div class="text-white/60 mt-1">Статус: ${statusLabel(order.status)}</div>
-              <div class="text-white/60 mt-1">Сумма: ${formatPrice(order.total)}</div>
-              <div class="text-white/40 mt-1 text-sm">${esc(formatDate(order.created_at))}</div>
-            </button>
+      if (!state.orders.length) {
+        root.innerHTML = `<div class="glass rounded-[22px] p-6" style="color:var(--silver-dim);font-family:var(--fn-body);font-size:14px;letter-spacing:0.04em;">Заказов пока нет.</div>`;
+        return;
+      }
 
-            <div class="grid grid-cols-2 md:grid-cols-1 gap-2 w-full md:w-auto">
-              <button onclick="openOrderDetails(${order.order_number})" class="rounded-xl bg-white text-slate-900 px-4 py-2 text-sm font-semibold">Открыть</button>
-              <button onclick="changeOrderStatus(${order.order_number}, 'confirmed')" class="rounded-xl bg-white/10 px-4 py-2 text-sm font-medium">Подтвердить</button>
+      root.innerHTML = state.orders.map(order => `
+        <article style="
+          background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);
+          border:1px solid var(--m-border);border-top-color:var(--m-top);
+          box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+          border-radius:4px;padding:14px;
+        ">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+            <button onclick="openOrderDetails(${order.order_number})" style="text-align:left;min-width:0;flex:1;background:none;border:none;cursor:pointer;">
+              <div style="font-family:var(--fn-display);font-weight:800;font-size:24px;letter-spacing:0.06em;color:var(--silver);line-height:1;">Заказ #${order.order_number}</div>
+              <div style="font-family:var(--fn-body);font-size:13px;font-weight:600;color:var(--silver-dim);margin-top:5px;letter-spacing:0.03em;">${esc(order.customer_name || 'Не указано')}</div>
+              <div style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--brass-dim);margin-top:4px;">${statusLabel(order.status)}</div>
+              <div style="font-family:var(--fn-display);font-size:18px;letter-spacing:0.04em;color:var(--silver);margin-top:4px;">${formatPrice(order.total)}</div>
+              <div style="font-family:var(--fn-body);font-size:11px;color:var(--silver-faint);margin-top:3px;letter-spacing:0.03em;">${esc(formatDate(order.created_at))}</div>
+            </button>
+            <div style="display:grid;grid-template-columns:1fr;gap:6px;width:auto;flex-shrink:0;">
+              <button onclick="openOrderDetails(${order.order_number})"
+                style="background:var(--scratch-a),linear-gradient(180deg,#2e2e2e 0%,#1e1e1e 55%,#242424 100%);border:1px solid rgba(140,141,143,0.40);border-top-color:rgba(218,220,224,0.55);border-bottom-color:rgba(0,0,0,0.48);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);color:var(--silver);font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:8px 14px;border-radius:3px;cursor:pointer;">
+                Открыть
+              </button>
+              <button onclick="changeOrderStatus(${order.order_number}, 'confirmed')"
+                style="background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.20);color:var(--silver-dim);font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:8px 14px;border-radius:3px;cursor:pointer;">
+                Подтвердить
+              </button>
             </div>
           </div>
         </article>
@@ -443,54 +679,62 @@
         return;
       }
 
+      const panelStyle = `
+        background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);
+        border:1px solid var(--m-border);border-top-color:var(--m-top);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);border-radius:4px;padding:14px;
+      `;
+      const labelStyle = `font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--silver-faint);margin-bottom:5px;`;
+      const valueStyle = `font-family:var(--fn-body);font-size:14px;color:var(--silver);letter-spacing:0.02em;`;
+      const metaStyle = `font-family:var(--fn-body);font-size:13px;letter-spacing:0.03em;`;
+
       const itemsHtml = (order.items || []).map(item => `
-        <div class="flex items-center justify-between gap-3 py-2 border-b border-white/10 last:border-b-0">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid rgba(155,157,160,0.10);">
           <div>
-            <div class="font-medium">${esc(item.title)}</div>
-            <div class="text-white/50 text-sm">
+            <div style="${metaStyle}color:var(--silver);font-weight:600;">${esc(item.title)}</div>
+            <div style="${metaStyle}color:var(--silver-dim);margin-top:2px;font-size:12px;">
               Кол-во: ${item.quantity}${item.size ? ` | Размер: ${esc(item.size)}` : ''}
             </div>
           </div>
-          <div class="font-semibold">${formatPrice(item.subtotal)}</div>
+          <div style="font-family:var(--fn-display);font-weight:800;font-size:18px;letter-spacing:0.04em;color:var(--silver);white-space:nowrap;">${formatPrice(item.subtotal)}</div>
         </div>
       `).join('');
 
       orderDetailsContent.innerHTML = `
-        <div class="grid md:grid-cols-2 gap-3">
-          <div class="glass rounded-2xl p-4">
-            <div class="text-white/50 text-sm mb-1">Номер заказа</div>
-            <div class="font-semibold text-lg">#${order.order_number}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="${panelStyle}">
+            <div style="${labelStyle}">Заказ</div>
+            <div style="font-family:var(--fn-display);font-weight:800;font-size:22px;letter-spacing:0.06em;color:var(--silver);">#${order.order_number}</div>
           </div>
-          <div class="glass rounded-2xl p-4">
-            <div class="text-white/50 text-sm mb-1">Статус</div>
-            <div class="font-semibold text-lg">${statusLabel(order.status)}</div>
+          <div style="${panelStyle}">
+            <div style="${labelStyle}">Статус</div>
+            <div style="font-family:var(--fn-body);font-size:12px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--brass-dim);">${statusLabel(order.status)}</div>
           </div>
         </div>
 
-        <div class="glass rounded-2xl p-4 space-y-2">
-          <div class="text-white/50 text-sm">Данные заказчика</div>
-          <div><span class="text-white/50">Имя:</span> ${esc(order.customer_name || 'Не указано')}</div>
-          <div><span class="text-white/50">Телефон:</span> ${esc(order.customer_phone || 'Не указано')}</div>
-          <div><span class="text-white/50">Telegram link:</span> ${esc(order.customer_telegram_link || 'Не указано')}</div>
-          <div><span class="text-white/50">Комментарий:</span> ${esc(order.customer_comment || '—')}</div>
+        <div style="${panelStyle}display:flex;flex-direction:column;gap:7px;">
+          <div style="${labelStyle}">Данные заказчика</div>
+          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Имя:</span> <span style="color:var(--silver);">${esc(order.customer_name || 'Не указано')}</span></div>
+          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Телефон:</span> <span style="color:var(--silver);">${esc(order.customer_phone || 'Не указано')}</span></div>
+          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Telegram:</span> <span style="color:var(--silver);">${esc(order.customer_telegram_link || 'Не указано')}</span></div>
+          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Комментарий:</span> <span style="color:var(--silver);">${esc(order.customer_comment || '—')}</span></div>
         </div>
 
-        <div class="glass rounded-2xl p-4 space-y-2">
-          <div class="text-white/50 text-sm">Telegram Mini App</div>
-          <div><span class="text-white/50">User ID:</span> ${esc(String(order.telegram_user_id || '—'))}</div>
-          <div><span class="text-white/50">Username:</span> ${order.telegram_username ? '@' + esc(order.telegram_username) : '—'}</div>
-          <div><span class="text-white/50">Имя:</span> ${esc(order.telegram_first_name || '—')}</div>
-          <div><span class="text-white/50">Создан:</span> ${esc(formatDate(order.created_at))}</div>
+        <div style="${panelStyle}display:flex;flex-direction:column;gap:7px;">
+          <div style="${labelStyle}">Telegram</div>
+          <div style="${metaStyle}"><span style="color:var(--silver-faint);">User ID:</span> <span style="color:var(--silver);">${esc(String(order.telegram_user_id || '—'))}</span></div>
+          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Username:</span> <span style="color:var(--silver);">${order.telegram_username ? '@' + esc(order.telegram_username) : '—'}</span></div>
+          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Создан:</span> <span style="color:var(--silver);">${esc(formatDate(order.created_at))}</span></div>
         </div>
 
-        <div class="glass rounded-2xl p-4">
-          <div class="text-white/50 text-sm mb-3">Состав заказа</div>
-          <div class="space-y-1">${itemsHtml || '<div class="text-white/50">Позиции отсутствуют</div>'}</div>
+        <div style="${panelStyle}">
+          <div style="${labelStyle}margin-bottom:10px;">Состав заказа</div>
+          <div>${itemsHtml || '<div style="color:var(--silver-faint);">Позиции отсутствуют</div>'}</div>
         </div>
 
-        <div class="glass rounded-2xl p-4 flex items-center justify-between">
-          <div class="text-white/50">Итого</div>
-          <div class="text-2xl font-bold">${formatPrice(order.total || 0)}</div>
+        <div style="${panelStyle}display:flex;align-items:center;justify-content:space-between;">
+          <div style="${labelStyle}margin-bottom:0;">Итого</div>
+          <div style="font-family:var(--fn-display);font-weight:800;font-size:28px;letter-spacing:0.04em;color:var(--silver);">${formatPrice(order.total || 0)}</div>
         </div>
       `;
     }
@@ -568,24 +812,49 @@
     function renderProducts() {
       const root = document.getElementById('productsList');
 
-      root.innerHTML = state.products.map(product => `
-        <article class="glass rounded-[22px] p-4 flex gap-3 items-center flex-col md:flex-row">
-          <img src="${esc(product.image)}" alt="${esc(product.title)}" class="w-full md:w-24 h-44 md:h-24 object-cover rounded-2xl" />
+      if (!state.products.length) {
+        root.innerHTML = `<div class="glass rounded-[22px] p-6" style="color:var(--silver-dim);font-family:var(--fn-body);font-size:14px;letter-spacing:0.04em;">Товаров пока нет.</div>`;
+        return;
+      }
 
-          <div class="flex-1 w-full min-w-0">
-            <div class="text-[11px] uppercase tracking-[0.16em] text-white/35">${esc(product.category)}</div>
-            <div class="font-semibold text-base mt-1 line-clamp-2">${esc(product.title)}</div>
-            <div class="text-white/80 mt-2">${formatPrice(product.price)}</div>
-            <div class="text-white/50 text-sm mt-1">Размеры: ${(product.sizes || []).map(esc).join(', ') || 'не указаны'}</div>
-            <div class="text-white/45 text-sm mt-1">${product.is_active ? 'Активен' : 'Скрыт'}</div>
+      root.innerHTML = state.products.map(product => `
+        <article style="
+          background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);
+          border:1px solid var(--m-border);border-top-color:var(--m-top);
+          box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+          border-radius:4px;padding:14px;
+          display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+        ">
+          <img src="${esc(product.image)}" alt="${esc(product.title)}"
+            style="width:88px;height:88px;object-fit:cover;border-radius:3px;border:1px solid rgba(155,157,160,0.14);flex-shrink:0;" />
+
+          <div style="flex:1;min-width:0;">
+            <div style="font-family:var(--fn-body);font-size:9px;font-weight:700;letter-spacing:0.26em;text-transform:uppercase;color:var(--brass-dim);">${esc(product.category)}</div>
+            <div style="font-family:var(--fn-body);font-size:15px;font-weight:700;color:var(--silver);letter-spacing:0.02em;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${esc(product.title)}</div>
+            <div style="font-family:var(--fn-display);font-weight:800;font-size:20px;letter-spacing:0.04em;color:var(--silver);margin-top:5px;line-height:1;">${formatPrice(product.price)}</div>
+            <div style="font-family:var(--fn-body);font-size:12px;color:var(--silver-faint);margin-top:3px;letter-spacing:0.03em;">Размеры: ${(product.sizes || []).map(esc).join(' · ') || 'не указаны'}</div>
+            <div style="font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${product.is_active ? 'var(--brass-dim)' : 'var(--silver-faint)'};margin-top:3px;">${product.is_active ? '● Активен' : '○ Скрыт'}</div>
           </div>
 
-          <div class="grid grid-cols-2 md:grid-cols-1 gap-2 w-full md:w-auto">
-            <button onclick="openEditProductModal(${product.id})" class="rounded-xl bg-white text-slate-900 px-4 py-2 text-sm font-semibold">Изменить</button>
+          <div style="display:grid;grid-template-columns:1fr;gap:5px;min-width:100px;flex-shrink:0;">
+            <button onclick="openEditProductModal(${product.id})"
+              style="background:var(--scratch-a),linear-gradient(180deg,#2e2e2e 0%,#1e1e1e 55%,#242424 100%);border:1px solid rgba(140,141,143,0.40);border-top-color:rgba(218,220,224,0.55);border-bottom-color:rgba(0,0,0,0.48);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);color:var(--silver);font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:8px 10px;border-radius:3px;cursor:pointer;">
+              Изменить
+            </button>
             ${product.is_active
-              ? `<button onclick="hideProduct(${product.id})" class="rounded-xl bg-red-500/80 px-4 py-2 text-sm font-medium">Скрыть</button>`
-              : `<button onclick="showProduct(${product.id})" class="rounded-xl bg-white/10 px-4 py-2 text-sm font-medium">Показать</button>`}
-            <button onclick="deleteProduct(${product.id})" class="rounded-xl bg-red-700/70 px-4 py-2 text-sm font-medium col-span-2 md:col-span-1">Удалить</button>
+              ? `<button onclick="hideProduct(${product.id})"
+                  style="background:linear-gradient(180deg,#5e1414 0%,#3c0c0c 100%);border:1px solid rgba(210,70,70,0.32);border-top-color:rgba(218,75,75,0.42);color:#f0b2b2;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:8px 10px;border-radius:3px;cursor:pointer;">
+                  Скрыть
+                </button>`
+              : `<button onclick="showProduct(${product.id})"
+                  style="background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.20);color:var(--silver-dim);font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:8px 10px;border-radius:3px;cursor:pointer;">
+                  Показать
+                </button>`
+            }
+            <button onclick="deleteProduct(${product.id})"
+              style="background:linear-gradient(180deg,#4a0e0e 0%,#2e0808 100%);border:1px solid rgba(210,70,70,0.28);color:#e8a0a0;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:8px 10px;border-radius:3px;cursor:pointer;">
+              Удалить
+            </button>
           </div>
         </article>
       `).join('');
@@ -601,16 +870,16 @@
     function renderImageList(listId, images) {
       const root = document.getElementById(listId);
       if (!images.length) {
-        root.innerHTML = '<div class="text-white/40 text-sm py-1">Фото не добавлены</div>';
+        root.innerHTML = '<div style="font-family:var(--fn-body);font-size:12px;color:var(--silver-faint);letter-spacing:0.04em;padding:4px 0;">Фото не добавлены</div>';
         return;
       }
       const prefix = listId === 'newImageList' ? 'removeNewImage' : 'removeEditImage';
       root.innerHTML = images.map((src, i) => `
-        <div class="flex items-center gap-3 rounded-2xl bg-white/5 border border-white/10 px-3 py-2">
-          <img src="${esc(src)}" class="w-10 h-10 rounded-xl object-cover flex-shrink-0" onerror="this.style.opacity='0.3'" />
-          <span class="flex-1 text-sm text-white/60 truncate">${esc(src.split('/').pop())}</span>
-          ${i === 0 ? '<span class="text-[10px] bg-white/10 text-white/60 px-2 py-0.5 rounded-full flex-shrink-0">главное</span>' : ''}
-          <button onclick="${prefix}(${i})" class="text-white/30 hover:text-white text-lg flex-shrink-0 leading-none">×</button>
+        <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(138,138,162,0.20);border-radius:3px;padding:8px 10px;">
+          <img src="${esc(src)}" style="width:36px;height:36px;border-radius:3px;object-fit:cover;flex-shrink:0;border:1px solid rgba(155,157,160,0.14);" onerror="this.style.opacity='0.3'" />
+          <span style="flex:1;font-family:var(--fn-body);font-size:12px;color:var(--silver-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(src.split('/').pop())}</span>
+          ${i === 0 ? '<span style="font-family:var(--fn-body);font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--brass-dim);border:1px solid var(--brass-dim);padding:2px 6px;border-radius:2px;flex-shrink:0;">главное</span>' : ''}
+          <button onclick="${prefix}(${i})" style="color:var(--silver-faint);font-size:18px;background:none;border:none;cursor:pointer;line-height:1;flex-shrink:0;">×</button>
         </div>
       `).join('');
     }
@@ -646,13 +915,28 @@
     function renderCategories() {
       const root = document.getElementById('categoriesList');
 
+      if (!state.categories.length) {
+        root.innerHTML = `<div class="glass rounded-[22px] p-6" style="color:var(--silver-dim);font-family:var(--fn-body);font-size:14px;letter-spacing:0.04em;">Категорий пока нет.</div>`;
+        fillCategorySelects();
+        return;
+      }
+
       root.innerHTML = state.categories.map(category => `
-        <article class="glass rounded-[22px] p-4 flex items-center justify-between gap-3">
+        <article style="
+          background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);
+          border:1px solid var(--m-border);border-top-color:var(--m-top);
+          box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+          border-radius:4px;padding:14px;
+          display:flex;align-items:center;justify-content:space-between;gap:12px;
+        ">
           <div>
-            <div class="font-semibold">${esc(category.name)}</div>
-            <div class="text-white/50 mt-1 text-sm">ID: ${category.id}</div>
+            <div style="font-family:var(--fn-body);font-size:16px;font-weight:700;color:var(--silver);letter-spacing:0.03em;">${esc(category.name)}</div>
+            <div style="font-family:var(--fn-body);font-size:11px;color:var(--silver-faint);margin-top:3px;letter-spacing:0.06em;">ID: ${category.id}</div>
           </div>
-          <button onclick="deleteCategory(${category.id}, '${esc(category.name)}')" class="rounded-xl bg-red-700/70 px-4 py-2 text-sm font-medium flex-shrink-0">Удалить</button>
+          <button onclick="deleteCategory(${category.id}, '${esc(category.name)}')"
+            style="background:linear-gradient(180deg,#5e1414 0%,#3c0c0c 100%);border:1px solid rgba(210,70,70,0.32);border-top-color:rgba(218,75,75,0.42);color:#f0b2b2;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:8px 14px;border-radius:3px;cursor:pointer;flex-shrink:0;">
+            Удалить
+          </button>
         </article>
       `).join('');
 
@@ -732,11 +1016,7 @@
 
       try {
         await apiPost('/api/admin/products', {
-          title,
-          price,
-          category,
-          sizes,
-          description,
+          title, price, category, sizes, description,
           image: newProductImages[0],
           extra_images: newProductImages.slice(1),
         });
@@ -810,23 +1090,24 @@
     window.changeOrderStatus = changeOrderStatus;
     window.hideProduct = hideProduct;
     window.showProduct = showProduct;
+    window.deleteProduct = deleteProduct;
+    window.deleteCategory = deleteCategory;
     window.openEditProductModal = openEditProductModal;
     window.openOrderDetails = openOrderDetails;
     window.changeStatusFromModal = changeStatusFromModal;
     window.removeNewImage = removeNewImage;
     window.removeEditImage = removeEditImage;
 
-  (async function init() {
-    try {
-      setTab('orders');
-
-      try { await loadOrders(); } catch (error) { console.error('loadOrders failed:', error); }
-      try { await loadProducts(); } catch (error) { console.error('loadProducts failed:', error); }
-      try { await loadCategories(); } catch (error) { console.error('loadCategories failed:', error); }
-    } catch (error) {
-      console.error('init failed:', error);
-    }
-  })();
+    (async function init() {
+      try {
+        setTab('orders');
+        try { await loadOrders(); } catch (error) { console.error('loadOrders failed:', error); }
+        try { await loadProducts(); } catch (error) { console.error('loadProducts failed:', error); }
+        try { await loadCategories(); } catch (error) { console.error('loadCategories failed:', error); }
+      } catch (error) {
+        console.error('init failed:', error);
+      }
+    })();
   </script>
 </body>
 </html>

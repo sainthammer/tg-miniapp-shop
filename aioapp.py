@@ -29,6 +29,8 @@ from db import (
     add_order,
     add_product,
     deactivate_product,
+    delete_category,
+    delete_product,
     get_active_products,
     get_all_products,
     get_categories,
@@ -55,14 +57,30 @@ load_dotenv(BASE_DIR / ".env")
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
 APP_URL = os.getenv("APP_URL", "http://127.0.0.1:8080").strip()
-ADMIN_CHAT_ID_RAW = os.getenv("ADMIN_CHAT_ID", "").strip()
 MANAGER_LINK = os.getenv("MANAGER_LINK", "https://t.me/").strip()
 PORT = int(os.getenv("PORT", "8080"))
 
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN is not set. Put it in the .env file.")
 
-ADMIN_CHAT_ID = int(ADMIN_CHAT_ID_RAW) if ADMIN_CHAT_ID_RAW else None
+# Поддержка нескольких администраторов через ADMIN_CHAT_IDS (через запятую).
+# Для обратной совместимости также читается старый ADMIN_CHAT_ID.
+def _parse_admin_ids() -> set[int]:
+    ids: set[int] = set()
+    for raw in (
+        os.getenv("ADMIN_CHAT_IDS", ""),
+        os.getenv("ADMIN_CHAT_ID", ""),
+    ):
+        for part in raw.split(","):
+            part = part.strip()
+            if part:
+                try:
+                    ids.add(int(part))
+                except ValueError:
+                    print(f"WARN: cannot parse admin id '{part}', skipping")
+    return ids
+
+ADMIN_CHAT_IDS: set[int] = _parse_admin_ids()
 
 # =========================================================
 # Bot, dispatcher, router, Flask app
@@ -95,12 +113,12 @@ async def log_bot_info() -> None:
     print("BOT USERNAME:", me.username)
     print("BOT ID:", me.id)
     print("BOT TOKEN PREFIX:", BOT_TOKEN[:15])
-    print("ADMIN CHAT ID:", ADMIN_CHAT_ID)
+    print("ADMIN CHAT IDS:", sorted(ADMIN_CHAT_IDS) if ADMIN_CHAT_IDS else "not set")
 
 
 def is_admin_chat(chat_id: int) -> bool:
-    """Return True if the given Telegram chat belongs to the configured admin."""
-    return ADMIN_CHAT_ID is not None and chat_id == ADMIN_CHAT_ID
+    """Return True if the given Telegram chat belongs to any configured admin."""
+    return chat_id in ADMIN_CHAT_IDS
 
 
 def rub(amount: int) -> str:
@@ -114,24 +132,30 @@ def json_error(message: str, status: int):
 
 
 def send_admin_message(text: str) -> None:
-    """Send a Telegram message to the admin. Buffers if bot loop isn't ready yet."""
-    if not ADMIN_CHAT_ID:
+    """Отправить сообщение всем администраторам. Буферизует, если event loop ещё не запущен."""
+    if not ADMIN_CHAT_IDS:
         return
     if BOT_LOOP is None or not BOT_LOOP.is_running():
         _admin_msg_queue.put(text)
         return
     asyncio.run_coroutine_threadsafe(
-        bot.send_message(ADMIN_CHAT_ID, text),
+        asyncio.gather(
+            *[bot.send_message(admin_id, text) for admin_id in ADMIN_CHAT_IDS],
+            return_exceptions=True,
+        ),
         BOT_LOOP,
     )
 
 
 async def _drain_admin_queue() -> None:
-    """Send any messages buffered before the bot loop was ready."""
+    """Отправить все сообщения, накопленные до запуска event loop, всем администраторам."""
     while not _admin_msg_queue.empty():
         try:
             text = _admin_msg_queue.get_nowait()
-            await bot.send_message(ADMIN_CHAT_ID, text)
+            await asyncio.gather(
+                *[bot.send_message(admin_id, text) for admin_id in ADMIN_CHAT_IDS],
+                return_exceptions=True,
+            )
         except Exception as exc:
             print(f"WARN: failed to send buffered admin message: {exc}")
 
@@ -227,12 +251,12 @@ def get_telegram_context_from_request() -> dict:
 def require_admin_context() -> dict:
     """
     Validate Telegram Mini App request and ensure that the current
-    Telegram user is the configured admin.
+    Telegram user is one of the configured admins.
     """
     context = get_telegram_context_from_request()
     user = context.get("user") or {}
 
-    if str(user.get("id")) != str(ADMIN_CHAT_ID):
+    if str(user.get("id")) not in {str(i) for i in ADMIN_CHAT_IDS}:
         raise PermissionError("Admin access required")
 
     return context
@@ -563,6 +587,21 @@ def api_admin_show_product(product_id: int):
         return json_error(str(exc), 400)
 
 
+@app.route("/api/admin/products/<int:product_id>/delete", methods=["POST"])
+def api_admin_delete_product(product_id: int):
+    """Delete product from admin panel."""
+    try:
+        require_admin_context()
+        ok = delete_product(product_id)
+        if not ok:
+            return json_error("Product not found", 404)
+        return jsonify({"ok": True})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
 @app.route("/api/admin/categories")
 def api_admin_categories():
     """Return categories for admin panel."""
@@ -590,6 +629,21 @@ def api_admin_add_category():
         if not ok:
             return json_error("Category already exists or invalid", 400)
 
+        return jsonify({"ok": True})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/categories/<int:category_id>/delete", methods=["POST"])
+def api_admin_delete_category(category_id: int):
+    """Delete category from admin panel."""
+    try:
+        require_admin_context()
+        result = delete_category(category_id)
+        if not result["ok"]:
+            return json_error(result["error"], 400)
         return jsonify({"ok": True})
     except PermissionError as exc:
         return json_error(str(exc), 403)
@@ -743,7 +797,7 @@ def run_bot() -> None:
     async def _main():
         await log_bot_info()
         await bot.delete_webhook(drop_pending_updates=True)
-        if ADMIN_CHAT_ID:
+        if ADMIN_CHAT_IDS:
             await _drain_admin_queue()
         await dp.start_polling(bot, handle_signals=False)
 
