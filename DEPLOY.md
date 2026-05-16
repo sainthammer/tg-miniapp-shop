@@ -1,60 +1,89 @@
-# Развертывание Telegram Mini Shop в Docker
+# Деплой XTINCT Shop на VPS
 
-## Что входит
-- `Dockerfile`
-- `docker-compose.yml`
-- `.dockerignore`
+## Стек
+- **Приложение:** Flask + aiogram 3, запущен через Gunicorn (4 потока, 1 воркер)
+- **База данных:** SQLite (файл `shop.db`, примонтирован с хоста)
+- **Контейнер:** Docker + Docker Compose
+- **Веб-сервер:** Nginx (SSL termination → proxy → порт 8080)
 
-Контейнер запускает приложение через `aioapp.py`.
-База данных SQLite (`shop.db`) и загруженные изображения (`static/uploads`) вынесены в volume, чтобы данные не терялись после пересоздания контейнера.
+---
 
-## Требования
-- VPS с Ubuntu 22.04 / Debian 12
-- Docker и Docker Compose plugin
-- домен или поддомен
-- HTTPS для Telegram Mini App
+## Требования к серверу
+- Ubuntu 22.04 / Debian 12
+- 1 vCPU / 512 MB RAM (минимум)
+- Белый IP
+- Домен или поддомен, направленный A-записью на IP сервера
 
-## 1. Установить Docker
+---
+
+## Шаг 1. Подключиться к серверу
+
 ```bash
-sudo apt update
-sudo apt install -y docker.io docker-compose-v2
-sudo systemctl enable docker
-sudo systemctl start docker
-```
-
-## 2. Загрузить проект на сервер
-Скопируй архив или репозиторий на сервер и перейди в папку проекта.
-
-Пример:
-```bash
-scp -r telegram_shop_sqlite root@YOUR_SERVER_IP:/root/
 ssh root@YOUR_SERVER_IP
-cd /root/telegram_shop_sqlite
 ```
 
-## 3. Подготовить `.env`
-Если файла `.env` нет, создай его из примера:
+---
+
+## Шаг 2. Установить Docker
+
+```bash
+sudo apt update && sudo apt install -y docker.io docker-compose-v2
+sudo systemctl enable --now docker
+```
+
+Проверить:
+```bash
+docker --version
+docker compose version
+```
+
+---
+
+## Шаг 3. Загрузить проект на сервер
+
+**Вариант A — через Git:**
+```bash
+git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git /root/xtinct-shop
+cd /root/xtinct-shop
+```
+
+**Вариант B — через scp (с локальной машины):**
+```bash
+scp -r /path/to/telegram_shop_sqlite_dockerized root@YOUR_SERVER_IP:/root/xtinct-shop
+ssh root@YOUR_SERVER_IP
+cd /root/xtinct-shop
+```
+
+---
+
+## Шаг 4. Настроить `.env`
 
 ```bash
 cp .env.example .env
 nano .env
 ```
 
-Минимально заполни:
+Заполнить:
 ```env
-BOT_TOKEN=your_bot_token
+BOT_TOKEN=123456789:AABBccDDeeFFggHH...
 APP_URL=https://your-domain.com
-ADMIN_CHAT_ID=123456789
-MANAGER_LINK=https://t.me/username
+ADMIN_CHAT_IDS=123456789
+MANAGER_LINK=https://t.me/your_manager_username
 PORT=8080
 ```
 
-Важно:
-- `APP_URL` должен быть именно `https://...`
-- не используй `http://127.0.0.1:8080` в проде
-- `BOT_TOKEN` должен быть от того же бота, через которого открывается Mini App
+> Если администраторов несколько, перечисли их через запятую:
+> `ADMIN_CHAT_IDS=111111111,222222222`
 
-## 4. Собрать и запустить контейнер
+**Важно:**
+- `APP_URL` — только `https://`, без слеша в конце
+- `BOT_TOKEN` — от того же бота, через которого открывается Mini App
+- `ADMIN_CHAT_IDS` — Telegram user_id (не username), найти можно через [@userinfobot](https://t.me/userinfobot)
+
+---
+
+## Шаг 5. Собрать и запустить контейнер
+
 ```bash
 sudo docker compose up -d --build
 ```
@@ -69,15 +98,15 @@ sudo docker compose ps
 sudo docker compose logs -f
 ```
 
-## 5. Проверить локально на сервере
-Пока без Nginx можно проверить так:
+Проверить, что приложение отвечает локально:
 ```bash
 curl http://127.0.0.1:8080/
 ```
 
-Если всё в порядке, контейнер уже слушает порт `8080`.
+---
 
-## 6. Настроить Nginx
+## Шаг 6. Настроить Nginx
+
 Установить:
 ```bash
 sudo apt install -y nginx
@@ -85,10 +114,10 @@ sudo apt install -y nginx
 
 Создать конфиг:
 ```bash
-sudo nano /etc/nginx/sites-available/telegram-shop
+sudo nano /etc/nginx/sites-available/xtinct-shop
 ```
 
-Вставить:
+Вставить (заменить `your-domain.com` на свой домен):
 ```nginx
 server {
     listen 80;
@@ -97,97 +126,128 @@ server {
     client_max_body_size 20M;
 
     location / {
-        proxy_pass http://127.0.0.1:8080;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass         http://127.0.0.1:8080;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
     }
 }
 ```
 
 Активировать:
 ```bash
-sudo ln -s /etc/nginx/sites-available/telegram-shop /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/xtinct-shop /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-## 7. Включить HTTPS
-Установить Certbot:
+---
+
+## Шаг 7. Выпустить SSL-сертификат
+
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
-```
-
-Получить сертификат:
-```bash
 sudo certbot --nginx -d your-domain.com
 ```
 
-После этого твой магазин будет доступен по:
-```text
+Certbot сам обновит конфиг Nginx и настроит редирект с HTTP на HTTPS.
+
+После успешного получения сертификата магазин будет доступен по адресу:
+```
 https://your-domain.com
 ```
 
-## 8. Проверить Telegram Mini App
-Открывай магазин и админку только через Telegram-кнопки бота.
+---
 
-Если открыть URL вручную в браузере, можно получить ошибку:
-- `Missing Telegram init data`
+## Шаг 8. Зарегистрировать вебхук бота
 
-Это нормально: Telegram `initData` передаётся только внутри Mini App.
+Telegram должен знать, куда слать апдейты. Бот регистрирует вебхук автоматически при старте — главное чтобы `APP_URL` в `.env` был правильным HTTPS-адресом.
 
-## 9. Обновление проекта
-После изменения кода:
+Проверить, что вебхук зарегистрирован:
+```
+https://api.telegram.org/bot<BOT_TOKEN>/getWebhookInfo
+```
+
+В ответе должно быть:
+```json
+{
+  "url": "https://your-domain.com/webhook/<BOT_TOKEN>",
+  "has_custom_certificate": false,
+  "pending_update_count": 0
+}
+```
+
+---
+
+## Шаг 9. Проверить работу Mini App
+
+Открывай магазин и админку **только через Telegram-кнопки бота** — не вставляй URL напрямую в браузер. Telegram передаёт `initData` только внутри Mini App, без него приложение вернёт ошибку `Missing Telegram init data`.
+
+---
+
+## Обновление проекта
+
+После изменения кода на сервере:
+
 ```bash
-cd /root/telegram_shop_sqlite
+cd /root/xtinct-shop
+
+# Если деплой через Git — сначала обновить код:
+git pull
+
+# Пересобрать и перезапустить контейнер:
 sudo docker compose up -d --build
 ```
 
-## 10. Полезные команды
-Остановить:
-```bash
-sudo docker compose down
-```
+---
 
-Перезапустить:
-```bash
-sudo docker compose restart
-```
+## Полезные команды
 
-Удалить контейнеры и сеть:
-```bash
-sudo docker compose down
-```
+| Действие | Команда |
+|---|---|
+| Логи в реальном времени | `sudo docker compose logs -f` |
+| Перезапустить контейнер | `sudo docker compose restart` |
+| Остановить | `sudo docker compose down` |
+| Зайти внутрь контейнера | `sudo docker compose exec telegram-shop sh` |
+| Статус Nginx | `sudo systemctl status nginx` |
+| Перезагрузить Nginx | `sudo systemctl reload nginx` |
 
-Удалить и пересобрать:
-```bash
-sudo docker compose down
-sudo docker compose up -d --build
-```
+---
 
-## 11. Где хранятся данные
-- база SQLite: `shop.db`
-- загруженные изображения: `static/uploads`
+## Хранение данных
 
-Они примонтированы из хоста в контейнер и сохраняются между перезапусками.
+| Данные | Путь на хосте |
+|---|---|
+| База SQLite | `./shop.db` |
+| Загруженные фото | `./static/uploads/` |
 
-## 12. Частые проблемы
+Оба пути примонтированы в контейнер через volume — данные сохраняются между пересборками.
+
+---
+
+## Частые проблемы
 
 ### `Invalid Telegram signature`
-Проверь:
-- правильный ли `BOT_TOKEN`
-- совпадает ли `APP_URL` с реальным HTTPS-доменом
-- Mini App открыт именно через этого бота
+- Проверь `BOT_TOKEN` — должен совпадать с тем, через который открывается Mini App
+- Убедись, что `APP_URL` точно совпадает с доменом из вебхука (без слеша на конце)
 
 ### `Missing Telegram init data`
-Значит страница открыта не внутри Telegram Mini App.
+Страница открыта вне Telegram. Используй кнопку в боте.
 
-### `Permission denied` для админки
-Проверь, что Telegram user id совпадает с `ADMIN_CHAT_ID`.
+### `Permission denied` в админке
+Telegram `user_id` не совпадает с `ADMIN_CHAT_IDS`. Проверь через [@userinfobot](https://t.me/userinfobot).
 
-## 13. Примечание
-Сейчас приложение запускается Flask dev server внутри контейнера. Для небольшого проекта это допустимо, но для более серьёзной нагрузки лучше перейти на:
-- Gunicorn
-- Nginx
-- PostgreSQL вместо SQLite
+### Контейнер не стартует
+Смотри логи:
+```bash
+sudo docker compose logs telegram-shop
+```
+
+### Nginx 502 Bad Gateway
+Контейнер не запущен или слушает не тот порт:
+```bash
+sudo docker compose ps
+curl http://127.0.0.1:8080/
+```
