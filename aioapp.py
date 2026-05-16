@@ -1,8 +1,11 @@
 import asyncio
+import io
 import json
 import os
 import queue as _queue
+import sqlite3
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Thread
 from urllib.parse import parse_qsl
@@ -12,6 +15,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.types import (
+    BufferedInputFile,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     KeyboardButton,
@@ -81,6 +85,9 @@ def _parse_admin_ids() -> set[int]:
     return ids
 
 ADMIN_CHAT_IDS: set[int] = _parse_admin_ids()
+
+DB_PATH = BASE_DIR / "shop.db"
+BACKUP_INTERVAL_SEC = 86400  # 24 часа
 
 # =========================================================
 # Bot, dispatcher, router, Flask app
@@ -786,6 +793,56 @@ async def my_id_button_handler(message: Message):
     await message.answer(f"Твой chat id: <code>{message.chat.id}</code>")
 
 
+@router.message(Command("backup"))
+async def backup_command(message: Message):
+    """Send DB backup on demand (admin only)."""
+    if not is_admin_chat(message.chat.id):
+        return
+    await message.answer("Создаю бэкап БД…")
+    await send_db_backup()
+
+
+# =========================================================
+# Database backup
+# =========================================================
+
+
+async def send_db_backup() -> None:
+    """Send a hot backup of shop.db to every admin."""
+    if not ADMIN_CHAT_IDS or not DB_PATH.exists():
+        return
+
+    buf = io.BytesIO()
+    src = sqlite3.connect(str(DB_PATH))
+    try:
+        src.backup(sqlite3.connect(":memory:"), pages=-1)  # warm up page cache
+        dst = sqlite3.connect(":memory:")
+        src.backup(dst, pages=-1)
+        dst.execute("VACUUM")
+        buf.write("\n".join(dst.iterdump()).encode())
+        buf.seek(0)
+    finally:
+        src.close()
+
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M")
+    filename = f"shop_backup_{ts}.sql"
+    doc = BufferedInputFile(buf.read(), filename=filename)
+    caption = f"Бэкап БД · {ts} UTC"
+
+    await asyncio.gather(
+        *[bot.send_document(admin_id, doc, caption=caption) for admin_id in ADMIN_CHAT_IDS],
+        return_exceptions=True,
+    )
+
+
+async def _backup_scheduler() -> None:
+    """Send a daily backup and then repeat every BACKUP_INTERVAL_SEC."""
+    await asyncio.sleep(60)  # подождать старта бота
+    while True:
+        await send_db_backup()
+        await asyncio.sleep(BACKUP_INTERVAL_SEC)
+
+
 # =========================================================
 # Bot runner
 # =========================================================
@@ -799,6 +856,7 @@ def run_bot() -> None:
         await bot.delete_webhook(drop_pending_updates=True)
         if ADMIN_CHAT_IDS:
             await _drain_admin_queue()
+        asyncio.create_task(_backup_scheduler())
         await dp.start_polling(bot, handle_signals=False)
 
     global BOT_LOOP
