@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Telegram Mini Shop</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+  /* ── XTINCT Metal Redesign ── */
+  body {
+    background-image:
+      linear-gradient(rgba(8,8,12,0.48), rgba(8,8,12,0.48)),
+      url(/static/metal-bg.jpg);
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    min-height: 100vh;
+  }
+  .glass {
+    background: rgba(18,18,24,0.82);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    border: 1px solid rgba(180,180,192,0.22);
+  }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .site-nav__tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 54px;
+    color: rgba(180,180,200,0.38);
+    position: relative;
+    transition: color .15s ease;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding-top: 8px;
+  }
+  .site-nav__tab.active {
+    color: #d8d8ea;
+  }
+  .site-nav__tab.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(200,200,215,0.5), rgba(220,220,235,0.9), rgba(200,200,215,0.5));
+    border-radius: 0 0 2px 2px;
+  }
+  .nav-icon { width: 20px; height: 20px; display: block; }
+  .nav-label { font-size: 10px; line-height: 1; font-weight: 600; letter-spacing: 0.05em; }
+  .badge {
+    position: absolute;
+    top: 4px;
+    right: 10px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: rgba(200,200,212,0.88);
+    color: #14141a;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ── Metal overrides for Tailwind utilities ── */
+
+  /* Flatten round corners on panels */
+  .rounded-\[22px\], .rounded-\[24px\], .rounded-\[28px\] { border-radius: 8px !important; }
+  .rounded-2xl { border-radius: 8px !important; }
+  .rounded-xl  { border-radius: 6px !important; }
+
+  /* Primary action buttons: bevel-metal */
+  .bg-white.text-slate-900 {
+    background: linear-gradient(
+      180deg,
+      rgba(75,75,88,0.95) 0%,
+      rgba(38,38,48,0.98) 55%,
+      rgba(58,58,70,0.95) 100%
+    ) !important;
+    border: 1px solid rgba(160,160,178,0.5) !important;
+    border-top-color: rgba(220,220,238,0.65) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.14),
+      inset 0 -1px 0 rgba(0,0,0,0.28),
+      0 2px 10px rgba(0,0,0,0.55),
+      0 1px 3px rgba(0,0,0,0.35) !important;
+    color: #dcdce8 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    font-weight: 700 !important;
+  }
+
+  /* Red danger buttons */
+  .bg-red-500\/80, .bg-red-700\/70 {
+    background: rgba(135,22,22,0.78) !important;
+    border: 1px solid rgba(200,70,70,0.32) !important;
+    color: #f2c0c0 !important;
+  }
+
+  /* Form inputs and selects */
+  input:not([type=file]), textarea, select {
+    background: rgba(22,22,28,0.92) !important;
+    border-color: rgba(160,160,172,0.30) !important;
+    color: #e4e4ee !important;
+  }
+  select option { background: #18181f; color: #e4e4ee; }
+  /* ── Site header ── */
+  .site-header {
+    background: linear-gradient(160deg, #1e1e28 0%, #28282e 40%, #1a1a24 100%);
+    border-bottom: 1px solid rgba(180,180,192,0.18);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(
+        92deg,
+        transparent 0px, transparent 3px,
+        rgba(255,255,255,0.018) 3px, rgba(255,255,255,0.018) 4px
+      ),
+      repeating-linear-gradient(
+        180deg,
+        transparent 0px, transparent 6px,
+        rgba(255,255,255,0.008) 6px, rgba(255,255,255,0.008) 7px
+      );
+  }
+  .site-header__inner {
+    position: relative;
+    z-index: 1;
+    height: 80px;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 14px 10px;
+    gap: 10px;
+  }
+  .site-header__brand { flex: 1; }
+  .site-header__title {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #d0d0e0;
+    line-height: 1;
+  }
+  .site-header__sub {
+    font-size: 8.5px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(200,200,210,0.45);
+    margin-top: 3px;
+  }
+  /* ── Site nav ── */
+  .site-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: flex;
+    background: rgba(10,10,16,0.98);
+    border-top: 1px solid rgba(180,180,192,0.14);
+    padding: 6px 0 max(10px, env(safe-area-inset-bottom));
+  }
+</style>
+</head>
+<body class="text-white">
+  <div class="max-w-6xl mx-auto px-4 pt-3 pb-36">
+    <header class="site-header mb-4">
+      <div class="site-header__inner">
+        <div class="site-header__brand">
+          <div class="site-header__title">XTINCT</div>
+          <div class="site-header__sub">одежда и стиль</div>
+        </div>
+        <button id="managerBtn" class="bg-white text-slate-900 px-4 py-2" style="border-radius:6px;">
+          Менеджер
+        </button>
+      </div>
+    </header>
+
+    <section id="catalogFilters" class="mb-4">
+      <div id="categories" class="flex gap-2 overflow-auto hide-scrollbar pb-1"></div>
+    </section>
+
+    <main id="catalogScreen" class="grid grid-cols-2 gap-3"></main>
+
+    <section id="favoritesScreen" class="hidden">
+      <div class="mb-4">
+        <h2 class="text-2xl font-bold">Избранное</h2>
+        <p class="text-white/60 mt-1">Товары, которые ты сохранил.</p>
+      </div>
+      <div id="favoritesGrid" class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 gap-3"></div>
+      <div id="favoritesEmpty" class="hidden glass rounded-[28px] p-6 text-white/70">В избранном пока ничего нет.</div>
+    </section>
+
+    <section id="cartScreen" class="hidden">
+      <div class="mb-4">
+        <h2 class="text-2xl font-bold">Корзина</h2>
+        <p class="text-white/60 mt-1">Проверь размеры и состав заказа перед оформлением.</p>
+      </div>
+      <div id="cartList" class="space-y-3"></div>
+      <div id="cartEmpty" class="hidden glass rounded-[28px] p-6 text-white/70">Корзина пуста.</div>
+      <div id="cartSummary" class="hidden glass rounded-[28px] p-5 mt-4">
+        <div class="flex items-center justify-between">
+          <span class="text-white/60">Итого</span>
+          <span id="cartSummaryTotal" class="text-2xl font-bold">0 ₽</span>
+        </div>
+        <button id="goCheckoutFromCart" class="w-full mt-4 rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">Перейти к оформлению</button>
+      </div>
+    </section>
+
+    <section id="ordersScreen" class="hidden">
+      <div class="mb-4">
+        <h2 class="text-2xl font-bold">Мои активные заказы</h2>
+        <p class="text-white/60 mt-1">Здесь видны все незавершенные заказы, созданные из этого Telegram аккаунта.</p>
+      </div>
+      <div id="ordersList" class="space-y-3"></div>
+      <div id="ordersEmpty" class="hidden glass rounded-[28px] p-6 text-white/70">Активных заказов пока нет.</div>
+    </section>
+  </div>
+
+  <nav id="bottomNavWrap" class="site-nav">
+    <button id="navCatalog" class="site-nav__tab active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M3 10.5 12 3l9 7.5"></path>
+        <path d="M5 9.5V20h14V9.5"></path>
+      </svg>
+      <span class="nav-label">Каталог</span>
+    </button>
+
+    <button id="navFavorites" class="site-nav__tab">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 21s-7.2-4.4-9.6-8.4C.7 9.8 2.1 5.8 6 4.8c2.1-.5 4.1.2 6 2.1 1.9-1.9 3.9-2.6 6-2.1 3.9 1 5.3 5 3.6 7.8C19.2 16.6 12 21 12 21Z"/>
+      </svg>
+      <span class="nav-label">Избранное</span>
+      <span id="favoritesBadge" class="badge hidden"></span>
+    </button>
+
+    <button id="navCart" class="site-nav__tab">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <circle cx="9" cy="20" r="1.5"></circle>
+        <circle cx="18" cy="20" r="1.5"></circle>
+        <path d="M3 4h2l2.4 10.2A2 2 0 0 0 9.35 16H18a2 2 0 0 0 1.94-1.5L21 8H7"></path>
+      </svg>
+      <span class="nav-label">Корзина</span>
+      <span id="cartBadge" class="badge hidden"></span>
+    </button>
+
+    <button id="navOrders" class="site-nav__tab">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M6 4h12v16H6z"></path>
+        <path d="M9 8h6"></path>
+        <path d="M9 12h6"></path>
+        <path d="M9 16h4"></path>
+      </svg>
+      <span class="nav-label">Заказы</span>
+    </button>
+  </nav>
+
+  <div id="productModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] p-4 overflow-auto">
+    <div class="max-w-lg mx-auto mt-6 mb-28 glass rounded-[28px] p-5 shadow-2xl">
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <h2 id="productModalTitle" class="text-2xl font-bold"></h2>
+        <button id="closeProductModal" class="text-white/60 hover:text-white text-xl">✕</button>
+      </div>
+      <div class="relative w-full">
+        <img id="productModalImage" class="w-full h-[420px] object-cover rounded-[24px]" alt="" />
+        <button id="carouselPrev" class="hidden absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 text-white text-xl flex items-center justify-center">‹</button>
+        <button id="carouselNext" class="hidden absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 text-white text-xl flex items-center justify-center">›</button>
+        <div id="carouselCounter" class="hidden absolute bottom-3 right-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full"></div>
+      </div>
+      <div class="mt-4 text-white/60" id="productModalCategory"></div>
+      <div class="mt-2 text-2xl font-bold" id="productModalPrice"></div>
+      <p class="mt-3 text-white/80 leading-7" id="productModalDescription"></p>
+      <div class="mt-5">
+        <div class="text-sm text-white/60 mb-2">Размер</div>
+        <div id="productModalSizes" class="flex flex-wrap gap-2"></div>
+      </div>
+      <div class="sticky bottom-0 pt-4 mt-5 bg-gradient-to-t from-[#12121800] to-transparent" style="pointer-events:none;background:linear-gradient(to top,rgba(12,12,18,0.97),rgba(12,12,18,0.6) 60%,transparent)">
+        <button id="addProductFromModal" class="w-full rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold" style="pointer-events:auto">
+          Добавить в корзину
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="checkoutModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] p-4 overflow-auto">
+    <div class="max-w-lg mx-auto mt-6 mb-28 glass rounded-[28px] p-5 shadow-2xl">
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <h2 class="text-2xl font-bold">Оформление заказа</h2>
+        <button id="closeModal" class="text-white/60 hover:text-white text-xl">✕</button>
+      </div>
+      <div id="checkoutItemsPreview" class="glass rounded-2xl p-4 mb-4 text-sm text-white/80"></div>
+      <div class="space-y-3">
+        <input id="name" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Имя" />
+        <input id="phone" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Телефон" />
+       <input id="telegram_link" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Telegram, например @username" />
+        <textarea id="comment" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[100px]" placeholder="Комментарий к заказу"></textarea>
+      </div>
+      <div class="mt-5 flex gap-3">
+        <button id="sendOrder" class="flex-1 rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">Отправить заказ</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    tg?.ready();
+    tg?.expand();
+
+    function esc(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderCarousel() {
+      const product = state.selectedProduct;
+      const images = (product?.images?.length ? product.images : [product?.image]).filter(Boolean);
+      const idx = state.selectedImageIndex;
+
+      document.getElementById('productModalImage').src = esc(images[idx] || '');
+      document.getElementById('productModalImage').alt = esc(product?.title || '');
+
+      const multi = images.length > 1;
+      document.getElementById('carouselPrev').classList.toggle('hidden', !multi);
+      document.getElementById('carouselNext').classList.toggle('hidden', !multi);
+      document.getElementById('carouselCounter').classList.toggle('hidden', !multi);
+      if (multi) {
+        document.getElementById('carouselCounter').textContent = `${idx + 1} / ${images.length}`;
+      }
+    }
+
+    function carouselStep(delta) {
+      const images = (state.selectedProduct?.images?.length
+        ? state.selectedProduct.images
+        : [state.selectedProduct?.image]
+      ).filter(Boolean);
+      if (!images.length) return;
+      state.selectedImageIndex = (state.selectedImageIndex + delta + images.length) % images.length;
+      renderCarousel();
+    }
+
+    const state = {
+      products: [],
+      categories: [],
+      category: 'Все',
+      activeTab: 'catalog',
+      cart: loadJson('mini_shop_cart', {}),
+      favorites: loadJson('mini_shop_favorites', []),
+      selectedProduct: null,
+      selectedSize: '',
+      selectedImageIndex: 0,
+      myOrders: [],
+    };
+
+    const catalogScreen = document.getElementById('catalogScreen');
+    const favoritesScreen = document.getElementById('favoritesScreen');
+    const cartScreen = document.getElementById('cartScreen');
+    const ordersScreen = document.getElementById('ordersScreen');
+    const favoritesGrid = document.getElementById('favoritesGrid');
+    const favoritesEmpty = document.getElementById('favoritesEmpty');
+    const cartList = document.getElementById('cartList');
+    const cartEmpty = document.getElementById('cartEmpty');
+    const cartSummary = document.getElementById('cartSummary');
+    const cartSummaryTotal = document.getElementById('cartSummaryTotal');
+    const categoriesEl = document.getElementById('categories');
+    const checkoutModal = document.getElementById('checkoutModal');
+    const productModal = document.getElementById('productModal');
+    const checkoutItemsPreview = document.getElementById('checkoutItemsPreview');
+    const catalogFilters = document.getElementById('catalogFilters');
+    const ordersList = document.getElementById('ordersList');
+    const ordersEmpty = document.getElementById('ordersEmpty');
+
+    const navCatalog = document.getElementById('navCatalog');
+    const navFavorites = document.getElementById('navFavorites');
+    const navCart = document.getElementById('navCart');
+    const navOrders = document.getElementById('navOrders');
+    const cartBadge = document.getElementById('cartBadge');
+    const favoritesBadge = document.getElementById('favoritesBadge');
+
+    function telegramHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'X-Telegram-Init-Data': tg?.initData || '',
+      };
+    }
+
+    function loadJson(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch {
+        return fallback;
+      }
+    }
+
+    function saveJson(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function formatPrice(value) {
+      return new Intl.NumberFormat('ru-RU').format(value) + ' ₽';
+    }
+
+    function formatDate(value) {
+      if (!value) return '—';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return String(value).replace('T', ' ');
+      return date.toLocaleString('ru-RU');
+    }
+
+    function getCartKey(productId, size) {
+      return `${productId}::${size || ''}`;
+    }
+
+    function getItems() {
+      return Object.values(state.cart);
+    }
+
+    function getTotal() {
+      return getItems().reduce((sum, item) => sum + item.price * item.quantity, 0);
+    }
+
+    function getCount() {
+      return getItems().reduce((sum, item) => sum + item.quantity, 0);
+    }
+
+    function isFavorite(productId) {
+      return state.favorites.includes(productId);
+    }
+
+    function toggleFavorite(productId) {
+      if (isFavorite(productId)) {
+        state.favorites = state.favorites.filter((id) => id !== productId);
+      } else {
+        state.favorites.push(productId);
+      }
+      saveJson('mini_shop_favorites', state.favorites);
+      updateCounters();
+      renderAll();
+    }
+
+    function updateCounters() {
+      const cartCount = getCount();
+      const favCount = state.favorites.length;
+
+      cartSummaryTotal.textContent = formatPrice(getTotal());
+
+      if (cartCount > 0) {
+        cartBadge.textContent = cartCount;
+        cartBadge.classList.remove('hidden');
+      } else {
+        cartBadge.classList.add('hidden');
+      }
+
+      if (favCount > 0) {
+        favoritesBadge.textContent = favCount;
+        favoritesBadge.classList.remove('hidden');
+      } else {
+        favoritesBadge.classList.add('hidden');
+      }
+    }
+
+    function addToCart(productId, size) {
+      const product = state.products.find((item) => item.id === productId);
+      if (!product) return;
+
+      const chosenSize = size || '';
+      if ((product.sizes || []).length && !chosenSize) {
+        tg?.showAlert?.('Сначала выбери размер');
+        return;
+      }
+
+      const key = getCartKey(productId, chosenSize);
+      if (!state.cart[key]) {
+        state.cart[key] = { ...product, size: chosenSize, quantity: 1, cartKey: key };
+      } else {
+        state.cart[key].quantity += 1;
+      }
+
+      saveJson('mini_shop_cart', state.cart);
+      updateCounters();
+      renderAll();
+    }
+
+    function changeQty(cartKey, delta) {
+      const item = state.cart[cartKey];
+      if (!item) return;
+      item.quantity += delta;
+      if (item.quantity <= 0) delete state.cart[cartKey];
+      saveJson('mini_shop_cart', state.cart);
+      updateCounters();
+      renderAll();
+    }
+
+    function removeFromCart(cartKey) {
+      delete state.cart[cartKey];
+      saveJson('mini_shop_cart', state.cart);
+      updateCounters();
+      renderAll();
+    }
+
+    function setCategory(name) {
+      state.category = name;
+      renderCategories();
+      renderCatalog();
+    }
+
+    function setTab(tab) {
+      state.activeTab = tab;
+
+      catalogScreen.classList.toggle('hidden', tab !== 'catalog');
+      favoritesScreen.classList.toggle('hidden', tab !== 'favorites');
+      cartScreen.classList.toggle('hidden', tab !== 'cart');
+      ordersScreen.classList.toggle('hidden', tab !== 'orders');
+      catalogFilters.classList.toggle('hidden', tab !== 'catalog');
+
+      [navCatalog, navFavorites, navCart, navOrders].forEach((el) => el.classList.remove('active'));
+      if (tab === 'catalog') navCatalog.classList.add('active');
+      if (tab === 'favorites') navFavorites.classList.add('active');
+      if (tab === 'cart') navCart.classList.add('active');
+      if (tab === 'orders') navOrders.classList.add('active');
+
+      updateCounters();
+      renderAll();
+
+      if (tab === 'orders') loadMyOrders();
+    }
+
+    function renderCategories() {
+      const categories = ['Все', ...state.categories];
+      categoriesEl.innerHTML = categories.map((name) => {
+        const active = state.category === name;
+        return `
+          <button
+            onclick="setCategory(${esc(JSON.stringify(name))})"
+            class="whitespace-nowrap rounded-2xl px-4 py-2 text-sm border ${active ? 'bg-white text-slate-900 border-white' : 'glass text-white/80 border-white/10'}"
+          >${esc(name)}</button>
+        `;
+      }).join('');
+    }
+
+    function productCardFavorite(product) {
+      const favorite = isFavorite(product.id);
+      const sizes = product.sizes || [];
+
+      return `
+        <article class="glass rounded-2xl overflow-hidden shadow-xl">
+          <button onclick="openProductModal(${product.id})" class="block w-full text-left">
+            <img src="${esc(product.image)}" alt="${esc(product.title)}" class="w-full h-64 object-cover" />
+          </button>
+
+          <div class="p-4">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <div class="text-xs uppercase tracking-[0.12em] text-white/40">
+                  ${esc(product.category)}
+                </div>
+                <h3 class="text-base font-semibold mt-1 leading-tight">
+                  ${esc(product.title)}
+                </h3>
+              </div>
+
+              <button
+                onclick="toggleFavorite(${product.id})"
+                class="shrink-0 rounded-xl w-9 h-9 flex items-center justify-center ${favorite ? 'bg-white text-rose-500' : 'bg-white/10 text-white'}"
+              >
+                ${favorite ? '♥' : '♡'}
+              </button>
+            </div>
+
+            <div class="text-lg font-bold mt-2">
+              ${formatPrice(product.price)}
+            </div>
+
+            <button
+              onclick="quickAdd(${product.id})"
+              class="w-full mt-3 rounded-xl bg-white text-slate-900 h-10 text-sm font-semibold"
+            >
+              В корзину
+            </button>
+          </div>
+        </article>
+      `;
+    }
+
+    function productCard(product) {
+      const favorite = isFavorite(product.id);
+      const sizes = product.sizes || [];
+
+      return `
+        <article class="glass rounded-2xl overflow-hidden shadow-xl">
+          <button
+            onclick="openProductModal(${product.id})"
+            class="block w-full text-left"
+          >
+            <img src="${esc(product.image)}" alt="${esc(product.title)}" class="w-full aspect-[3/4] object-cover" />
+          </button>
+
+          <div class="p-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <div class="text-[10px] uppercase tracking-[0.12em] text-white/40 truncate">
+                  ${esc(product.category)}
+                </div>
+                <h3 class="text-sm font-semibold mt-1 leading-tight line-clamp-2">
+                  ${esc(product.title)}
+                </h3>
+              </div>
+
+              <button
+                onclick="toggleFavorite(${product.id})"
+                class="shrink-0 rounded-xl w-8 h-8 flex items-center justify-center ${favorite ? 'bg-white text-rose-500' : 'bg-white/10 text-white'}"
+              >
+                ${favorite ? '♥' : '♡'}
+              </button>
+            </div>
+
+            <div class="text-sm font-bold mt-2">
+              ${formatPrice(product.price)}
+            </div>
+
+            <div class="text-white/50 text-[11px] mt-1 truncate">
+              ${sizes.length ? sizes.map(esc).join(', ') : 'Без размеров'}
+            </div>
+
+            <button
+              onclick="quickAdd(${product.id})"
+              class="w-full mt-3 rounded-xl bg-white text-slate-900 h-9 text-sm font-semibold"
+            >
+              В корзину
+            </button>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderCatalog() {
+      const list = state.category === 'Все'
+        ? state.products
+        : state.products.filter((item) => item.category === state.category);
+
+      catalogScreen.innerHTML = list.length
+        ? list.map(productCard).join('')
+        : `<div class="glass rounded-[28px] p-6 text-white/70 col-span-full">В этой категории товаров пока нет.</div>`;
+    }
+
+    function renderFavorites() {
+      const list = state.products.filter((item) => state.favorites.includes(item.id));
+      favoritesEmpty.classList.toggle('hidden', list.length > 0);
+
+      favoritesGrid.innerHTML = list.map(productCardFavorite).join('');
+    }
+
+    function renderCart() {
+      const items = getItems();
+
+      cartEmpty.classList.toggle('hidden', items.length > 0);
+      cartSummary.classList.toggle('hidden', items.length === 0);
+
+      cartList.innerHTML = items.map((item) => `
+        <article class="glass rounded-[24px] p-4 flex gap-4 items-center">
+          <img src="${esc(item.image)}" alt="${esc(item.title)}" class="w-20 h-20 rounded-2xl object-cover" />
+          <div class="flex-1 min-w-0">
+            <div class="text-sm text-white/50">${esc(item.category)}</div>
+            <div class="font-semibold text-lg truncate">${esc(item.title)}</div>
+            <div class="text-white/60 mt-1">Размер: ${esc(item.size || '—')}</div>
+            <div class="text-white/80 mt-1">${formatPrice(item.price)}</div>
+          </div>
+          <div class="flex flex-col gap-2 items-end">
+            <div class="grid grid-cols-[40px_56px_40px] gap-2">
+              <button onclick="changeQty(${esc(JSON.stringify(item.cartKey))}, -1)" class="rounded-2xl bg-white/10 h-10 text-xl">−</button>
+              <div class="rounded-2xl bg-white/10 h-10 flex items-center justify-center font-semibold">${item.quantity}</div>
+              <button onclick="changeQty(${esc(JSON.stringify(item.cartKey))}, 1)" class="rounded-2xl bg-white/10 h-10 text-xl">+</button>
+            </div>
+            <button onclick="removeFromCart(${esc(JSON.stringify(item.cartKey))})" class="text-sm text-white/60 hover:text-white">Удалить</button>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function renderMyOrders() {
+      ordersEmpty.classList.toggle('hidden', state.myOrders.length > 0);
+
+      ordersList.innerHTML = state.myOrders.map((order) => `
+        <article class="glass rounded-[24px] p-5">
+          <div class="flex items-start justify-between gap-4 flex-col sm:flex-row">
+            <div class="space-y-1">
+              <div class="text-xl font-bold">Заказ #${order.order_number}</div>
+              <div class="text-white/60">Статус: ${statusLabel(order.status)}</div>
+              <div class="text-white/45 text-sm">${esc(formatDate(order.created_at))}</div>
+            </div>
+          </div>
+
+          <div class="border-t border-white/10 mt-4 pt-4 space-y-3">
+            ${order.items.map((item) => `
+              <div class="flex items-start justify-between gap-4">
+                <div class="min-w-0">
+                  <div class="font-medium leading-6">${esc(item.title)}</div>
+                  <div class="text-white/50 text-sm mt-1">
+                    ${item.quantity} шт.${item.size ? ` · Размер ${esc(item.size)}` : ''}
+                  </div>
+                </div>
+                <div class="text-white/80 whitespace-nowrap">
+                  ${formatPrice(item.subtotal)}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function statusLabel(status) {
+      const labels = {
+        new: 'Новый',
+        confirmed: 'Подтвержден',
+        processing: 'В обработке',
+        shipped: 'Отправлен',
+        done: 'Завершен',
+        cancelled: 'Отменен',
+      };
+      return labels[status] || status;
+    }
+
+    function renderCheckoutPreview() {
+      const items = getItems();
+      if (!items.length) {
+        checkoutItemsPreview.textContent = 'Корзина пуста.';
+        return;
+      }
+
+      checkoutItemsPreview.innerHTML = `
+        <div class="space-y-2">
+          ${items.map(item => `
+            <div class="flex items-center justify-between gap-3">
+              <span>${esc(item.title)} × ${item.quantity}${item.size ? ` | ${esc(item.size)}` : ''}</span>
+              <span>${formatPrice(item.price * item.quantity)}</span>
+            </div>
+          `).join('')}
+          <div class="border-t border-white/10 pt-2 mt-2 flex items-center justify-between font-semibold">
+            <span>Итого</span>
+            <span>${formatPrice(getTotal())}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAll() {
+      renderCatalog();
+      renderFavorites();
+      renderCart();
+      renderMyOrders();
+      renderCheckoutPreview();
+      updateCounters();
+    }
+
+    async function loadProducts() {
+      const response = await fetch('/api/products');
+      state.products = await response.json();
+    }
+
+    async function loadCategories() {
+      const response = await fetch('/api/categories');
+      state.categories = await response.json();
+    }
+
+    async function loadMyOrders() {
+      try {
+        const response = await fetch('/api/my-orders', { headers: telegramHeaders() });
+        const data = await response.json();
+        state.myOrders = data.items || [];
+      } catch {
+        state.myOrders = [];
+      }
+      renderMyOrders();
+    }
+
+    function validateCheckoutForm() {
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const telegramLink = document.getElementById('telegram_link').value.trim();
+
+      if (!name) return 'Укажи имя';
+      if (!phone) return 'Укажи телефон';
+      if (!telegramLink) return 'Укажи Telegram';
+      if (!/^@[A-Za-z0-9_]{4,32}$/.test(telegramLink)) {
+        return 'Telegram должен быть в формате @username';
+      }
+      return null;
+    }
+
+    function openCheckout() {
+      if (!getItems().length) return;
+      renderCheckoutPreview();
+      checkoutModal.classList.remove('hidden');
+    }
+
+
+    function openProductModal(productId) {
+      const product = state.products.find((item) => item.id === productId);
+      if (!product) return;
+
+      state.selectedProduct = product;
+      state.selectedSize = (product.sizes || [])[0] || '';
+
+      state.selectedImageIndex = 0;
+
+      document.getElementById('productModalTitle').textContent = product.title;
+      document.getElementById('productModalCategory').textContent = product.category;
+      document.getElementById('productModalPrice').textContent = formatPrice(product.price);
+      document.getElementById('productModalDescription').textContent = product.description;
+
+      renderCarousel();
+
+      renderProductSizes();
+      productModal.classList.remove('hidden');
+    }
+
+    function renderProductSizes() {
+      const product = state.selectedProduct;
+      const root = document.getElementById('productModalSizes');
+      const sizes = product?.sizes || [];
+
+      if (!sizes.length) {
+        root.innerHTML = '<div class="text-white/50">Размер не требуется</div>';
+        return;
+      }
+
+      root.innerHTML = sizes.map(size => `
+        <button onclick="selectProductSize(${esc(JSON.stringify(size))})" class="rounded-2xl px-4 py-2 border ${state.selectedSize === size ? 'bg-white text-slate-900 border-white' : 'bg-white/10 text-white border-white/10'}">${esc(size)}</button>
+      `).join('');
+    }
+
+    function selectProductSize(size) {
+      state.selectedSize = size;
+      renderProductSizes();
+    }
+
+    function quickAdd(productId) {
+      const product = state.products.find((item) => item.id === productId);
+      if (!product) return;
+
+      const sizes = product.sizes || [];
+      if (sizes.length === 1) {
+        addToCart(product.id, sizes[0]);
+        return;
+      }
+
+      openProductModal(productId);
+    }
+
+    function openManager() {
+      const link = `{{ manager_link }}`;
+      if (tg?.openTelegramLink) {
+        tg.openTelegramLink(link);
+        return;
+      }
+      window.open(link, '_blank');
+    }
+
+    document.getElementById('managerBtn').addEventListener('click', openManager);
+
+    document.getElementById('addProductFromModal').addEventListener('click', () => {
+      if (!state.selectedProduct) return;
+      addToCart(state.selectedProduct.id, state.selectedSize);
+      productModal.classList.add('hidden');
+    });
+
+    document.getElementById('closeProductModal').addEventListener('click', () => {
+      productModal.classList.add('hidden');
+    });
+
+    navCatalog.addEventListener('click', () => setTab('catalog'));
+    navFavorites.addEventListener('click', () => setTab('favorites'));
+    navCart.addEventListener('click', () => setTab('cart'));
+    navOrders.addEventListener('click', () => setTab('orders'));
+
+    document.getElementById('goCheckoutFromCart').addEventListener('click', openCheckout);
+    document.getElementById('closeModal').addEventListener('click', () => {
+      checkoutModal.classList.add('hidden');
+    });
+
+    document.getElementById('sendOrder').addEventListener('click', async () => {
+      const items = getItems().map((item) => ({
+        id: item.id,
+        quantity: item.quantity,
+        size: item.size || '',
+      }));
+
+      if (!items.length) {
+        tg?.showAlert?.('Корзина пуста');
+        return;
+      }
+
+      const formError = validateCheckoutForm();
+      if (formError) {
+        tg?.showAlert?.(formError);
+        return;
+      }
+
+      const payload = {
+        customer: {
+          name: document.getElementById('name').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
+          telegram_link: document.getElementById('telegram_link').value.trim(),
+          comment: document.getElementById('comment').value.trim(),
+        },
+        items,
+      };
+
+      const response = await fetch('/api/order', {
+        method: 'POST',
+        headers: telegramHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.ok) {
+        tg?.showAlert?.(data.error || 'Не удалось отправить заказ');
+        return;
+      }
+
+      tg?.showAlert?.(`Спасибо за заказ ❤️\n\nЗаказ #${data.order_number} принят.\nСкоро с вами свяжется менеджер.`);
+      state.cart = {};
+      saveJson('mini_shop_cart', state.cart);
+      renderAll();
+      checkoutModal.classList.add('hidden');
+
+      document.getElementById('name').value = '';
+      document.getElementById('phone').value = '';
+      document.getElementById('telegram_link').value = '';
+      document.getElementById('comment').value = '';
+
+      await loadMyOrders();
+      setTab('orders');
+    });
+
+    window.setCategory = setCategory;
+    window.toggleFavorite = toggleFavorite;
+    window.changeQty = changeQty;
+    window.removeFromCart = removeFromCart;
+    window.openProductModal = openProductModal;
+    window.selectProductSize = selectProductSize;
+    window.quickAdd = quickAdd;
+
+    document.getElementById('carouselPrev').addEventListener('click', () => carouselStep(-1));
+    document.getElementById('carouselNext').addEventListener('click', () => carouselStep(1));
+
+    let _swipeStartX = 0;
+    const _carouselEl = document.querySelector('#productModal .relative');
+    _carouselEl.addEventListener('touchstart', (e) => {
+      _swipeStartX = e.touches[0].clientX;
+    }, { passive: true });
+    _carouselEl.addEventListener('touchend', (e) => {
+      const delta = e.changedTouches[0].clientX - _swipeStartX;
+      if (Math.abs(delta) > 50) carouselStep(delta < 0 ? 1 : -1);
+    }, { passive: true });
+
+    (async function init() {
+      await Promise.all([loadProducts(), loadCategories()]);
+      renderCategories();
+      renderAll();
+      setTab('catalog');
+    })();
+  </script>
+</body>
+</html>

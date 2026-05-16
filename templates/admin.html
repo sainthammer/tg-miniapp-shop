@@ -1,0 +1,832 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Панель администрирования</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── XTINCT Metal Redesign ── */
+    body {
+      background-image:
+        linear-gradient(rgba(8,8,12,0.48), rgba(8,8,12,0.48)),
+        url(/static/metal-bg.jpg);
+      background-size: cover;
+      background-attachment: fixed;
+      background-position: center;
+      min-height: 100vh;
+    }
+    .glass {
+      background: rgba(18,18,24,0.82);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      border: 1px solid rgba(180,180,192,0.22);
+    }
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      min-width: 76px;
+      height: 62px;
+      border-radius: 8px;
+      color: rgba(200,200,212,0.50);
+      transition: all .18s ease;
+      position: relative;
+    }
+    .nav-btn.active {
+      color: #e8e8ee;
+      background: rgba(50,50,60,0.95);
+      border: 1px solid rgba(180,180,194,0.35);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.10);
+    }
+    .nav-icon { width: 22px; height: 22px; display: block; }
+    .nav-label { font-size: 11px; line-height: 1; font-weight: 600; letter-spacing: 0.06em; }
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ── Metal overrides for Tailwind utilities ── */
+
+    .rounded-\[22px\], .rounded-\[24px\] { border-radius: 8px !important; }
+    .rounded-2xl { border-radius: 8px !important; }
+    .rounded-xl  { border-radius: 6px !important; }
+
+    .bg-white.text-slate-900 {
+      background: linear-gradient(
+        180deg,
+        rgba(75,75,88,0.95) 0%,
+        rgba(38,38,48,0.98) 55%,
+        rgba(58,58,70,0.95) 100%
+      ) !important;
+      border: 1px solid rgba(160,160,178,0.5) !important;
+      border-top-color: rgba(220,220,238,0.65) !important;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        inset 0 -1px 0 rgba(0,0,0,0.28),
+        0 2px 10px rgba(0,0,0,0.55),
+        0 1px 3px rgba(0,0,0,0.35) !important;
+      color: #dcdce8 !important;
+      letter-spacing: 0.08em !important;
+      text-transform: uppercase !important;
+      font-size: 12px !important;
+      font-weight: 700 !important;
+    }
+
+    .bg-red-500\/80, .bg-red-700\/70 {
+      background: rgba(135,22,22,0.78) !important;
+      border: 1px solid rgba(200,70,70,0.32) !important;
+      color: #f2c0c0 !important;
+    }
+
+    input:not([type=file]), textarea, select {
+      background: rgba(22,22,28,0.92) !important;
+      border-color: rgba(160,160,172,0.30) !important;
+      color: #e4e4ee !important;
+    }
+    select option { background: #18181f; color: #e4e4ee; }
+
+    /* ── Header banner ── */
+    .header-banner {
+      background-image:
+        linear-gradient(rgba(8,8,14,0.55), rgba(8,8,14,0.55)),
+        url(/static/xtinct-logo.jpg);
+      background-size: cover;
+      background-position: center;
+      border: 1px solid rgba(180,180,192,0.25);
+      border-radius: 8px;
+      overflow: hidden;
+      -webkit-mask-image: -webkit-radial-gradient(white, black);
+      height: 110px;
+      position: relative;
+    }
+    .header-admin-label {
+      position: absolute;
+      bottom: 12px;
+      left: 14px;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      color: rgba(200,200,210,0.5);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="text-white">
+  <div class="max-w-6xl mx-auto px-4 pt-4 pb-36">
+    <header class="header-banner sticky top-4 z-30 mb-4">
+      <span class="header-admin-label">УПРАВЛЕНИЕ</span>
+    </header>
+
+    <section id="ordersScreen">
+      <div id="ordersList" class="space-y-3"></div>
+    </section>
+
+    <section id="productsScreen" class="hidden">
+      <div class="glass rounded-[24px] p-4 mb-4 space-y-3">
+        <div>
+          <div class="text-lg font-semibold">Добавить товар</div>
+          <div class="text-sm text-white/50 mt-1">Заполни карточку и сохрани товар в каталог.</div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-3">
+          <input id="newProductTitle" class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Название" />
+          <input id="newProductPrice" class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Цена" />
+          <select id="newProductCategory" class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none">
+            <option value="">Выбери категорию</option>
+          </select>
+          <input id="newProductSizes" class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Размеры через запятую, например S,M,L" />
+        </div>
+
+        <textarea id="newProductDescription" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[110px]" placeholder="Описание"></textarea>
+
+        <div>
+          <div id="newImageList" class="space-y-2 mb-2"></div>
+          <input id="newProductImageFile" type="file" accept="image/*" class="hidden" />
+          <button id="addImageBtn" class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold">+ Добавить фото</button>
+        </div>
+
+        <button id="addProductBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">
+          Добавить товар
+        </button>
+      </div>
+
+      <div id="productsList" class="space-y-3"></div>
+    </section>
+
+    <section id="categoriesScreen" class="hidden">
+      <div class="glass rounded-[24px] p-4 mb-4">
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input id="newCategoryName" class="flex-1 rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Новая категория" />
+          <button id="addCategoryBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">Добавить</button>
+        </div>
+      </div>
+      <div id="categoriesList" class="space-y-3"></div>
+    </section>
+  </div>
+
+  <div id="bottomNavWrap" class="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4">
+    <div class="max-w-6xl mx-auto glass rounded-[24px] p-2 shadow-2xl flex items-center justify-between">
+      <button id="navOrders" class="nav-btn active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M6 4h12v16H6z"></path>
+          <path d="M9 8h6"></path>
+          <path d="M9 12h6"></path>
+          <path d="M9 16h4"></path>
+        </svg>
+        <span class="nav-label">Заказы</span>
+      </button>
+
+      <button id="navProducts" class="nav-btn">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 3 4 7l8 4 8-4-8-4Z"></path>
+          <path d="M4 7v10l8 4 8-4V7"></path>
+          <path d="M12 11v10"></path>
+        </svg>
+        <span class="nav-label">Товары</span>
+      </button>
+
+      <button id="navCategories" class="nav-btn">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="6" cy="6" r="2"></circle>
+          <circle cx="18" cy="6" r="2"></circle>
+          <circle cx="6" cy="18" r="2"></circle>
+          <circle cx="18" cy="18" r="2"></circle>
+          <path d="M8 6h8"></path>
+          <path d="M6 8v8"></path>
+          <path d="M18 8v8"></path>
+          <path d="M8 18h8"></path>
+        </svg>
+        <span class="nav-label">Категории</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="editProductModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] p-4 overflow-auto">
+    <div class="max-w-lg mx-auto mt-6 mb-28 glass rounded-[28px] p-5 shadow-2xl">
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <h2 class="text-2xl font-bold">Редактирование товара</h2>
+        <button id="closeEditProductModal" class="text-white/60 hover:text-white text-xl">✕</button>
+      </div>
+
+      <div class="space-y-3">
+        <input id="editProductTitle" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Название" />
+        <input id="editProductPrice" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Цена" />
+        <select id="editProductCategory" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none">
+          <option value="">Выбери категорию</option>
+        </select>
+        <input id="editProductSizes" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Размеры через запятую" />
+        <div>
+          <div id="editImageList" class="space-y-2 mb-2"></div>
+          <input id="editProductImageFile" type="file" accept="image/*" class="hidden" />
+          <button id="editAddImageBtn" class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold">+ Добавить фото</button>
+        </div>
+        <textarea id="editProductDescription" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[110px]" placeholder="Описание"></textarea>
+      </div>
+
+      <div class="mt-5 grid grid-cols-2 gap-3">
+        <button id="saveEditProductBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">Сохранить</button>
+        <button id="cancelEditProductBtn" class="rounded-2xl bg-white/10 px-5 py-3 font-semibold">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="orderDetailsModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] p-4 overflow-auto">
+    <div class="max-w-2xl mx-auto mt-6 mb-28 glass rounded-[28px] p-5 shadow-2xl">
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <h2 class="text-2xl font-bold">Детали заказа</h2>
+        <button id="closeOrderDetailsModal" class="text-white/60 hover:text-white text-xl">✕</button>
+      </div>
+
+      <div id="orderDetailsContent" class="space-y-4"></div>
+
+      <div class="mt-5 grid grid-cols-2 md:grid-cols-5 gap-2">
+        <button onclick="changeStatusFromModal('confirmed')" class="rounded-xl bg-white text-slate-900 px-4 py-3 text-sm font-semibold">Подтвердить</button>
+        <button onclick="changeStatusFromModal('processing')" class="rounded-xl bg-white/10 px-4 py-3 text-sm font-medium">В обработку</button>
+        <button onclick="changeStatusFromModal('shipped')" class="rounded-xl bg-white/10 px-4 py-3 text-sm font-medium">Отправлен</button>
+        <button onclick="changeStatusFromModal('done')" class="rounded-xl bg-white/10 px-4 py-3 text-sm font-medium">Завершен</button>
+        <button onclick="changeStatusFromModal('cancelled')" class="rounded-xl bg-red-500/80 px-4 py-3 text-sm font-medium">Отменен</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    tg?.ready();
+    tg?.expand();
+
+    function esc(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    if (!tg?.initData) {
+      document.body.innerHTML = `
+        <div class="max-w-xl mx-auto px-4 pt-10 text-white">
+          <div class="glass rounded-[24px] p-6">
+            <div class="text-2xl font-bold mb-3">Нет Telegram initData</div>
+            <div class="text-white/70">
+              Открой админку только через кнопку бота в Telegram. Не открывай /admin вручную и не обновляй страницу как обычный сайт.
+            </div>
+          </div>
+        </div>
+      `;
+      throw new Error("Missing Telegram initData in admin.html");
+    }
+
+    const state = {
+      tab: 'orders',
+      orders: [],
+      products: [],
+      categories: [],
+      editingProductId: null,
+      selectedOrder: null,
+    };
+
+    let newProductImages = [];
+    let editProductImages = [];
+
+    const ordersScreen = document.getElementById('ordersScreen');
+    const productsScreen = document.getElementById('productsScreen');
+    const categoriesScreen = document.getElementById('categoriesScreen');
+
+    const navOrders = document.getElementById('navOrders');
+    const navProducts = document.getElementById('navProducts');
+    const navCategories = document.getElementById('navCategories');
+
+    const editProductModal = document.getElementById('editProductModal');
+    const editProductTitle = document.getElementById('editProductTitle');
+    const editProductPrice = document.getElementById('editProductPrice');
+    const editProductCategory = document.getElementById('editProductCategory');
+    const editProductSizes = document.getElementById('editProductSizes');
+    const editProductDescription = document.getElementById('editProductDescription');
+
+    const orderDetailsModal = document.getElementById('orderDetailsModal');
+    const orderDetailsContent = document.getElementById('orderDetailsContent');
+
+    function headers(isJson = true) {
+      const result = {
+        "X-Telegram-Init-Data": tg.initData
+      };
+
+      if (isJson) {
+        result["Content-Type"] = "application/json";
+      }
+
+      return result;
+    }
+
+    function formatPrice(value) {
+      return new Intl.NumberFormat('ru-RU').format(value) + ' ₽';
+    }
+
+    function formatDate(value) {
+      if (!value) return '—';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return String(value).replace('T', ' ');
+      return date.toLocaleString('ru-RU');
+    }
+
+    function statusLabel(status) {
+      const labels = {
+        new: 'Новый',
+        confirmed: 'Подтвержден',
+        processing: 'В обработке',
+        shipped: 'Отправлен',
+        done: 'Завершен',
+        cancelled: 'Отменен',
+      };
+      return labels[status] || status;
+    }
+
+    function setTab(tab) {
+      state.tab = tab;
+
+      ordersScreen.classList.toggle('hidden', tab !== 'orders');
+      productsScreen.classList.toggle('hidden', tab !== 'products');
+      categoriesScreen.classList.toggle('hidden', tab !== 'categories');
+
+      [navOrders, navProducts, navCategories].forEach((el) => el.classList.remove('active'));
+      if (tab === 'orders') navOrders.classList.add('active');
+      if (tab === 'products') navProducts.classList.add('active');
+      if (tab === 'categories') navCategories.classList.add('active');
+    }
+
+    async function apiGet(url) {
+      const response = await fetch(url, { headers: headers(true) });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.error || 'Request failed');
+      return data;
+    }
+
+    async function apiPost(url, payload = {}) {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: headers(true),
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.error || 'Request failed');
+      return data;
+    }
+
+    async function loadOrders() {
+      const data = await apiGet('/api/admin/orders');
+      state.orders = data.items;
+      renderOrders();
+    }
+
+    async function loadProducts() {
+      const data = await apiGet('/api/admin/products');
+      state.products = data.items;
+      renderProducts();
+    }
+
+    async function loadCategories() {
+      const data = await apiGet('/api/admin/categories');
+      state.categories = data.items;
+      renderCategories();
+    }
+
+    function renderOrders() {
+      const root = document.getElementById('ordersList');
+
+      root.innerHTML = state.orders.map(order => `
+        <article class="glass rounded-[22px] p-4">
+          <div class="flex items-start justify-between gap-4 flex-col md:flex-row">
+            <button onclick="openOrderDetails(${order.order_number})" class="text-left min-w-0 flex-1">
+              <div class="text-lg font-bold">Заказ #${order.order_number}</div>
+              <div class="text-white/60 mt-1">${esc(order.customer_name || 'Не указано')}</div>
+              <div class="text-white/60 mt-1">Статус: ${statusLabel(order.status)}</div>
+              <div class="text-white/60 mt-1">Сумма: ${formatPrice(order.total)}</div>
+              <div class="text-white/40 mt-1 text-sm">${esc(formatDate(order.created_at))}</div>
+            </button>
+
+            <div class="grid grid-cols-2 md:grid-cols-1 gap-2 w-full md:w-auto">
+              <button onclick="openOrderDetails(${order.order_number})" class="rounded-xl bg-white text-slate-900 px-4 py-2 text-sm font-semibold">Открыть</button>
+              <button onclick="changeOrderStatus(${order.order_number}, 'confirmed')" class="rounded-xl bg-white/10 px-4 py-2 text-sm font-medium">Подтвердить</button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    async function openOrderDetails(orderNumber) {
+      try {
+        const data = await apiGet(`/api/admin/orders/${orderNumber}`);
+        state.selectedOrder = data.item;
+        renderOrderDetails();
+        orderDetailsModal.classList.remove('hidden');
+      } catch (error) {
+        tg?.showAlert?.(error.message);
+      }
+    }
+
+    function closeOrderDetails() {
+      state.selectedOrder = null;
+      orderDetailsModal.classList.add('hidden');
+    }
+
+    function renderOrderDetails() {
+      const order = state.selectedOrder;
+      if (!order) {
+        orderDetailsContent.innerHTML = '';
+        return;
+      }
+
+      const itemsHtml = (order.items || []).map(item => `
+        <div class="flex items-center justify-between gap-3 py-2 border-b border-white/10 last:border-b-0">
+          <div>
+            <div class="font-medium">${esc(item.title)}</div>
+            <div class="text-white/50 text-sm">
+              Кол-во: ${item.quantity}${item.size ? ` | Размер: ${esc(item.size)}` : ''}
+            </div>
+          </div>
+          <div class="font-semibold">${formatPrice(item.subtotal)}</div>
+        </div>
+      `).join('');
+
+      orderDetailsContent.innerHTML = `
+        <div class="grid md:grid-cols-2 gap-3">
+          <div class="glass rounded-2xl p-4">
+            <div class="text-white/50 text-sm mb-1">Номер заказа</div>
+            <div class="font-semibold text-lg">#${order.order_number}</div>
+          </div>
+          <div class="glass rounded-2xl p-4">
+            <div class="text-white/50 text-sm mb-1">Статус</div>
+            <div class="font-semibold text-lg">${statusLabel(order.status)}</div>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl p-4 space-y-2">
+          <div class="text-white/50 text-sm">Данные заказчика</div>
+          <div><span class="text-white/50">Имя:</span> ${esc(order.customer_name || 'Не указано')}</div>
+          <div><span class="text-white/50">Телефон:</span> ${esc(order.customer_phone || 'Не указано')}</div>
+          <div><span class="text-white/50">Telegram link:</span> ${esc(order.customer_telegram_link || 'Не указано')}</div>
+          <div><span class="text-white/50">Комментарий:</span> ${esc(order.customer_comment || '—')}</div>
+        </div>
+
+        <div class="glass rounded-2xl p-4 space-y-2">
+          <div class="text-white/50 text-sm">Telegram Mini App</div>
+          <div><span class="text-white/50">User ID:</span> ${esc(String(order.telegram_user_id || '—'))}</div>
+          <div><span class="text-white/50">Username:</span> ${order.telegram_username ? '@' + esc(order.telegram_username) : '—'}</div>
+          <div><span class="text-white/50">Имя:</span> ${esc(order.telegram_first_name || '—')}</div>
+          <div><span class="text-white/50">Создан:</span> ${esc(formatDate(order.created_at))}</div>
+        </div>
+
+        <div class="glass rounded-2xl p-4">
+          <div class="text-white/50 text-sm mb-3">Состав заказа</div>
+          <div class="space-y-1">${itemsHtml || '<div class="text-white/50">Позиции отсутствуют</div>'}</div>
+        </div>
+
+        <div class="glass rounded-2xl p-4 flex items-center justify-between">
+          <div class="text-white/50">Итого</div>
+          <div class="text-2xl font-bold">${formatPrice(order.total || 0)}</div>
+        </div>
+      `;
+    }
+
+    async function changeStatusFromModal(status) {
+      if (!state.selectedOrder) return;
+      try {
+        await apiPost(`/api/admin/orders/${state.selectedOrder.order_number}/status`, { status });
+        const updated = await apiGet(`/api/admin/orders/${state.selectedOrder.order_number}`);
+        state.selectedOrder = updated.item;
+        renderOrderDetails();
+        await loadOrders();
+        tg?.showAlert?.(`Статус заказа #${state.selectedOrder.order_number} обновлен`);
+      } catch (error) {
+        tg?.showAlert?.(error.message);
+      }
+    }
+
+    function openEditProductModal(id) {
+      const product = state.products.find((item) => item.id === id);
+      if (!product) return;
+
+      state.editingProductId = id;
+      editProductTitle.value = product.title || '';
+      editProductPrice.value = product.price || '';
+      editProductCategory.value = product.category || '';
+      editProductSizes.value = (product.sizes || []).join(',');
+      editProductDescription.value = product.description || '';
+
+      editProductImages = product.images?.length ? [...product.images] : (product.image ? [product.image] : []);
+      renderImageList('editImageList', editProductImages);
+
+      editProductModal.classList.remove('hidden');
+    }
+
+    function closeEditProductModal() {
+      state.editingProductId = null;
+      editProductImages = [];
+      editProductModal.classList.add('hidden');
+    }
+
+    async function saveEditedProduct() {
+      if (!state.editingProductId) return;
+
+      if (!editProductImages.length) {
+        tg?.showAlert?.('Добавь хотя бы одно фото');
+        return;
+      }
+
+      const payload = {
+        title: editProductTitle.value.trim(),
+        price: editProductPrice.value.trim(),
+        category: editProductCategory.value.trim(),
+        sizes: editProductSizes.value.split(',').map(s => s.trim()).filter(Boolean),
+        description: editProductDescription.value.trim(),
+        image: editProductImages[0],
+        extra_images: editProductImages.slice(1),
+      };
+
+      if (!payload.title || !payload.price || !payload.category || !payload.image || !payload.description) {
+        tg?.showAlert?.('Заполни все поля товара');
+        return;
+      }
+
+      try {
+        await apiPost(`/api/admin/products/${state.editingProductId}`, payload);
+        closeEditProductModal();
+        await loadProducts();
+        tg?.showAlert?.('Товар обновлен');
+      } catch (error) {
+        tg?.showAlert?.(error.message);
+      }
+    }
+
+    function renderProducts() {
+      const root = document.getElementById('productsList');
+
+      root.innerHTML = state.products.map(product => `
+        <article class="glass rounded-[22px] p-4 flex gap-3 items-center flex-col md:flex-row">
+          <img src="${esc(product.image)}" alt="${esc(product.title)}" class="w-full md:w-24 h-44 md:h-24 object-cover rounded-2xl" />
+
+          <div class="flex-1 w-full min-w-0">
+            <div class="text-[11px] uppercase tracking-[0.16em] text-white/35">${esc(product.category)}</div>
+            <div class="font-semibold text-base mt-1 line-clamp-2">${esc(product.title)}</div>
+            <div class="text-white/80 mt-2">${formatPrice(product.price)}</div>
+            <div class="text-white/50 text-sm mt-1">Размеры: ${(product.sizes || []).map(esc).join(', ') || 'не указаны'}</div>
+            <div class="text-white/45 text-sm mt-1">${product.is_active ? 'Активен' : 'Скрыт'}</div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-1 gap-2 w-full md:w-auto">
+            <button onclick="openEditProductModal(${product.id})" class="rounded-xl bg-white text-slate-900 px-4 py-2 text-sm font-semibold">Изменить</button>
+            ${product.is_active
+              ? `<button onclick="hideProduct(${product.id})" class="rounded-xl bg-red-500/80 px-4 py-2 text-sm font-medium">Скрыть</button>`
+              : `<button onclick="showProduct(${product.id})" class="rounded-xl bg-white/10 px-4 py-2 text-sm font-medium">Показать</button>`}
+            <button onclick="deleteProduct(${product.id})" class="rounded-xl bg-red-700/70 px-4 py-2 text-sm font-medium col-span-2 md:col-span-1">Удалить</button>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function fillCategorySelects() {
+      const options = '<option value="">Выбери категорию</option>' +
+        state.categories.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+      document.getElementById('newProductCategory').innerHTML = options;
+      document.getElementById('editProductCategory').innerHTML = options;
+    }
+
+    function renderImageList(listId, images) {
+      const root = document.getElementById(listId);
+      if (!images.length) {
+        root.innerHTML = '<div class="text-white/40 text-sm py-1">Фото не добавлены</div>';
+        return;
+      }
+      const prefix = listId === 'newImageList' ? 'removeNewImage' : 'removeEditImage';
+      root.innerHTML = images.map((src, i) => `
+        <div class="flex items-center gap-3 rounded-2xl bg-white/5 border border-white/10 px-3 py-2">
+          <img src="${esc(src)}" class="w-10 h-10 rounded-xl object-cover flex-shrink-0" onerror="this.style.opacity='0.3'" />
+          <span class="flex-1 text-sm text-white/60 truncate">${esc(src.split('/').pop())}</span>
+          ${i === 0 ? '<span class="text-[10px] bg-white/10 text-white/60 px-2 py-0.5 rounded-full flex-shrink-0">главное</span>' : ''}
+          <button onclick="${prefix}(${i})" class="text-white/30 hover:text-white text-lg flex-shrink-0 leading-none">×</button>
+        </div>
+      `).join('');
+    }
+
+    function removeNewImage(index) {
+      newProductImages.splice(index, 1);
+      renderImageList('newImageList', newProductImages);
+    }
+
+    function removeEditImage(index) {
+      editProductImages.splice(index, 1);
+      renderImageList('editImageList', editProductImages);
+    }
+
+    async function uploadAndAddImage(fileInputId, images, listId) {
+      const input = document.getElementById(fileInputId);
+      const file = input.files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('image', file);
+      const response = await fetch('/api/admin/upload-image', {
+        method: 'POST',
+        headers: { 'X-Telegram-Init-Data': tg?.initData || '' },
+        body: formData,
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.error || 'Upload failed');
+      images.push(data.path);
+      renderImageList(listId, images);
+      input.value = '';
+    }
+
+    function renderCategories() {
+      const root = document.getElementById('categoriesList');
+
+      root.innerHTML = state.categories.map(category => `
+        <article class="glass rounded-[22px] p-4 flex items-center justify-between gap-3">
+          <div>
+            <div class="font-semibold">${esc(category.name)}</div>
+            <div class="text-white/50 mt-1 text-sm">ID: ${category.id}</div>
+          </div>
+          <button onclick="deleteCategory(${category.id}, '${esc(category.name)}')" class="rounded-xl bg-red-700/70 px-4 py-2 text-sm font-medium flex-shrink-0">Удалить</button>
+        </article>
+      `).join('');
+
+      fillCategorySelects();
+    }
+
+    async function changeOrderStatus(orderNumber, status) {
+      try {
+        await apiPost(`/api/admin/orders/${orderNumber}/status`, { status });
+        await loadOrders();
+        tg?.showAlert?.(`Статус заказа #${orderNumber} обновлен`);
+      } catch (error) {
+        tg?.showAlert?.(error.message);
+      }
+    }
+
+    async function deleteProduct(productId) {
+      tg?.showConfirm('Удалить товар? Это действие необратимо.', async (confirmed) => {
+        if (!confirmed) return;
+        try {
+          await apiPost(`/api/admin/products/${productId}/delete`);
+          await loadProducts();
+        } catch (error) {
+          tg?.showAlert?.(error.message);
+        }
+      });
+    }
+
+    async function deleteCategory(categoryId, categoryName) {
+      tg?.showConfirm(`Удалить категорию «${categoryName}»? Это действие необратимо.`, async (confirmed) => {
+        if (!confirmed) return;
+        try {
+          await apiPost(`/api/admin/categories/${categoryId}/delete`);
+          await loadCategories();
+        } catch (error) {
+          tg?.showAlert?.(error.message);
+        }
+      });
+    }
+
+    async function hideProduct(productId) {
+      try {
+        await apiPost(`/api/admin/products/${productId}/hide`);
+        await loadProducts();
+      } catch (error) {
+        tg?.showAlert?.(error.message);
+      }
+    }
+
+    async function showProduct(productId) {
+      try {
+        await apiPost(`/api/admin/products/${productId}/show`);
+        await loadProducts();
+      } catch (error) {
+        tg?.showAlert?.(error.message);
+      }
+    }
+
+    document.getElementById('addProductBtn').addEventListener('click', async () => {
+      const title = document.getElementById('newProductTitle').value.trim();
+      const price = document.getElementById('newProductPrice').value.trim();
+      const category = document.getElementById('newProductCategory').value.trim();
+      const sizes = document.getElementById('newProductSizes').value
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      const description = document.getElementById('newProductDescription').value.trim();
+
+      if (!title || !price || !category || !description) {
+        tg?.showAlert?.('Заполни все поля товара');
+        return;
+      }
+      if (!newProductImages.length) {
+        tg?.showAlert?.('Добавь хотя бы одно фото');
+        return;
+      }
+
+      try {
+        await apiPost('/api/admin/products', {
+          title,
+          price,
+          category,
+          sizes,
+          description,
+          image: newProductImages[0],
+          extra_images: newProductImages.slice(1),
+        });
+
+        document.getElementById('newProductTitle').value = '';
+        document.getElementById('newProductPrice').value = '';
+        document.getElementById('newProductCategory').value = '';
+        document.getElementById('newProductSizes').value = '';
+        document.getElementById('newProductDescription').value = '';
+        newProductImages = [];
+        renderImageList('newImageList', newProductImages);
+
+        await loadProducts();
+        tg?.showAlert?.('Товар добавлен');
+      } catch (error) {
+        tg?.showAlert?.(error.message);
+      }
+    });
+
+    document.getElementById('addCategoryBtn').addEventListener('click', async () => {
+      const input = document.getElementById('newCategoryName');
+      const name = input.value.trim();
+
+      if (!name) {
+        tg?.showAlert?.('Введите название категории');
+        return;
+      }
+
+      try {
+        await apiPost('/api/admin/categories', { name });
+        input.value = '';
+        await loadCategories();
+        tg?.showAlert?.('Категория добавлена');
+      } catch (error) {
+        tg?.showAlert?.(error.message);
+      }
+    });
+
+    navOrders.addEventListener('click', () => setTab('orders'));
+    navProducts.addEventListener('click', () => setTab('products'));
+    navCategories.addEventListener('click', () => setTab('categories'));
+
+    document.getElementById('closeEditProductModal').addEventListener('click', closeEditProductModal);
+    document.getElementById('cancelEditProductBtn').addEventListener('click', closeEditProductModal);
+    document.getElementById('saveEditProductBtn').addEventListener('click', saveEditedProduct);
+
+    document.getElementById('closeOrderDetailsModal').addEventListener('click', closeOrderDetails);
+
+    document.getElementById('addImageBtn').addEventListener('click', () => {
+      document.getElementById('newProductImageFile').click();
+    });
+    document.getElementById('newProductImageFile').addEventListener('change', async () => {
+      try {
+        await uploadAndAddImage('newProductImageFile', newProductImages, 'newImageList');
+      } catch (error) {
+        tg?.showAlert?.(error.message);
+      }
+    });
+
+    document.getElementById('editAddImageBtn').addEventListener('click', () => {
+      document.getElementById('editProductImageFile').click();
+    });
+    document.getElementById('editProductImageFile').addEventListener('change', async () => {
+      try {
+        await uploadAndAddImage('editProductImageFile', editProductImages, 'editImageList');
+      } catch (error) {
+        tg?.showAlert?.(error.message);
+      }
+    });
+
+    window.changeOrderStatus = changeOrderStatus;
+    window.hideProduct = hideProduct;
+    window.showProduct = showProduct;
+    window.openEditProductModal = openEditProductModal;
+    window.openOrderDetails = openOrderDetails;
+    window.changeStatusFromModal = changeStatusFromModal;
+    window.removeNewImage = removeNewImage;
+    window.removeEditImage = removeEditImage;
+
+  (async function init() {
+    try {
+      setTab('orders');
+
+      try { await loadOrders(); } catch (error) { console.error('loadOrders failed:', error); }
+      try { await loadProducts(); } catch (error) { console.error('loadProducts failed:', error); }
+      try { await loadCategories(); } catch (error) { console.error('loadCategories failed:', error); }
+    } catch (error) {
+      console.error('init failed:', error);
+    }
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+services:
+  telegram-shop:
+    build: .
+    container_name: telegram-shop
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./shop.db:/app/shop.db
+      - ./static/uploads:/app/static/uploads

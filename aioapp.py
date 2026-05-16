@@ -1,0 +1,762 @@
+import asyncio
+import json
+import os
+import queue as _queue
+import uuid
+from pathlib import Path
+from threading import Thread
+from urllib.parse import parse_qsl
+
+from aiogram import Bot, Dispatcher, F, Router
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
+from aiogram.filters import Command
+from aiogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    Message,
+    ReplyKeyboardMarkup,
+    WebAppInfo,
+)
+from aiogram.utils.web_app import check_webapp_signature
+from dotenv import load_dotenv
+from flask import Flask, jsonify, render_template, request
+
+from db import (
+    activate_product,
+    add_category,
+    add_order,
+    add_product,
+    deactivate_product,
+    get_active_products,
+    get_all_products,
+    get_categories,
+    get_order,
+    get_order_status_keys,
+    get_product_map,
+    get_status_label,
+    get_user_orders,
+    init_db,
+    list_orders,
+    update_order_status,
+    update_product,
+)
+
+# =========================================================
+# Paths and environment
+# =========================================================
+
+BASE_DIR = Path(__file__).resolve().parent
+UPLOAD_DIR = BASE_DIR / "static" / "uploads"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+load_dotenv(BASE_DIR / ".env")
+
+BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
+APP_URL = os.getenv("APP_URL", "http://127.0.0.1:8080").strip()
+ADMIN_CHAT_ID_RAW = os.getenv("ADMIN_CHAT_ID", "").strip()
+MANAGER_LINK = os.getenv("MANAGER_LINK", "https://t.me/").strip()
+PORT = int(os.getenv("PORT", "8080"))
+
+if not BOT_TOKEN:
+    raise RuntimeError("BOT_TOKEN is not set. Put it in the .env file.")
+
+ADMIN_CHAT_ID = int(ADMIN_CHAT_ID_RAW) if ADMIN_CHAT_ID_RAW else None
+
+# =========================================================
+# Bot, dispatcher, router, Flask app
+# =========================================================
+
+bot = Bot(
+    token=BOT_TOKEN,
+    default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+)
+dp = Dispatcher()
+router = Router()
+dp.include_router(router)
+
+app = Flask(__name__, template_folder="templates", static_folder="static")
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 MB
+init_db()
+
+BOT_LOOP = None
+_admin_msg_queue: _queue.Queue[str] = _queue.Queue()
+
+
+# =========================================================
+# Utility functions
+# =========================================================
+
+
+async def log_bot_info() -> None:
+    """Print basic bot metadata at startup."""
+    me = await bot.get_me()
+    print("BOT USERNAME:", me.username)
+    print("BOT ID:", me.id)
+    print("BOT TOKEN PREFIX:", BOT_TOKEN[:15])
+    print("ADMIN CHAT ID:", ADMIN_CHAT_ID)
+
+
+def is_admin_chat(chat_id: int) -> bool:
+    """Return True if the given Telegram chat belongs to the configured admin."""
+    return ADMIN_CHAT_ID is not None and chat_id == ADMIN_CHAT_ID
+
+
+def rub(amount: int) -> str:
+    """Format integer price to Russian ruble string."""
+    return f"{amount:,}".replace(",", " ") + " ₽"
+
+
+def json_error(message: str, status: int):
+    """Return a standard JSON error response."""
+    return jsonify({"ok": False, "error": message}), status
+
+
+def send_admin_message(text: str) -> None:
+    """Send a Telegram message to the admin. Buffers if bot loop isn't ready yet."""
+    if not ADMIN_CHAT_ID:
+        return
+    if BOT_LOOP is None or not BOT_LOOP.is_running():
+        _admin_msg_queue.put(text)
+        return
+    asyncio.run_coroutine_threadsafe(
+        bot.send_message(ADMIN_CHAT_ID, text),
+        BOT_LOOP,
+    )
+
+
+async def _drain_admin_queue() -> None:
+    """Send any messages buffered before the bot loop was ready."""
+    while not _admin_msg_queue.empty():
+        try:
+            text = _admin_msg_queue.get_nowait()
+            await bot.send_message(ADMIN_CHAT_ID, text)
+        except Exception as exc:
+            print(f"WARN: failed to send buffered admin message: {exc}")
+
+
+# =========================================================
+# Telegram keyboard builders
+# =========================================================
+
+
+def build_user_keyboard() -> ReplyKeyboardMarkup:
+    """Build reply keyboard for regular users."""
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="🛍 Открыть магазин")],
+            [KeyboardButton(text="👨‍💼 Менеджер")],
+        ],
+        resize_keyboard=True,
+    )
+
+
+def build_admin_keyboard() -> ReplyKeyboardMarkup:
+    """Build reply keyboard for admin user."""
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text="🛍 Открыть магазин"),
+                KeyboardButton(text="🛠 Открыть админку"),
+            ],
+            [
+                KeyboardButton(text="👨‍💼 Менеджер"),
+                KeyboardButton(text="🆔 Мой ID"),
+            ],
+        ],
+        resize_keyboard=True,
+    )
+
+
+def build_store_inline() -> InlineKeyboardMarkup:
+    """Build inline button that opens the customer Mini App."""
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Открыть магазин", web_app=WebAppInfo(url=APP_URL)
+                )
+            ]
+        ]
+    )
+
+
+def build_admin_inline() -> InlineKeyboardMarkup:
+    """Build inline button that opens the admin Mini App."""
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Открыть админку",
+                    web_app=WebAppInfo(url=f"{APP_URL.rstrip('/')}?mode=admin"),
+                )
+            ]
+        ]
+    )
+
+
+# =========================================================
+# Telegram Mini App auth helpers
+# =========================================================
+
+
+def get_telegram_context_from_request() -> dict:
+    """
+    Validate Telegram Mini App initData from request headers
+    and return parsed Telegram context.
+    """
+    init_data = request.headers.get("X-Telegram-Init-Data", "").strip()
+
+    if not init_data:
+        raise ValueError("Missing Telegram init data")
+
+    if not check_webapp_signature(BOT_TOKEN, init_data):
+        raise ValueError("Invalid Telegram signature")
+
+    parsed = dict(parse_qsl(init_data, keep_blank_values=True))
+    parsed.pop("hash", None)
+    parsed.pop("signature", None)
+
+    if "user" in parsed:
+        parsed["user"] = json.loads(parsed["user"])
+
+    return parsed
+
+
+def require_admin_context() -> dict:
+    """
+    Validate Telegram Mini App request and ensure that the current
+    Telegram user is the configured admin.
+    """
+    context = get_telegram_context_from_request()
+    user = context.get("user") or {}
+
+    if str(user.get("id")) != str(ADMIN_CHAT_ID):
+        raise PermissionError("Admin access required")
+
+    return context
+
+
+# =========================================================
+# Flask page routes
+# =========================================================
+
+
+@app.route("/")
+def index():
+    """Render customer app or admin app depending on query mode."""
+    mode = (request.args.get("mode") or "").strip().lower()
+    if mode == "admin":
+        return render_template("admin.html")
+    return render_template("index.html", manager_link=MANAGER_LINK)
+
+
+# =========================================================
+# Public API routes
+# =========================================================
+
+
+@app.route("/api/products")
+def api_products():
+    """Return active products for the customer Mini App."""
+    return jsonify(get_active_products())
+
+
+@app.route("/api/categories")
+def api_categories():
+    """Return category names for the customer Mini App."""
+    return jsonify([item["name"] for item in get_categories()])
+
+
+@app.route("/api/my-orders")
+def api_my_orders():
+    """Return active orders for the current Telegram user."""
+    try:
+        context = get_telegram_context_from_request()
+        user = context.get("user") or {}
+        user_id = str(user.get("id") or "")
+        if not user_id:
+            return jsonify({"ok": True, "items": []})
+
+        items = get_user_orders(user_id, active_only=True)
+        return jsonify({"ok": True, "items": items})
+    except Exception as exc:
+        return json_error(str(exc), 403)
+
+
+@app.route("/api/order", methods=["POST"])
+def create_order():
+    """Create a new order from the customer Mini App cart."""
+    try:
+        context = get_telegram_context_from_request()
+        tg_user = context.get("user") or {}
+
+        payload = request.get_json(force=True, silent=True) or {}
+        items = payload.get("items", [])
+        customer = payload.get("customer", {}) or {}
+
+        if not items:
+            return json_error("Корзина пуста", 400)
+
+        product_map = get_product_map()
+        lines = []
+        normalized_items = []
+        total = 0
+
+        for item in items:
+            product_id = int(item.get("id", 0))
+            quantity = int(item.get("quantity", 0))
+            size = (item.get("size") or "").strip()
+
+            product = product_map.get(product_id)
+            if not product or quantity <= 0:
+                continue
+
+            available_sizes = product.get("sizes") or []
+            if available_sizes and size not in available_sizes:
+                continue
+
+            subtotal = product["price"] * quantity
+            total += subtotal
+
+            size_label = f" | Размер: {size}" if size else ""
+            lines.append(
+                f'• {product["title"]} × {quantity}{size_label} — {rub(subtotal)}'
+            )
+            normalized_items.append(
+                {
+                    "id": product_id,
+                    "title": product["title"],
+                    "price": product["price"],
+                    "size": size,
+                    "quantity": quantity,
+                    "subtotal": subtotal,
+                }
+            )
+
+        if not normalized_items:
+            return json_error("Некорректные товары или размеры", 400)
+
+        status = "new"
+
+        name = customer.get("name", "").strip() or "Не указано"
+        phone = customer.get("phone", "").strip() or "Не указано"
+        telegram_link = customer.get("telegram_link", "").strip()
+
+        if telegram_link and not telegram_link.startswith("@"):
+            telegram_link = f"@{telegram_link}"
+
+        telegram_link = telegram_link or "Не указано"
+        comment = customer.get("comment", "").strip() or "—"
+
+        username = tg_user.get("username") or "—"
+        user_id = tg_user.get("id") or "—"
+        first_name = tg_user.get("first_name") or "—"
+
+        order_data = {
+            "status": status,
+            "customer": {
+                "name": name,
+                "phone": phone,
+                "telegram_link": telegram_link,
+                "comment": comment,
+            },
+            "telegram_user": tg_user,
+            "items": normalized_items,
+            "total": total,
+        }
+        saved_order = add_order(order_data)
+        order_number = saved_order["order_number"]
+
+        text = (
+            f"<b>Новый заказ #{order_number}</b>\n\n"
+            f"<b>Статус:</b> {get_status_label(status)}\n"
+            f"<b>Покупатель:</b> {name}\n"
+            f"<b>Телефон:</b> {phone}\n"
+            f"<b>Telegram link:</b> {telegram_link}\n"
+            f"<b>Mini App user:</b> {first_name} | @{username if username != '—' else 'unknown'} | ID: {user_id}\n\n"
+            f"<b>Состав заказа:</b>\n"
+            + "\n".join(lines)
+            + f"\n\n<b>Комментарий:</b> {comment}"
+            f"\n<b>Итого:</b> {rub(total)}"
+        )
+
+        send_admin_message(text)
+
+        return jsonify(
+            {
+                "ok": True,
+                "message": "Заказ отправлен",
+                "order_number": order_number,
+                "status": status,
+                "total": total,
+            }
+        )
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except ValueError as exc:
+        return json_error(str(exc), 400)
+    except Exception as exc:
+        print("ORDER ERROR:", repr(exc))
+        return json_error(str(exc), 500)
+
+
+# =========================================================
+# Admin API routes
+# =========================================================
+
+
+@app.route("/api/admin/orders")
+def api_admin_orders():
+    """Return admin order list."""
+    try:
+        require_admin_context()
+        return jsonify({"ok": True, "items": list_orders(100)})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/orders/<int:order_number>")
+def api_admin_order_detail(order_number: int):
+    """Return full details for one order."""
+    try:
+        require_admin_context()
+        order = get_order(order_number)
+        if not order:
+            return json_error("Order not found", 404)
+        return jsonify({"ok": True, "item": order})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/orders/<int:order_number>/status", methods=["POST"])
+def api_admin_order_status(order_number: int):
+    """Update order status from admin panel."""
+    try:
+        require_admin_context()
+        payload = request.get_json(force=True, silent=True) or {}
+        new_status = (payload.get("status") or "").strip()
+
+        if new_status not in get_order_status_keys():
+            return json_error("Invalid status", 400)
+
+        order = update_order_status(order_number, new_status)
+        if not order:
+            return json_error("Order not found", 404)
+
+        return jsonify({"ok": True, "item": order})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/products")
+def api_admin_products():
+    """Return all products for admin panel."""
+    try:
+        require_admin_context()
+        return jsonify({"ok": True, "items": get_all_products()})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/products", methods=["POST"])
+def api_admin_create_product():
+    """Create a new product from admin panel."""
+    try:
+        require_admin_context()
+        payload = request.get_json(force=True, silent=True) or {}
+
+        title = (payload.get("title") or "").strip()
+        category = (payload.get("category") or "").strip()
+        image = (payload.get("image") or "").strip()
+        description = (payload.get("description") or "").strip()
+        sizes = payload.get("sizes") or []
+        extra_images = [img for img in (payload.get("extra_images") or []) if isinstance(img, str) and img.strip()]
+
+        try:
+            price = int(payload.get("price", 0))
+        except Exception:
+            return json_error("Invalid price", 400)
+
+        if not title or not category or not image or not description or price <= 0:
+            return json_error("All product fields are required", 400)
+
+        product = add_product(title, price, category, image, description, sizes, extra_images)
+        if not product:
+            return json_error("Invalid category", 400)
+
+        return jsonify({"ok": True, "item": product})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/products/<int:product_id>", methods=["POST"])
+def api_admin_update_product(product_id: int):
+    """Update existing product from admin panel."""
+    try:
+        require_admin_context()
+        payload = request.get_json(force=True, silent=True) or {}
+        updates = {}
+
+        for key in ("title", "price", "category", "image", "description", "sizes", "extra_images"):
+            if key in payload:
+                updates[key] = payload[key]
+
+        if "price" in updates:
+            try:
+                updates["price"] = int(updates["price"])
+            except Exception:
+                return json_error("Invalid price", 400)
+
+        if "image" in updates and not str(updates["image"]).strip():
+            return json_error("image cannot be empty", 400)
+
+        product = update_product(product_id, updates)
+        if not product:
+            return json_error("Product not found or invalid category", 404)
+
+        return jsonify({"ok": True, "item": product})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/products/<int:product_id>/hide", methods=["POST"])
+def api_admin_hide_product(product_id: int):
+    """Hide product in admin panel."""
+    try:
+        require_admin_context()
+        ok = deactivate_product(product_id)
+        if not ok:
+            return json_error("Product not found", 404)
+        return jsonify({"ok": True})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/products/<int:product_id>/show", methods=["POST"])
+def api_admin_show_product(product_id: int):
+    """Show product in admin panel."""
+    try:
+        require_admin_context()
+        ok = activate_product(product_id)
+        if not ok:
+            return json_error("Product not found", 404)
+        return jsonify({"ok": True})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/categories")
+def api_admin_categories():
+    """Return categories for admin panel."""
+    try:
+        require_admin_context()
+        return jsonify({"ok": True, "items": get_categories()})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/categories", methods=["POST"])
+def api_admin_add_category():
+    """Create a new category from admin panel."""
+    try:
+        require_admin_context()
+        payload = request.get_json(force=True, silent=True) or {}
+        name = (payload.get("name") or "").strip()
+
+        if not name:
+            return json_error("Category name is required", 400)
+
+        ok = add_category(name)
+        if not ok:
+            return json_error("Category already exists or invalid", 400)
+
+        return jsonify({"ok": True})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/upload-image", methods=["POST"])
+def api_admin_upload_image():
+    """Upload product image from admin panel."""
+    try:
+        require_admin_context()
+
+        if "image" not in request.files:
+            return json_error("Image file is required", 400)
+
+        file = request.files["image"]
+        if not file.filename:
+            return json_error("Empty file", 400)
+
+        ext = Path(file.filename).suffix.lower() or ".jpg"
+        if ext not in {".jpg", ".jpeg", ".png", ".webp"}:
+            return json_error("Unsupported file format", 400)
+
+        filename = f"{uuid.uuid4().hex}{ext}"
+        path = UPLOAD_DIR / filename
+        file.save(path)
+
+        return jsonify({"ok": True, "path": f"/static/uploads/{filename}"})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+# =========================================================
+# Aiogram bot command handlers
+# =========================================================
+
+
+@router.message(Command("start"))
+async def start_handler(message: Message):
+    """Show welcome message and main reply keyboard."""
+    admin = is_admin_chat(message.chat.id)
+    reply_markup = build_admin_keyboard() if admin else build_user_keyboard()
+
+    text = "Добро пожаловать в магазин."
+    if admin:
+        text += "\nУ тебя также есть доступ к админке."
+
+    await message.answer(text, reply_markup=reply_markup)
+
+
+@router.message(Command("admin_app"))
+async def admin_app_handler(message: Message):
+    """Send inline button that opens admin Mini App."""
+    if not is_admin_chat(message.chat.id):
+        await message.answer("Нет доступа.")
+        return
+
+    await message.answer(
+        "Нажми кнопку ниже, чтобы открыть админку.",
+        reply_markup=build_admin_inline(),
+    )
+
+
+@router.message(Command("myid"))
+async def myid_handler(message: Message):
+    """Return current Telegram chat id."""
+    await message.answer(f"Твой chat id: <code>{message.chat.id}</code>")
+
+
+@router.message(Command("add_product"))
+async def add_product_guide_handler(message: Message):
+    """Show brief hint for admin product management."""
+    await message.answer(
+        "Для управления товарами используй кнопку «🛠 Открыть админку»."
+    )
+
+
+@router.message(Command("admin"))
+async def admin_help_handler(message: Message):
+    """Show admin help and admin keyboard."""
+    if not is_admin_chat(message.chat.id):
+        await message.answer("Нет доступа.")
+        return
+
+    await message.answer(
+        (
+            "<b>Админ-доступ</b>\n\n"
+            "🛠 Открыть админку — панель управления\n"
+            "🛍 Открыть магазин — клиентская витрина\n"
+            "🆔 Мой ID — показать chat id"
+        ),
+        reply_markup=build_admin_keyboard(),
+    )
+
+
+# =========================================================
+# Aiogram text button handlers
+# =========================================================
+
+
+@router.message(F.text == "🛍 Открыть магазин")
+async def open_store_button_handler(message: Message):
+    """Send inline button that opens customer Mini App."""
+    await message.answer(
+        "Нажми кнопку ниже, чтобы открыть магазин.",
+        reply_markup=build_store_inline(),
+    )
+
+
+@router.message(F.text == "🛠 Открыть админку")
+async def open_admin_button_handler(message: Message):
+    """Send inline button that opens admin Mini App for admin only."""
+    if not is_admin_chat(message.chat.id):
+        await message.answer("Нет доступа.")
+        return
+
+    await message.answer(
+        "Нажми кнопку ниже, чтобы открыть админку.",
+        reply_markup=build_admin_inline(),
+    )
+
+
+@router.message(F.text == "👨‍💼 Менеджер")
+async def open_manager_handler(message: Message):
+    """Send inline link to manager chat."""
+    markup = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Написать менеджеру", url=MANAGER_LINK)]
+        ]
+    )
+    await message.answer("Открыть чат с менеджером:", reply_markup=markup)
+
+
+@router.message(F.text == "🆔 Мой ID")
+async def my_id_button_handler(message: Message):
+    """Return current Telegram chat id from keyboard button."""
+    await message.answer(f"Твой chat id: <code>{message.chat.id}</code>")
+
+
+# =========================================================
+# Bot runner
+# =========================================================
+
+
+def run_bot() -> None:
+    """Start aiogram polling in a dedicated event loop."""
+
+    async def _main():
+        await log_bot_info()
+        await bot.delete_webhook(drop_pending_updates=True)
+        if ADMIN_CHAT_ID:
+            await _drain_admin_queue()
+        await dp.start_polling(bot, handle_signals=False)
+
+    global BOT_LOOP
+    BOT_LOOP = asyncio.new_event_loop()
+    asyncio.set_event_loop(BOT_LOOP)
+    BOT_LOOP.run_until_complete(_main())
+
+
+# =========================================================
+# Application entrypoint
+# =========================================================
+
+if __name__ == "__main__":
+    Thread(target=run_bot, daemon=True).start()
+    app.run(host="0.0.0.0", port=PORT, debug=False, use_reloader=False)
