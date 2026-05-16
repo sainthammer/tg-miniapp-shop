@@ -83,16 +83,14 @@
 
   /* ── Primary buttons ── */
   .bg-white.text-slate-900 {
-    background:
-      var(--scratch-a),
-      linear-gradient(180deg, #2e2e2e 0%, #1e1e1e 55%, #242424 100%) !important;
-    border: 1px solid rgba(140,141,143,0.40) !important;
-    border-top-color: rgba(218,220,224,0.55) !important;
-    border-bottom-color: rgba(0,0,0,0.48) !important;
+    background: linear-gradient(rgba(255,255,255,0.06), rgba(0,0,0,0.18)), url(/static/button-bg.jpg) center/cover !important;
+    border: 1px solid rgba(255,255,255,0.20) !important;
+    border-top-color: rgba(255,255,255,0.42) !important;
+    border-bottom-color: rgba(0,0,0,0.28) !important;
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.07),
-      inset 0 -1px 0 rgba(0,0,0,0.28) !important;
-    color: var(--silver) !important;
+      inset 0 1px 0 rgba(255,255,255,0.30),
+      inset 0 -1px 0 rgba(0,0,0,0.18) !important;
+    color: #0a0c14 !important;
     letter-spacing: 0.12em !important;
     text-transform: uppercase !important;
     font-weight: 700 !important;
@@ -100,7 +98,7 @@
     font-size: 11px !important;
     transition: filter .12s ease !important;
   }
-  .bg-white.text-slate-900:active { filter: brightness(0.86) !important; }
+  .bg-white.text-slate-900:active { filter: brightness(0.88) !important; }
 
   /* ── Danger buttons ── */
   .bg-red-500\/80, .bg-red-700\/70 {
@@ -139,11 +137,7 @@
 
   /* ── Site header (shared with client) ── */
   .site-header {
-    background:
-      repeating-linear-gradient(180deg, transparent 0, transparent 1px, rgba(255,255,255,0.018) 1px, rgba(255,255,255,0.018) 2px),
-      repeating-linear-gradient(12deg, transparent 0, transparent 2.8px, rgba(255,255,255,0.022) 2.8px, rgba(255,255,255,0.022) 3px),
-      repeating-linear-gradient(-7deg, transparent 0, transparent 5px, rgba(255,255,255,0.011) 5px, rgba(255,255,255,0.011) 5.3px),
-      linear-gradient(100deg, #1a1a1a 0%, #212121 18%, #1d1d1d 35%, #232323 52%, #1c1c1c 68%, #202020 82%, #1b1b1b 100%);
+    background: url(/static/button-bg.jpg) center/cover;
     border: 1px solid rgba(130,132,136,0.22);
     border-top-color: rgba(228,232,238,0.34);
     border-bottom-color: rgba(0,0,0,0.55);
@@ -178,7 +172,7 @@
     padding: 0 20px;
   }
   .site-header__logo {
-    height: 110px;
+    height: 58px;
     width: auto;
     filter: invert(1);
     mix-blend-mode: screen;
@@ -340,36 +334,35 @@
     </section>
 
     <section id="productsScreen" class="hidden">
-      <div class="form-panel">
-        <div class="form-title">Добавить товар</div>
-        <div class="form-sub">Заполни карточку и сохрани товар в каталог.</div>
 
+      <!-- Кнопка-переключатель формы -->
+      <button id="toggleAddProductBtn" style="width:100%;margin-bottom:10px;padding:10px 16px;font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#0a0c14;background:linear-gradient(rgba(255,255,255,0.06),rgba(0,0,0,0.18)),url(/static/button-bg.jpg) center/cover;border:1px solid rgba(255,255,255,0.20);border-top-color:rgba(255,255,255,0.42);border-bottom-color:rgba(0,0,0,0.28);box-shadow:inset 0 1px 0 rgba(255,255,255,0.30);border-radius:3px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Добавить товар
+      </button>
+
+      <!-- Форма добавления — скрыта по умолчанию -->
+      <div id="addProductForm" class="hidden form-panel" style="margin-bottom:12px;">
         <div class="grid md:grid-cols-2 gap-3">
           <input id="newProductTitle" class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Название" />
           <input id="newProductPrice" class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Цена" />
           <select id="newProductCategory" class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none">
             <option value="">Выбери категорию</option>
           </select>
-          <input id="newProductSizes" class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Размеры через запятую, например S,M,L" />
+          <input id="newProductSizes" class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Размеры: S,M,L" />
         </div>
-
         <div style="margin-top:12px;">
-          <textarea id="newProductDescription" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[110px]" placeholder="Описание"></textarea>
+          <textarea id="newProductDescription" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[100px]" placeholder="Описание"></textarea>
         </div>
-
         <div style="margin-top:12px;">
           <div id="newImageList" class="space-y-2 mb-2"></div>
           <input id="newProductImageFile" type="file" accept="image/*" class="hidden" />
-          <button id="addImageBtn" class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold"
-            style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--silver-dim);background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.22);border-top-color:rgba(192,195,198,0.26);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);border-radius:3px;cursor:pointer;">
+          <button id="addImageBtn" style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--silver-dim);background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.22);border-top-color:rgba(192,195,198,0.26);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);border-radius:3px;cursor:pointer;padding:8px 14px;">
             + Добавить фото
           </button>
         </div>
-
         <div style="margin-top:14px;">
-          <button id="addProductBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">
-            Добавить товар
-          </button>
+          <button id="addProductBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">Сохранить товар</button>
         </div>
       </div>
 
@@ -595,6 +588,10 @@
       if (tab === 'orders') navOrders.classList.add('active');
       if (tab === 'products') navProducts.classList.add('active');
       if (tab === 'categories') navCategories.classList.add('active');
+
+      if (tab !== 'products') {
+        document.getElementById('addProductForm').classList.add('hidden');
+      }
     }
 
     async function apiGet(url) {
@@ -1055,6 +1052,7 @@
         newProductImages = [];
         renderImageList('newImageList', newProductImages);
 
+        document.getElementById('addProductForm').classList.add('hidden');
         await loadProducts();
         tg?.showAlert?.('Товар добавлен');
       } catch (error) {
@@ -1084,6 +1082,11 @@
     navOrders.addEventListener('click', () => setTab('orders'));
     navProducts.addEventListener('click', () => setTab('products'));
     navCategories.addEventListener('click', () => setTab('categories'));
+
+    document.getElementById('toggleAddProductBtn').addEventListener('click', () => {
+      const form = document.getElementById('addProductForm');
+      form.classList.toggle('hidden');
+    });
 
     // Поиск товаров по названию — клиентская фильтрация без запроса на сервер
     document.getElementById('productSearchInput').addEventListener('input', () => {
