@@ -81,6 +81,43 @@
     -webkit-backdrop-filter: none;
   }
 
+  /* ── Modal image skeleton ── */
+  .modal-img-wrap {
+    position: relative;
+    min-height: 220px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #111111, #0d0d0d);
+    border-bottom: 1px solid rgba(155,157,160,0.14);
+  }
+  .modal-img-wrap::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255,255,255,0.05) 40%,
+      rgba(255,255,255,0.09) 50%,
+      rgba(255,255,255,0.05) 60%,
+      transparent 100%);
+    background-size: 200% 100%;
+    animation: img-shimmer 1.6s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .modal-img-wrap.loaded::after { display: none; }
+  @keyframes img-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  #productModalImage {
+    display: block;
+    width: 100%;
+    height: auto;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  #productModalImage.img-ready { opacity: 1; }
+
   /* ── Scrollbars ── */
   .hide-scrollbar::-webkit-scrollbar { display: none; }
   .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -587,8 +624,8 @@
         <h2 id="productModalTitle" style="font-family:var(--fn-display);font-size:28px;letter-spacing:0.10em;color:var(--silver);line-height:1;"></h2>
         <button id="closeProductModal" style="color:var(--silver-dim);font-size:20px;line-height:1;background:none;border:none;cursor:pointer;padding:4px;font-family:var(--fn-body);flex-shrink:0;">✕</button>
       </div>
-      <div class="relative w-full">
-        <img id="productModalImage" class="w-full" style="height:auto;display:block;border-radius:3px;border-bottom:1px solid rgba(155,157,160,0.14);" alt="" onerror="this.onerror=null;this.src=PLACEHOLDER_IMG" />
+      <div class="relative w-full modal-img-wrap" id="modalImgWrap">
+        <img id="productModalImage" alt="" onerror="this.onerror=null;this.src=PLACEHOLDER_IMG;this.classList.add('img-ready');document.getElementById('modalImgWrap').classList.add('loaded');" />
         <button id="carouselPrev" class="hidden absolute top-1/2 -translate-y-1/2 flex items-center justify-center" style="left:10px;width:36px;height:36px;background:rgba(7,7,12,0.62);border:1px solid rgba(155,155,180,0.28);color:var(--silver);font-size:20px;border-radius:3px;cursor:pointer;">‹</button>
         <button id="carouselNext" class="hidden absolute top-1/2 -translate-y-1/2 flex items-center justify-center" style="right:10px;width:36px;height:36px;background:rgba(7,7,12,0.62);border:1px solid rgba(155,155,180,0.28);color:var(--silver);font-size:20px;border-radius:3px;cursor:pointer;">›</button>
         <div id="carouselCounter" class="hidden absolute bottom-10 right-10" style="background:rgba(7,7,12,0.65);border:1px solid rgba(155,155,180,0.22);color:var(--silver-dim);font-family:var(--fn-body);font-size:11px;letter-spacing:0.08em;padding:3px 8px;border-radius:3px;"></div>
@@ -653,8 +690,13 @@
       const images = (product?.images?.length ? product.images : [product?.image]).filter(Boolean);
       const idx = state.selectedImageIndex;
 
-      document.getElementById('productModalImage').src = esc(images[idx] || '');
-      document.getElementById('productModalImage').alt = esc(product?.title || '');
+      const img = document.getElementById('productModalImage');
+      const wrap = document.getElementById('modalImgWrap');
+      img.classList.remove('img-ready');
+      wrap.classList.remove('loaded');
+      img.onload = () => { img.classList.add('img-ready'); wrap.classList.add('loaded'); };
+      img.src = esc(images[idx] || '');
+      img.alt = esc(product?.title || '');
 
       const multi = images.length > 1;
       document.getElementById('carouselPrev').classList.toggle('hidden', !multi);

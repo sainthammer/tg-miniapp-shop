@@ -41,6 +41,7 @@ from db import (
     get_all_products,
     get_all_user_ids,
     get_categories,
+    count_orders,
     get_order,
     get_order_status_keys,
     get_product_map,
@@ -444,10 +445,24 @@ def create_order():
 
 @app.route("/api/admin/orders")
 def api_admin_orders():
-    """Return admin order list."""
+    """Return admin order list with pagination."""
     try:
         require_admin_context()
-        return jsonify({"ok": True, "items": list_orders(100)})
+        per_page = 15
+        page = max(1, int(request.args.get("page", 1)))
+        search = request.args.get("search", "").strip()
+        field = request.args.get("field", "number")
+        offset = (page - 1) * per_page
+        items = list_orders(per_page, offset, search, field)
+        total = count_orders(search, field)
+        return jsonify({
+            "ok": True,
+            "items": items,
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "total_pages": max(1, -(-total // per_page)),
+        })
     except PermissionError as exc:
         return json_error(str(exc), 403)
     except Exception as exc:

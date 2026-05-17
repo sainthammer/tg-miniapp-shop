@@ -551,23 +551,53 @@ def add_order(order_data: dict[str, Any]) -> dict[str, Any]:
     return get_order(assigned_number)
 
 
-def list_orders(limit: int = 50) -> list[dict[str, Any]]:
+def _order_search_clause(search: str, field: str) -> tuple[str, tuple]:
+    q = f"%{search.lower().lstrip('@')}%"
+    clauses = {
+        "number":   ("(order_number || '') LIKE ?", (f"%{search}%",)),
+        "name":     ("LOWER(COALESCE(customer_name, '')) LIKE ?", (q,)),
+        "phone":    ("LOWER(COALESCE(customer_phone, '')) LIKE ?", (q,)),
+        "telegram": ("REPLACE(LOWER(COALESCE(customer_telegram_link, '')), '@', '') LIKE ?", (q,)),
+    }
+    return clauses.get(field, clauses["number"])
+
+
+def count_orders(search: str = "", field: str = "number") -> int:
     with get_connection() as conn:
-        rows = conn.execute(
-            """
-            SELECT
-                order_number,
-                status,
-                customer_name,
-                total,
-                created_at,
-                telegram_user_id
-            FROM orders
-            ORDER BY order_number DESC
-            LIMIT ?
-            """,
-            (limit,),
-        ).fetchall()
+        if search:
+            clause, params = _order_search_clause(search, field)
+            return conn.execute(
+                f"SELECT COUNT(*) FROM orders WHERE {clause}", params
+            ).fetchone()[0]
+        return conn.execute("SELECT COUNT(*) FROM orders").fetchone()[0]
+
+
+def list_orders(limit: int = 20, offset: int = 0, search: str = "", field: str = "number") -> list[dict[str, Any]]:
+    with get_connection() as conn:
+        if search:
+            clause, params = _order_search_clause(search, field)
+            rows = conn.execute(
+                f"""
+                SELECT order_number, status, customer_name, customer_phone,
+                       customer_telegram_link, total, created_at, telegram_user_id
+                FROM orders
+                WHERE {clause}
+                ORDER BY order_number DESC
+                LIMIT ? OFFSET ?
+                """,
+                (*params, limit, offset),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """
+                SELECT order_number, status, customer_name, customer_phone,
+                       customer_telegram_link, total, created_at, telegram_user_id
+                FROM orders
+                ORDER BY order_number DESC
+                LIMIT ? OFFSET ?
+                """,
+                (limit, offset),
+            ).fetchall()
     return [dict(row) for row in rows]
 
 

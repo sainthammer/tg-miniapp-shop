@@ -338,6 +338,21 @@
     </header>
 
     <section id="ordersScreen">
+      <div style="margin-bottom:12px;display:flex;gap:8px;">
+        <select id="orderSearchField" class="rounded-2xl bg-white/10 border border-white/10 px-3 py-3 outline-none" style="flex-shrink:0;">
+          <option value="number">Номер</option>
+          <option value="name">Имя</option>
+          <option value="phone">Телефон</option>
+          <option value="telegram">Telegram</option>
+        </select>
+        <input
+          id="orderSearchInput"
+          class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none"
+          style="flex:1;min-width:0;"
+          placeholder="Введите значение"
+          autocomplete="off"
+        />
+      </div>
       <div id="ordersList" class="space-y-3"></div>
     </section>
 
@@ -374,13 +389,17 @@
         </div>
       </div>
 
-      <div style="margin-bottom:12px;">
+      <div style="margin-bottom:12px;display:flex;gap:8px;">
         <input
           id="productSearchInput"
-          class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none"
+          class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none"
+          style="flex:1;min-width:0;"
           placeholder="Поиск по названию"
           autocomplete="off"
         />
+        <select id="productCategoryFilter" class="rounded-2xl bg-white/10 border border-white/10 px-3 py-3 outline-none" style="flex-shrink:0;max-width:140px;">
+          <option value="">Все категории</option>
+        </select>
       </div>
 
       <div id="productsList" class="space-y-3"></div>
@@ -548,6 +567,9 @@
     const state = {
       tab: 'orders',
       orders: [],
+      ordersPage: 1,
+      ordersTotalPages: 1,
+      ordersTotal: 0,
       products: [],
       categories: [],
       editingProductId: null,
@@ -616,9 +638,13 @@
 
       // Сбрасываем поиск при переключении таба
       const searchInput = document.getElementById('productSearchInput');
-      if (searchInput) {
-        searchInput.value = '';
-      }
+      if (searchInput) searchInput.value = '';
+      const categoryFilter = document.getElementById('productCategoryFilter');
+      if (categoryFilter) categoryFilter.value = '';
+      const orderSearch = document.getElementById('orderSearchInput');
+      if (orderSearch) orderSearch.value = '';
+      const orderField = document.getElementById('orderSearchField');
+      if (orderField) orderField.value = 'number';
 
       ordersScreen.classList.toggle('hidden', tab !== 'orders');
       productsScreen.classList.toggle('hidden', tab !== 'products');
@@ -654,9 +680,18 @@
       return data;
     }
 
-    async function loadOrders() {
-      const data = await apiGet('/api/admin/orders');
+    let _ordersRequestId = 0;
+
+    async function loadOrders(page = state.ordersPage) {
+      state.ordersPage = page;
+      const search = encodeURIComponent((document.getElementById('orderSearchInput')?.value || '').trim());
+      const field = document.getElementById('orderSearchField')?.value || 'number';
+      const requestId = ++_ordersRequestId;
+      const data = await apiGet(`/api/admin/orders?page=${page}&search=${search}&field=${field}`);
+      if (requestId !== _ordersRequestId) return;
       state.orders = data.items;
+      state.ordersTotalPages = data.total_pages;
+      state.ordersTotal = data.total;
       renderOrders();
     }
 
@@ -677,6 +712,11 @@
 
       if (!state.orders.length) {
         root.innerHTML = `<div class="glass rounded-[22px] p-6" style="color:var(--silver-dim);font-family:var(--fn-body);font-size:14px;letter-spacing:0.04em;">Заказов пока нет.</div>`;
+        return;
+      }
+
+      if (!state.orders.length) {
+        root.innerHTML = `<div class="glass rounded-[22px] p-6" style="color:var(--silver-dim);font-family:var(--fn-body);font-size:14px;letter-spacing:0.04em;">Ничего не найдено.</div>`;
         return;
       }
 
@@ -708,6 +748,24 @@
           </div>
         </article>
       `).join('');
+
+      if (state.ordersTotalPages > 1) {
+        const p = state.ordersPage;
+        const total = state.ordersTotalPages;
+        const btnStyle = `font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:9px 16px;border-radius:3px;cursor:pointer;`;
+        const activeStyle = `${btnStyle}background:linear-gradient(180deg,#2a2a2a,#1a1a1a);border:1px solid rgba(192,195,198,0.30);border-top-color:rgba(218,220,224,0.42);color:var(--silver);`;
+        const disabledStyle = `${btnStyle}background:linear-gradient(180deg,#181818,#141414);border:1px solid rgba(140,141,143,0.14);color:var(--silver-faint);cursor:default;`;
+
+        root.insertAdjacentHTML('afterend', `
+          <div id="ordersPagination" style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;">
+            <button onclick="loadOrders(${p - 1})" ${p <= 1 ? 'disabled' : ''} style="${p <= 1 ? disabledStyle : activeStyle}">← Назад</button>
+            <span style="font-family:var(--fn-body);font-size:12px;color:var(--silver-dim);letter-spacing:0.06em;">${p} / ${total} · всего ${state.ordersTotal}</span>
+            <button onclick="loadOrders(${p + 1})" ${p >= total ? 'disabled' : ''} style="${p >= total ? disabledStyle : activeStyle}">Вперёд →</button>
+          </div>
+        `);
+      } else {
+        document.getElementById('ordersPagination')?.remove();
+      }
     }
 
     async function openOrderDetails(orderNumber) {
@@ -770,14 +828,20 @@
           <div style="${labelStyle}">Данные заказчика</div>
           <div style="${metaStyle}"><span style="color:var(--silver-faint);">Имя:</span> <span style="color:var(--silver);">${esc(order.customer_name || 'Не указано')}</span></div>
           <div style="${metaStyle}"><span style="color:var(--silver-faint);">Телефон:</span> <span style="color:var(--silver);">${esc(order.customer_phone || 'Не указано')}</span></div>
-          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Telegram:</span> <span style="color:var(--silver);">${esc(order.customer_telegram_link || 'Не указано')}</span></div>
+          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Telegram:</span> ${order.customer_telegram_link
+            ? `<a onclick="tg?.openTelegramLink?.('https://t.me/${esc(order.customer_telegram_link.replace(/^@/, ''))}');return false;" href="#" style="color:var(--brass-dim);text-decoration:underline;cursor:pointer;">${esc(order.customer_telegram_link)}</a>`
+            : `<span style="color:var(--silver);">Не указано</span>`
+          }</div>
           <div style="${metaStyle}"><span style="color:var(--silver-faint);">Комментарий:</span> <span style="color:var(--silver);">${esc(order.customer_comment || '—')}</span></div>
         </div>
 
         <div style="${panelStyle}display:flex;flex-direction:column;gap:7px;">
           <div style="${labelStyle}">Telegram</div>
           <div style="${metaStyle}"><span style="color:var(--silver-faint);">User ID:</span> <span style="color:var(--silver);">${esc(String(order.telegram_user_id || '—'))}</span></div>
-          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Username:</span> <span style="color:var(--silver);">${order.telegram_username ? '@' + esc(order.telegram_username) : '—'}</span></div>
+          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Username:</span> ${order.telegram_username
+            ? `<a onclick="tg?.openTelegramLink?.('https://t.me/${esc(order.telegram_username)}');return false;" href="#" style="color:var(--brass-dim);text-decoration:underline;cursor:pointer;">@${esc(order.telegram_username)}</a>`
+            : '—'
+          }</div>
           <div style="${metaStyle}"><span style="color:var(--silver-faint);">Создан:</span> <span style="color:var(--silver);">${esc(formatDate(order.created_at))}</span></div>
         </div>
 
@@ -866,11 +930,12 @@
     function renderProducts() {
       const root = document.getElementById('productsList');
 
-      // Фильтруем по текущему тексту поиска (case-insensitive)
       const query = (document.getElementById('productSearchInput')?.value || '').trim().toLowerCase();
-      const visible = query
-        ? state.products.filter(p => p.title.toLowerCase().includes(query))
-        : state.products;
+      const category = (document.getElementById('productCategoryFilter')?.value || '');
+      const visible = state.products.filter(p =>
+        (!query || p.title.toLowerCase().includes(query)) &&
+        (!category || p.category === category)
+      );
 
       if (!state.products.length) {
         root.innerHTML = `<div class="glass rounded-[22px] p-6" style="color:var(--silver-dim);font-family:var(--fn-body);font-size:14px;letter-spacing:0.04em;">Товаров пока нет.</div>`;
@@ -930,6 +995,12 @@
         state.categories.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
       document.getElementById('newProductCategory').innerHTML = options;
       document.getElementById('editProductCategory').innerHTML = options;
+
+      const filter = document.getElementById('productCategoryFilter');
+      const current = filter.value;
+      filter.innerHTML = '<option value="">Все категории</option>' +
+        state.categories.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+      filter.value = current;
     }
 
     function renderImageList(listId, images) {
@@ -1195,6 +1266,22 @@
       renderProducts();
     });
 
+    document.getElementById('productCategoryFilter').addEventListener('change', () => {
+      renderProducts();
+    });
+
+    let _orderSearchTimer = null;
+    function _triggerOrderSearch() {
+      clearTimeout(_orderSearchTimer);
+      _orderSearchTimer = setTimeout(() => { state.ordersPage = 1; loadOrders(1); }, 350);
+    }
+    document.getElementById('orderSearchInput').addEventListener('input', _triggerOrderSearch);
+    document.getElementById('orderSearchField').addEventListener('change', () => {
+      document.getElementById('orderSearchInput').value = '';
+      state.ordersPage = 1;
+      loadOrders(1);
+    });
+
     document.getElementById('closeEditProductModal').addEventListener('click', closeEditProductModal);
     document.getElementById('cancelEditProductBtn').addEventListener('click', closeEditProductModal);
     document.getElementById('saveEditProductBtn').addEventListener('click', saveEditedProduct);
@@ -1223,6 +1310,7 @@
       }
     });
 
+    window.loadOrders = loadOrders;
     window.changeOrderStatus = changeOrderStatus;
     window.hideProduct = hideProduct;
     window.showProduct = showProduct;
