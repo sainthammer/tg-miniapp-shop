@@ -723,12 +723,9 @@
       const root = document.getElementById('ordersList');
 
       if (!state.orders.length) {
-        root.innerHTML = `<div class="glass rounded-[22px] p-6" style="color:var(--silver-dim);font-family:var(--fn-body);font-size:14px;letter-spacing:0.04em;">Заказов пока нет.</div>`;
-        return;
-      }
-
-      if (!state.orders.length) {
-        root.innerHTML = `<div class="glass rounded-[22px] p-6" style="color:var(--silver-dim);font-family:var(--fn-body);font-size:14px;letter-spacing:0.04em;">Ничего не найдено.</div>`;
+        const hasSearch = (document.getElementById('orderSearchInput')?.value || '').trim().length > 0;
+        const msg = hasSearch ? 'Ничего не найдено.' : 'Заказов пока нет.';
+        root.innerHTML = `<div class="glass rounded-[22px] p-6" style="color:var(--silver-dim);font-family:var(--fn-body);font-size:14px;letter-spacing:0.04em;">${msg}</div>`;
         return;
       }
 

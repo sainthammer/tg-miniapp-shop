@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from threading import Thread
-from urllib.parse import parse_qsl
+from urllib.parse import parse_qsl, urlencode
 
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.client.default import DefaultBotProperties
@@ -207,13 +207,12 @@ def build_admin_keyboard() -> ReplyKeyboardMarkup:
 
 def _build_url(base: str, **params) -> str:
     """Build URL, auto-adding ngrok browser warning bypass when needed."""
-    sep = "&" if "?" in base else "?"
     if "ngrok" in base:
         params["ngrok-skip-browser-warning"] = "true"
     if not params:
         return base
-    query = "&".join(f"{k}={v}" for k, v in params.items())
-    return f"{base}{sep}{query}"
+    sep = "&" if "?" in base else "?"
+    return f"{base}{sep}{urlencode(params)}"
 
 
 def build_store_inline() -> InlineKeyboardMarkup:
@@ -635,8 +634,11 @@ def api_admin_delete_product(product_id: int):
         ok = delete_product(product_id)
         if not ok:
             return json_error("Product not found", 404)
+        upload_dir = UPLOAD_DIR.resolve()
         for rel_path in image_paths:
-            abs_path = BASE_DIR / rel_path.lstrip("/")
+            abs_path = (BASE_DIR / rel_path.lstrip("/")).resolve()
+            if not abs_path.is_relative_to(upload_dir):
+                continue
             try:
                 abs_path.unlink(missing_ok=True)
             except OSError:
@@ -911,15 +913,15 @@ async def send_db_backup() -> None:
 
     buf = io.BytesIO()
     src = sqlite3.connect(str(DB_PATH))
+    dst = sqlite3.connect(":memory:")
     try:
-        src.backup(sqlite3.connect(":memory:"), pages=-1)  # warm up page cache
-        dst = sqlite3.connect(":memory:")
         src.backup(dst, pages=-1)
         dst.execute("VACUUM")
         buf.write("\n".join(dst.iterdump()).encode())
         buf.seek(0)
     finally:
         src.close()
+        dst.close()
 
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M")
     filename = f"shop_backup_{ts}.sql"

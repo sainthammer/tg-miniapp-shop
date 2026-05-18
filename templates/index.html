@@ -1197,13 +1197,25 @@
     }
 
     async function loadProducts() {
-      const response = await fetch('/api/products');
-      state.products = await response.json();
+      try {
+        const response = await fetch('/api/products');
+        if (!response.ok) throw new Error('server error');
+        state.products = await response.json();
+      } catch {
+        state.products = [];
+        document.getElementById('catalogScreen').innerHTML =
+          `<div class="glass rounded-[22px] p-6 col-span-2" style="color:var(--silver-dim);font-size:14px;">Не удалось загрузить товары. Попробуй позже.</div>`;
+      }
     }
 
     async function loadCategories() {
-      const response = await fetch('/api/categories');
-      state.categories = await response.json();
+      try {
+        const response = await fetch('/api/categories');
+        if (!response.ok) throw new Error('server error');
+        state.categories = await response.json();
+      } catch {
+        state.categories = [];
+      }
     }
 
     async function loadMyOrders() {
@@ -1308,7 +1320,7 @@
     }
 
     function openManager() {
-      const link = `{{ manager_link }}`;
+      const link = {{ manager_link | tojson }};
       if (tg?.openTelegramLink) {
         tg.openTelegramLink(link);
         return;
