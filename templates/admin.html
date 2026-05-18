@@ -319,10 +319,18 @@
     display: -webkit-box; -webkit-line-clamp: 2;
     -webkit-box-orient: vertical; overflow: hidden;
   }
+
+  /* ── Telegram fullscreen safe areas ── */
+  .safe-top {
+    padding-top: max(12px, calc(var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px)));
+  }
+  .modal-safe-top {
+    padding-top: max(16px, calc(var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px))) !important;
+  }
   </style>
 </head>
 <body>
-  <div class="max-w-6xl mx-auto px-3 pt-3 pb-36">
+  <div class="max-w-6xl mx-auto px-3 safe-top pb-36">
 
     <header class="site-header mb-4">
       <div class="site-header__inner">
@@ -479,7 +487,7 @@
   </div>
 
   <!-- Edit product modal -->
-  <div id="editProductModal" class="hidden fixed inset-0 z-[60] p-4 overflow-auto" style="background:rgba(4,4,8,0.74);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);">
+  <div id="editProductModal" class="hidden fixed inset-0 z-[60] p-4 overflow-auto modal-safe-top" style="background:rgba(4,4,8,0.74);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);">
     <div class="max-w-lg mx-auto mt-6 mb-28 glass rounded-[28px] p-5 shadow-2xl">
       <div class="flex items-center justify-between gap-3 mb-5">
         <h2 style="font-family:var(--fn-display);font-size:26px;letter-spacing:0.10em;color:var(--silver);line-height:1;">Редактирование товара</h2>
@@ -511,7 +519,7 @@
   </div>
 
   <!-- Order details modal -->
-  <div id="orderDetailsModal" class="hidden fixed inset-0 z-[60] p-4 overflow-auto" style="background:rgba(4,4,8,0.74);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);">
+  <div id="orderDetailsModal" class="hidden fixed inset-0 z-[60] p-4 overflow-auto modal-safe-top" style="background:rgba(4,4,8,0.74);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);">
     <div class="max-w-2xl mx-auto mt-6 mb-28 glass rounded-[28px] p-5 shadow-2xl">
       <div class="flex items-center justify-between gap-3 mb-5">
         <h2 style="font-family:var(--fn-display);font-size:26px;letter-spacing:0.10em;color:var(--silver);line-height:1;">Детали заказа</h2>
@@ -536,6 +544,10 @@
     tg?.ready();
     tg?.expand();
     tg?.disableVerticalSwipes?.();
+    tg?.requestFullscreen?.();
+    tg?.onEvent?.('fullscreenChanged', () => {
+      requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    });
 
     document.getElementById('openStoreBtn').addEventListener('click', () => {
       window.location.href = '/';

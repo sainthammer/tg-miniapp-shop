@@ -205,13 +205,25 @@ def build_admin_keyboard() -> ReplyKeyboardMarkup:
     )
 
 
+def _build_url(base: str, **params) -> str:
+    """Build URL, auto-adding ngrok browser warning bypass when needed."""
+    sep = "&" if "?" in base else "?"
+    if "ngrok" in base:
+        params["ngrok-skip-browser-warning"] = "true"
+    if not params:
+        return base
+    query = "&".join(f"{k}={v}" for k, v in params.items())
+    return f"{base}{sep}{query}"
+
+
 def build_store_inline() -> InlineKeyboardMarkup:
     """Build inline button that opens the customer Mini App."""
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Открыть магазин", web_app=WebAppInfo(url=APP_URL)
+                    text="Открыть магазин",
+                    web_app=WebAppInfo(url=_build_url(APP_URL)),
                 )
             ]
         ]
@@ -225,7 +237,7 @@ def build_admin_inline() -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton(
                     text="Открыть админку",
-                    web_app=WebAppInfo(url=f"{APP_URL.rstrip('/')}?mode=admin"),
+                    web_app=WebAppInfo(url=_build_url(APP_URL.rstrip("/"), mode="admin")),
                 )
             ]
         ]
@@ -277,6 +289,7 @@ def require_admin_context() -> dict:
 # =========================================================
 # Flask page routes
 # =========================================================
+
 
 
 @app.route("/")
