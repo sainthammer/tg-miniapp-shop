@@ -8,5 +8,8 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./shop.db:/app/shop.db
+      - shop_data:/app/data
       - ./static/uploads:/app/static/uploads
+
+volumes:
+  shop_data:

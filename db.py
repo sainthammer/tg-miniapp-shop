@@ -5,7 +5,9 @@ from pathlib import Path
 from typing import Any
 
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "shop.db"
+_DATA_DIR = BASE_DIR / "data"
+_DATA_DIR.mkdir(parents=True, exist_ok=True)
+DB_PATH = _DATA_DIR / "shop.db"
 
 ORDER_STATUSES = {
     "new": "Новый",

@@ -91,7 +91,7 @@ def _parse_admin_ids() -> set[int]:
 
 ADMIN_CHAT_IDS: set[int] = _parse_admin_ids()
 
-DB_PATH = BASE_DIR / "shop.db"
+DB_PATH = BASE_DIR / "data" / "shop.db"
 BACKUP_HOUR_MSK = 22  # час отправки бэкапа по МСК (UTC+3)
 
 # =========================================================
