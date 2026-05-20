@@ -536,6 +536,12 @@
           style="font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--silver-dim);background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.20);border-radius:3px;cursor:pointer;">Завершён</button>
         <button onclick="changeStatusFromModal('cancelled')" class="rounded-xl bg-red-500/80 px-4 py-3 text-sm font-medium">Отменён</button>
       </div>
+      <div class="mt-3">
+        <button onclick="deleteOrderFromModal()"
+          style="width:100%;background:linear-gradient(180deg,#4a0e0e 0%,#2e0808 100%);border:1px solid rgba(210,70,70,0.28);color:#e8a0a0;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:10px 16px;border-radius:3px;cursor:pointer;">
+          Удалить заказ
+        </button>
+      </div>
     </div>
   </div>
 
@@ -752,6 +758,10 @@
               <button onclick="changeOrderStatus(${order.order_number}, 'confirmed')"
                 style="background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.20);color:var(--silver-dim);font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:8px 14px;border-radius:3px;cursor:pointer;">
                 Подтвердить
+              </button>
+              <button onclick="deleteOrder(${order.order_number})"
+                style="background:linear-gradient(180deg,#4a0e0e 0%,#2e0808 100%);border:1px solid rgba(210,70,70,0.28);color:#e8a0a0;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:8px 14px;border-radius:3px;cursor:pointer;">
+                Удалить
               </button>
             </div>
           </div>
@@ -1110,6 +1120,33 @@
       });
     }
 
+    async function deleteOrder(orderNumber) {
+      tg?.showConfirm(`Удалить заказ #${orderNumber}? Это действие необратимо.`, async (confirmed) => {
+        if (!confirmed) return;
+        try {
+          await apiPost(`/api/admin/orders/${orderNumber}/delete`);
+          await loadOrders();
+        } catch (error) {
+          tg?.showAlert?.(error.message);
+        }
+      });
+    }
+
+    async function deleteOrderFromModal() {
+      if (!state.selectedOrder) return;
+      const orderNumber = state.selectedOrder.order_number;
+      tg?.showConfirm(`Удалить заказ #${orderNumber}? Это действие необратимо.`, async (confirmed) => {
+        if (!confirmed) return;
+        try {
+          await apiPost(`/api/admin/orders/${orderNumber}/delete`);
+          closeOrderDetails();
+          await loadOrders();
+        } catch (error) {
+          tg?.showAlert?.(error.message);
+        }
+      });
+    }
+
     async function deleteCategory(categoryId, categoryName) {
       tg?.showConfirm(`Удалить категорию «${categoryName}»? Это действие необратимо.`, async (confirmed) => {
         if (!confirmed) return;
@@ -1321,6 +1358,8 @@
 
     window.loadOrders = loadOrders;
     window.changeOrderStatus = changeOrderStatus;
+    window.deleteOrder = deleteOrder;
+    window.deleteOrderFromModal = deleteOrderFromModal;
     window.hideProduct = hideProduct;
     window.showProduct = showProduct;
     window.deleteProduct = deleteProduct;

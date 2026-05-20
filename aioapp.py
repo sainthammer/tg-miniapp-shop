@@ -35,6 +35,7 @@ from db import (
     add_product,
     deactivate_product,
     delete_category,
+    delete_order,
     delete_product,
     get_product_image_paths,
     get_active_products,
@@ -644,6 +645,21 @@ def api_admin_delete_product(product_id: int):
                 abs_path.unlink(missing_ok=True)
             except OSError:
                 pass
+        return jsonify({"ok": True})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/orders/<int:order_number>/delete", methods=["POST"])
+def api_admin_delete_order(order_number: int):
+    """Delete order and its items from the database."""
+    try:
+        require_admin_context()
+        ok = delete_order(order_number)
+        if not ok:
+            return json_error("Order not found", 404)
         return jsonify({"ok": True})
     except PermissionError as exc:
         return json_error(str(exc), 403)

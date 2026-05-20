@@ -633,6 +633,19 @@ def get_order(order_number: int) -> dict[str, Any] | None:
     return result
 
 
+def delete_order(order_number: int) -> bool:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT id FROM orders WHERE order_number = ?", (order_number,)
+        ).fetchone()
+        if not row:
+            return False
+        conn.execute("DELETE FROM order_items WHERE order_id = ?", (row["id"],))
+        conn.execute("DELETE FROM orders WHERE id = ?", (row["id"],))
+        conn.commit()
+    return True
+
+
 def update_order_status(order_number: int, status: str):
     with get_connection() as conn:
         cur = conn.execute(
