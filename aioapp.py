@@ -150,13 +150,14 @@ def send_admin_message(text: str) -> None:
     if BOT_LOOP is None or not BOT_LOOP.is_running():
         _admin_msg_queue.put(text)
         return
-    asyncio.run_coroutine_threadsafe(
-        asyncio.gather(
+
+    async def _send():
+        await asyncio.gather(
             *[bot.send_message(admin_id, text) for admin_id in ADMIN_CHAT_IDS],
             return_exceptions=True,
-        ),
-        BOT_LOOP,
-    )
+        )
+
+    asyncio.run_coroutine_threadsafe(_send(), BOT_LOOP)
 
 
 async def _drain_admin_queue() -> None:
@@ -957,7 +958,10 @@ def run_bot() -> None:
     """Start aiogram polling in a dedicated event loop."""
 
     async def _main():
-        await log_bot_info()
+        try:
+            await log_bot_info()
+        except Exception as exc:
+            print(f"WARN: could not fetch bot info (network issue?): {exc}")
         await bot.delete_webhook(drop_pending_updates=True)
         if ADMIN_CHAT_IDS:
             await _drain_admin_queue()

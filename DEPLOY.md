@@ -9,7 +9,7 @@
 ---
 
 ## Требования к серверу
-- Ubuntu 22.04 / Debian 12
+- Debian 11 (bullseye)
 - 1 vCPU / 512 MB RAM (минимум)
 - Белый IP
 - Домен или поддомен, направленный A-записью на IP сервера
@@ -26,8 +26,28 @@ ssh root@YOUR_SERVER_IP
 
 ## Шаг 2. Установить Docker
 
+На Debian 11 пакет `docker.io` из стандартных репозиториев устаревший — ставим из официального репозитория Docker.
+
 ```bash
-sudo apt update && sudo apt install -y docker.io docker-compose-v2
+# Зависимости
+sudo apt update
+sudo apt install -y ca-certificates curl gnupg
+
+# GPG-ключ Docker
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+# Репозиторий Docker
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Установить Docker Engine + Compose plugin
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
 sudo systemctl enable --now docker
 ```
 
@@ -41,9 +61,29 @@ docker compose version
 
 ## Шаг 3. Загрузить проект на сервер
 
-**Вариант A — через Git:**
+**Вариант A — через Git (по SSH):**
+
+Сначала создать SSH-ключ на сервере и добавить его в GitHub:
+
 ```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git /root/xtinct-shop
+# Сгенерировать ключ (Enter три раза, без пароля)
+ssh-keygen -t ed25519 -C "deploy@xtinct-shop"
+
+# Показать публичный ключ — скопировать его
+cat ~/.ssh/id_ed25519.pub
+```
+
+Открыть в браузере: **GitHub → Settings → SSH and GPG keys → New SSH key**, вставить скопированный ключ.
+
+Проверить, что доступ работает:
+```bash
+ssh -T git@github.com
+# Ответ: Hi YOUR_USERNAME! You've successfully authenticated...
+```
+
+Клонировать репозиторий:
+```bash
+git clone git@github.com:YOUR_USERNAME/YOUR_REPO.git /root/xtinct-shop
 cd /root/xtinct-shop
 ```
 
@@ -147,8 +187,18 @@ sudo systemctl restart nginx
 
 ## Шаг 7. Выпустить SSL-сертификат
 
+На Debian 11 Certbot рекомендуется ставить через snap (apt-версия устарела).
+
 ```bash
-sudo apt install -y certbot python3-certbot-nginx
+# Установить snapd
+sudo apt install -y snapd
+sudo snap install core && sudo snap refresh core
+
+# Установить Certbot
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+
+# Выпустить сертификат
 sudo certbot --nginx -d your-domain.com
 ```
 
