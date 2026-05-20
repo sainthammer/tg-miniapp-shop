@@ -552,6 +552,18 @@
     </header>
 
     <section id="catalogFilters" class="mb-4">
+      <div style="position:relative;margin-bottom:10px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:rgba(148,150,158,0.44);pointer-events:none;z-index:1;">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input
+          id="catalogSearch"
+          type="search"
+          placeholder="Поиск по названию"
+          autocomplete="off"
+          style="width:100%;padding:10px 14px 10px 36px;border-radius:3px;outline:none;"
+        />
+      </div>
       <div id="categories" class="flex gap-2 overflow-auto hide-scrollbar pb-1"></div>
     </section>
 
@@ -734,6 +746,7 @@
       products: [],
       categories: [],
       category: 'Все',
+      search: '',
       activeTab: 'catalog',
       cart: loadJson('mini_shop_cart', {}),
       favorites: loadJson('mini_shop_favorites', []),
@@ -911,6 +924,11 @@
     function setTab(tab) {
       state.activeTab = tab;
       window.scrollTo({ top: 0, behavior: 'instant' });
+      if (tab !== 'catalog') {
+        state.search = '';
+        const si = document.getElementById('catalogSearch');
+        if (si) si.value = '';
+      }
 
       catalogScreen.classList.toggle('hidden', tab !== 'catalog');
       favoritesScreen.classList.toggle('hidden', tab !== 'favorites');
@@ -1061,13 +1079,24 @@
     }
 
     function renderCatalog() {
-      const list = state.category === 'Все'
-        ? state.products
-        : state.products.filter((item) => item.category === state.category);
+      const words = state.search.toLowerCase().split(/\s+/).filter(Boolean);
+      const list = state.products.filter((item) => {
+        const matchCat = state.category === 'Все' || item.category === state.category;
+        const tokens = (item.title + ' ' + item.category).toLowerCase().split(/\s+/);
+        const matchSearch = words.length === 0 || words.every(w => {
+          const stem = w.length > 3 ? w.slice(0, -1) : w;
+          return tokens.some(t => t.startsWith(stem));
+        });
+        return matchCat && matchSearch;
+      });
+
+      const empty = words.length > 0
+        ? 'Ничего не найдено.'
+        : 'В этой категории товаров пока нет.';
 
       catalogScreen.innerHTML = list.length
         ? list.map(productCard).join('')
-        : `<div class="glass rounded-[28px] p-6 col-span-full" style="color:var(--silver-dim);">В этой категории товаров пока нет.</div>`;
+        : `<div class="glass rounded-[28px] p-6 col-span-full" style="color:var(--silver-dim);">${empty}</div>`;
     }
 
     function renderFavorites() {
@@ -1417,6 +1446,11 @@
     window.openProductModal = openProductModal;
     window.selectProductSize = selectProductSize;
     window.quickAdd = quickAdd;
+
+    document.getElementById('catalogSearch').addEventListener('input', (e) => {
+      state.search = e.target.value.trim();
+      renderCatalog();
+    });
 
     document.getElementById('carouselPrev').addEventListener('click', () => carouselStep(-1));
     document.getElementById('carouselNext').addEventListener('click', () => carouselStep(1));
