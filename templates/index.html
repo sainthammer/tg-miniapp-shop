@@ -890,19 +890,10 @@
       if (!state.cart[key]) {
         state.cart[key] = { ...product, size: chosenSize, quantity: 1, cartKey: key };
       } else {
-        state.cart[key].quantity += 1;
+        tg?.showAlert?.('Этот товар уже в корзине');
+        return;
       }
 
-      saveJson('mini_shop_cart', state.cart);
-      updateCounters();
-      renderAll();
-    }
-
-    function changeQty(cartKey, delta) {
-      const item = state.cart[cartKey];
-      if (!item) return;
-      item.quantity += delta;
-      if (item.quantity <= 0) delete state.cart[cartKey];
       saveJson('mini_shop_cart', state.cart);
       updateCounters();
       renderAll();
@@ -1132,13 +1123,6 @@
             <div style="font-family:var(--fn-display);font-weight:800;font-size:20px;letter-spacing:0.04em;color:var(--silver);margin-top:4px;line-height:1;">${formatPrice(item.price)}</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0;">
-            <div style="display:grid;grid-template-columns:38px 48px 38px;gap:4px;">
-              <button onclick="changeQty(${esc(JSON.stringify(item.cartKey))}, -1)"
-                style="background:linear-gradient(180deg,#222222,#181818);border:1px solid rgba(140,141,143,0.26);border-top-color:rgba(192,195,198,0.30);color:var(--silver);font-family:var(--fn-body);font-size:18px;border-radius:3px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;">−</button>
-              <div style="background:linear-gradient(to bottom,#141414,#101010);border:1px solid rgba(138,138,162,0.22);color:var(--silver);font-family:var(--fn-display);font-weight:800;font-size:20px;border-radius:3px;height:38px;display:flex;align-items:center;justify-content:center;letter-spacing:0.04em;">${item.quantity}</div>
-              <button onclick="changeQty(${esc(JSON.stringify(item.cartKey))}, 1)"
-                style="background:linear-gradient(180deg,#222222,#181818);border:1px solid rgba(140,141,143,0.26);border-top-color:rgba(192,195,198,0.30);color:var(--silver);font-family:var(--fn-body);font-size:18px;border-radius:3px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;">+</button>
-            </div>
             <button onclick="removeFromCart(${esc(JSON.stringify(item.cartKey))})"
               style="font-family:var(--fn-body);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--silver-faint);background:none;border:none;cursor:pointer;padding:2px 0;">Удалить</button>
           </div>
@@ -1441,7 +1425,6 @@
 
     window.setCategory = setCategory;
     window.toggleFavorite = toggleFavorite;
-    window.changeQty = changeQty;
     window.removeFromCart = removeFromCart;
     window.openProductModal = openProductModal;
     window.selectProductSize = selectProductSize;
