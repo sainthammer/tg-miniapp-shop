@@ -553,6 +553,15 @@
       requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     });
 
+    document.addEventListener('touchstart', (e) => {
+      const active = document.activeElement;
+      const isInput = active && active.matches('input, textarea, select');
+      if (isInput && !e.target.closest('input, textarea, select')) {
+        active.blur();
+        e.preventDefault();
+      }
+    }, { passive: false });
+
     document.getElementById('openStoreBtn').addEventListener('click', () => {
       window.location.href = '/';
     });
@@ -841,21 +850,14 @@
         </div>
 
         <div style="${panelStyle}display:flex;flex-direction:column;gap:7px;">
-          <div style="${labelStyle}">Данные заказчика</div>
-          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Telegram:</span> ${order.customer_telegram_link
-            ? `<a onclick="tg?.openTelegramLink?.('https://t.me/${esc(order.customer_telegram_link.replace(/^@/, ''))}');return false;" href="#" style="color:var(--brass-dim);text-decoration:underline;cursor:pointer;">${esc(order.customer_telegram_link)}</a>`
-            : `<span style="color:var(--silver);">Не указано</span>`
-          }</div>
-          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Комментарий:</span> <span style="color:var(--silver);">${esc(order.customer_comment || '—')}</span></div>
-        </div>
-
-        <div style="${panelStyle}display:flex;flex-direction:column;gap:7px;">
-          <div style="${labelStyle}">Telegram</div>
-          <div style="${metaStyle}"><span style="color:var(--silver-faint);">User ID:</span> <span style="color:var(--silver);">${esc(String(order.telegram_user_id || '—'))}</span></div>
-          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Username:</span> ${order.telegram_username
+          <div style="${labelStyle}">Заказчик</div>
+          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Имя:</span> <span style="color:var(--silver);">${esc(order.telegram_first_name || '—')}</span></div>
+          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Telegram:</span> ${order.telegram_username
             ? `<a onclick="tg?.openTelegramLink?.('https://t.me/${esc(order.telegram_username)}');return false;" href="#" style="color:var(--brass-dim);text-decoration:underline;cursor:pointer;">@${esc(order.telegram_username)}</a>`
-            : '—'
+            : `<span style="color:var(--silver);">—</span>`
           }</div>
+          <div style="${metaStyle}"><span style="color:var(--silver-faint);">ID:</span> <span style="color:var(--silver);">${esc(String(order.telegram_user_id || '—'))}</span></div>
+          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Комментарий:</span> <span style="color:var(--silver);">${esc(order.customer_comment || '—')}</span></div>
           <div style="${metaStyle}"><span style="color:var(--silver-faint);">Создан:</span> <span style="color:var(--silver);">${esc(formatDate(order.created_at))}</span></div>
         </div>
 

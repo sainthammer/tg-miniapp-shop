@@ -494,7 +494,6 @@ def add_order(order_data: dict[str, Any]) -> dict[str, Any]:
             INSERT INTO orders (
                 order_number,
                 status,
-                customer_telegram_link,
                 customer_comment,
                 telegram_user_id,
                 telegram_username,
@@ -502,12 +501,11 @@ def add_order(order_data: dict[str, Any]) -> dict[str, Any]:
                 total,
                 created_at
             )
-            SELECT COALESCE(MAX(order_number), 0) + 1, ?, ?, ?, ?, ?, ?, ?, ?
+            SELECT COALESCE(MAX(order_number), 0) + 1, ?, ?, ?, ?, ?, ?, ?
             FROM orders
             """,
             (
                 order_data["status"],
-                order_data["customer"]["telegram_link"],
                 order_data["customer"]["comment"],
                 str(order_data["telegram_user"].get("id", "")),
                 order_data["telegram_user"].get("username", ""),

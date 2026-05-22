@@ -691,7 +691,6 @@
       </div>
       <div id="checkoutItemsPreview" class="glass rounded-2xl p-4 mb-5" style="font-size:13px;color:var(--silver-dim);letter-spacing:0.03em;"></div>
       <div class="space-y-3">
-        <input id="telegram_link" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Telegram, например @username" />
         <textarea id="comment" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[100px]" placeholder="Комментарий к заказу"></textarea>
       </div>
       <div class="mt-5" style="display:flex;flex-direction:column;gap:10px;">
@@ -707,9 +706,30 @@
     tg?.expand();
     tg?.disableVerticalSwipes?.();
     tg?.requestFullscreen?.();
-    tg?.onEvent?.('fullscreenChanged', () => {
-      requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'instant' }));
-    });
+    const _scrollTop = () => window.scrollTo({ top: 0, behavior: 'instant' });
+    tg?.onEvent?.('fullscreenChanged', () => { requestAnimationFrame(_scrollTop); });
+    tg?.onEvent?.('fullscreenFailed', () => { requestAnimationFrame(_scrollTop); });
+    requestAnimationFrame(_scrollTop);
+
+    // Скрываем навбар когда клавиатура открыта (visualViewport shrinks on iOS)
+    const _navbar = document.getElementById('bottomNavWrap');
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        const keyboardHeight = window.innerHeight - window.visualViewport.height;
+        _navbar.style.transform = keyboardHeight > 100 ? `translateY(${keyboardHeight}px)` : '';
+      });
+    }
+
+    // Закрытие клавиатуры по тапу: первый тап только закрывает, клик не срабатывает
+    let _kbOpen = false;
+    document.addEventListener('touchstart', (e) => {
+      const active = document.activeElement;
+      const isInput = active && active.matches('input, textarea, select');
+      if (isInput && !e.target.closest('input, textarea, select')) {
+        active.blur();
+        e.preventDefault();
+      }
+    }, { passive: false });
 
     const HEART_MASK = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M12 21s-7.2-4.4-9.6-8.4C.7 9.8 2.1 5.8 6 4.8c2.1-.5 4.1.2 6 2.1 1.9-1.9 3.9-2.6 6-2.1 3.9 1 5.3 5 3.6 7.8C19.2 16.6 12 21 12 21Z"/></svg>');
 
@@ -1269,11 +1289,6 @@
     }
 
     function validateCheckoutForm() {
-      const telegramLink = document.getElementById('telegram_link').value.trim();
-      if (!telegramLink) return 'Укажи Telegram';
-      if (!/^@[A-Za-z0-9_]{4,32}$/.test(telegramLink)) {
-        return 'Telegram должен быть в формате @username';
-      }
       return null;
     }
 
@@ -1387,7 +1402,21 @@
       window.open(link, '_blank');
     }
 
-    document.getElementById('managerBtn').addEventListener('click', openManager);
+    const ADMIN_IDS = new Set({{ admin_ids | tojson }});
+    const currentUserId = tg?.initDataUnsafe?.user?.id;
+    const managerBtn = document.getElementById('managerBtn');
+
+    if (currentUserId && ADMIN_IDS.has(currentUserId)) {
+      managerBtn.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+        </svg>
+        Админка`;
+      managerBtn.addEventListener('click', () => { window.location.href = '/?mode=admin'; });
+    } else {
+      managerBtn.addEventListener('click', openManager);
+    }
 
     document.getElementById('addProductFromModal').addEventListener('click', () => {
       if (!state.selectedProduct) return;
@@ -1410,6 +1439,7 @@
       checkoutModal.classList.add('hidden');
     });
 
+
     document.getElementById('sendOrder').addEventListener('click', async () => {
       const items = getItems().map((item) => ({
         id: item.id,
@@ -1430,7 +1460,6 @@
 
       const payload = {
         customer: {
-          telegram_link: document.getElementById('telegram_link').value.trim(),
           comment: document.getElementById('comment').value.trim(),
         },
         items,
@@ -1454,7 +1483,6 @@
       renderAll();
       checkoutModal.classList.add('hidden');
 
-      document.getElementById('telegram_link').value = '';
       document.getElementById('comment').value = '';
 
       await loadMyOrders();

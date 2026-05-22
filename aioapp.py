@@ -299,7 +299,7 @@ def index():
     mode = (request.args.get("mode") or "").strip().lower()
     if mode == "admin":
         return render_template("admin.html")
-    return render_template("index.html", manager_link=MANAGER_LINK)
+    return render_template("index.html", manager_link=MANAGER_LINK, admin_ids=sorted(ADMIN_CHAT_IDS))
 
 
 # =========================================================
@@ -390,22 +390,15 @@ def create_order():
 
         status = "new"
 
-        telegram_link = customer.get("telegram_link", "").strip()
+        comment = customer.get("comment", "").strip()
 
-        if telegram_link and not telegram_link.startswith("@"):
-            telegram_link = f"@{telegram_link}"
-
-        telegram_link = telegram_link or "Не указано"
-        comment = customer.get("comment", "").strip() or "—"
-
-        username = tg_user.get("username") or "—"
+        username = tg_user.get("username") or ""
         user_id = tg_user.get("id") or "—"
         first_name = tg_user.get("first_name") or "—"
 
         order_data = {
             "status": status,
             "customer": {
-                "telegram_link": telegram_link,
                 "comment": comment,
             },
             "telegram_user": tg_user,
@@ -415,15 +408,20 @@ def create_order():
         saved_order = add_order(order_data)
         order_number = saved_order["order_number"]
 
+        username_str = f"@{username}" if username else "—"
+        tg_profile = f'<a href="tg://user?id={user_id}">{first_name}</a>'
+        items_block = "\n".join(lines)
+        comment_block = f"\n\n<b>Комментарий:</b> {comment}" if comment else ""
+
         text = (
             f"<b>Новый заказ #{order_number}</b>\n\n"
-            f"<b>Статус:</b> {get_status_label(status)}\n"
-            f"<b>Telegram link:</b> {telegram_link}\n"
-            f"<b>Mini App user:</b> {first_name} | @{username if username != '—' else 'unknown'} | ID: {user_id}\n\n"
+            f"<b>Покупатель:</b> {tg_profile}\n"
+            f"<b>Telegram:</b> {username_str}\n"
+            f"<b>User ID:</b> <code>{user_id}</code>\n\n"
             f"<b>Состав заказа:</b>\n"
-            + "\n".join(lines)
-            + f"\n\n<b>Комментарий:</b> {comment}"
-            f"\n<b>Итого:</b> {rub(total)}"
+            f"{items_block}\n\n"
+            f"<b>Итого:</b> {rub(total)}"
+            f"{comment_block}"
         )
 
         send_admin_message(text)
