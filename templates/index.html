@@ -81,7 +81,7 @@
     -webkit-backdrop-filter: none;
   }
 
-  /* ── Modal image skeleton ── */
+  /* ── Product image skeleton (экран товара) ── */
   .modal-img-wrap {
     position: relative;
     min-height: 220px;
@@ -117,6 +117,21 @@
     transition: opacity 0.35s ease;
   }
   #productModalImage.img-ready { opacity: 1; }
+
+  /* ── Экран продукта (fullscreen) ── */
+  #productScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    overflow-y: auto;
+    background-image:
+      var(--scratch-a), var(--scratch-b), var(--scratch-c),
+      linear-gradient(rgba(8,8,8,0.78), rgba(8,8,8,0.78)),
+      url(/static/metal-bg.jpg);
+    background-size: auto, auto, auto, cover, cover;
+    background-position: center;
+    -webkit-overflow-scrolling: touch;
+  }
 
   /* ── Scrollbars ── */
   .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -637,32 +652,32 @@
     </button>
   </nav>
 
-  <!-- Product modal -->
-  <div id="productModal" class="hidden fixed inset-0 z-[60] p-4 overflow-auto modal-safe-top" style="background:rgba(4,4,8,0.74);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);">
-    <div class="max-w-lg mx-auto mt-6 mb-28 glass rounded-[28px] p-5">
-      <div class="flex items-center justify-between gap-3 mb-4">
-        <h2 id="productModalTitle" style="font-family:var(--fn-display);font-size:28px;letter-spacing:0.10em;color:var(--silver);line-height:1;"></h2>
-        <button id="closeProductModal" style="color:var(--silver-dim);font-size:20px;line-height:1;background:none;border:none;cursor:pointer;padding:4px;font-family:var(--fn-body);flex-shrink:0;">✕</button>
-      </div>
-      <div class="relative w-full modal-img-wrap" id="modalImgWrap">
+  <!-- Экран товара (fullscreen) -->
+  <div id="productScreen" class="hidden">
+    <div class="max-w-lg mx-auto px-3 modal-safe-top pb-8">
+      <!-- Фото с каруселью -->
+      <div class="relative w-full modal-img-wrap" id="modalImgWrap" style="margin-top:12px;">
         <img id="productModalImage" alt="" onerror="this.onerror=null;this.src=PLACEHOLDER_IMG;this.classList.add('img-ready');document.getElementById('modalImgWrap').classList.add('loaded');" />
         <button id="carouselPrev" class="hidden absolute top-1/2 -translate-y-1/2 flex items-center justify-center" style="left:10px;width:36px;height:36px;background:rgba(7,7,12,0.62);border:1px solid rgba(155,155,180,0.28);color:var(--silver);font-size:20px;border-radius:3px;cursor:pointer;">‹</button>
         <button id="carouselNext" class="hidden absolute top-1/2 -translate-y-1/2 flex items-center justify-center" style="right:10px;width:36px;height:36px;background:rgba(7,7,12,0.62);border:1px solid rgba(155,155,180,0.28);color:var(--silver);font-size:20px;border-radius:3px;cursor:pointer;">›</button>
-        <div id="carouselCounter" class="hidden absolute bottom-10 right-10" style="background:rgba(7,7,12,0.65);border:1px solid rgba(155,155,180,0.22);color:var(--silver-dim);font-family:var(--fn-body);font-size:11px;letter-spacing:0.08em;padding:3px 8px;border-radius:3px;"></div>
+        <div id="carouselCounter" class="hidden absolute" style="bottom:10px;right:10px;background:rgba(7,7,12,0.65);border:1px solid rgba(155,155,180,0.22);color:var(--silver-dim);font-family:var(--fn-body);font-size:11px;letter-spacing:0.08em;padding:3px 8px;border-radius:3px;"></div>
       </div>
-      <div class="mt-4 engraved" id="productModalCategory"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px;">
-        <div id="productModalPrice" style="font-family:var(--fn-display);font-weight:800;font-size:34px;letter-spacing:0.04em;color:var(--silver);line-height:1;"></div>
-        <button id="modalFavBtn" data-fav-btn="modal" data-fav-size="24"
-          style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;border:none;padding:0;transition:opacity .14s ease;flex-shrink:0;"></button>
-      </div>
-      <p class="mt-3 leading-relaxed" id="productModalDescription" style="color:var(--silver-dim);font-size:14px;letter-spacing:0.02em;line-height:1.6;white-space:pre-wrap;"></p>
-      <div class="mt-5">
+      <!-- Инфо-блок -->
+      <div class="glass" style="margin-top:12px;border-radius:4px;padding:18px 16px;">
+        <div class="engraved" id="productModalCategory"></div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:6px;">
+          <h2 id="productModalTitle" style="font-family:var(--fn-display);font-size:30px;letter-spacing:0.08em;color:var(--silver);line-height:1.1;flex:1;min-width:0;"></h2>
+          <button id="modalFavBtn" data-fav-btn="modal" data-fav-size="24"
+            style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;border:none;padding:0;transition:opacity .14s ease;flex-shrink:0;margin-top:2px;"></button>
+        </div>
+        <div id="productModalPrice" style="font-family:var(--fn-display);font-weight:800;font-size:36px;letter-spacing:0.04em;color:var(--silver);line-height:1;margin-top:10px;"></div>
+        <p id="productModalDescription" style="color:var(--silver-dim);font-size:14px;letter-spacing:0.02em;line-height:1.6;white-space:pre-wrap;margin-top:12px;"></p>
+        <hr class="metal-divider" style="margin-top:16px;" />
         <div class="engraved mb-3">Размер</div>
         <div id="productModalSizes" class="flex flex-wrap gap-2"></div>
-      </div>
-      <div class="mt-5">
-        <button id="addProductFromModal" class="btn-cta">В корзину</button>
+        <div style="margin-top:20px;">
+          <button id="addProductFromModal" class="btn-cta">В корзину</button>
+        </div>
       </div>
     </div>
   </div>
@@ -748,6 +763,8 @@
       category: 'Все',
       search: '',
       activeTab: 'catalog',
+      // Таб, с которого открыли экран товара — нужен для корректного возврата
+      prevTab: 'catalog',
       cart: loadJson('mini_shop_cart', {}),
       favorites: loadJson('mini_shop_favorites', []),
       selectedProduct: null,
@@ -768,7 +785,7 @@
     const cartSummaryTotal = document.getElementById('cartSummaryTotal');
     const categoriesEl = document.getElementById('categories');
     const checkoutModal = document.getElementById('checkoutModal');
-    const productModal = document.getElementById('productModal');
+    const productScreen = document.getElementById('productScreen');
     const checkoutItemsPreview = document.getElementById('checkoutItemsPreview');
     const catalogFilters = document.getElementById('catalogFilters');
     const ordersList = document.getElementById('ordersList');
@@ -913,6 +930,16 @@
     }
 
     function setTab(tab) {
+      // Если экран товара открыт и нажали таб напрямую — закрываем без вызова setTab рекурсии
+      if (!productScreen.classList.contains('hidden')) {
+        productScreen.classList.add('hidden');
+        state.selectedProduct = null;
+        if (tg?.BackButton) {
+          tg.BackButton.hide();
+          tg.BackButton.offClick(closeProductScreen);
+        }
+      }
+
       state.activeTab = tab;
       window.scrollTo({ top: 0, behavior: 'instant' });
       if (tab !== 'catalog') {
@@ -1266,6 +1293,8 @@
       const product = state.products.find((item) => item.id === productId);
       if (!product) return;
 
+      // Запоминаем таб, с которого открыли, для возврата
+      state.prevTab = state.activeTab;
       state.selectedProduct = product;
       state.selectedSize = (product.sizes || [])[0] || '';
       state.selectedImageIndex = 0;
@@ -1284,7 +1313,30 @@
 
       renderCarousel();
       renderProductSizes();
-      productModal.classList.remove('hidden');
+
+      // Показываем экран товара
+      productScreen.classList.remove('hidden');
+      productScreen.scrollTop = 0;
+
+      // Показываем BackButton Telegram и вешаем обработчик
+      if (tg?.BackButton) {
+        tg.BackButton.show();
+        tg.BackButton.onClick(closeProductScreen);
+      }
+    }
+
+    function closeProductScreen() {
+      productScreen.classList.add('hidden');
+      state.selectedProduct = null;
+
+      // Скрываем BackButton Telegram
+      if (tg?.BackButton) {
+        tg.BackButton.hide();
+        tg.BackButton.offClick(closeProductScreen);
+      }
+
+      // Возвращаемся на таб, с которого пришли
+      setTab(state.prevTab || 'catalog');
     }
 
     function renderProductSizes() {
@@ -1346,11 +1398,7 @@
     document.getElementById('addProductFromModal').addEventListener('click', () => {
       if (!state.selectedProduct) return;
       addToCart(state.selectedProduct.id, state.selectedSize);
-      productModal.classList.add('hidden');
-    });
-
-    document.getElementById('closeProductModal').addEventListener('click', () => {
-      productModal.classList.add('hidden');
+      closeProductScreen();
     });
 
     document.getElementById('modalFavBtn').addEventListener('click', () => {
@@ -1438,8 +1486,9 @@
     document.getElementById('carouselPrev').addEventListener('click', () => carouselStep(-1));
     document.getElementById('carouselNext').addEventListener('click', () => carouselStep(1));
 
+    // Свайп по области фото для перелистывания карусели
     let _swipeStartX = 0;
-    const _carouselEl = document.querySelector('#productModal .relative');
+    const _carouselEl = document.getElementById('modalImgWrap');
     _carouselEl.addEventListener('touchstart', (e) => {
       _swipeStartX = e.touches[0].clientX;
     }, { passive: true });
