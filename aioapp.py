@@ -390,8 +390,6 @@ def create_order():
 
         status = "new"
 
-        name = customer.get("name", "").strip() or "Не указано"
-        phone = customer.get("phone", "").strip() or "Не указано"
         telegram_link = customer.get("telegram_link", "").strip()
 
         if telegram_link and not telegram_link.startswith("@"):
@@ -407,8 +405,6 @@ def create_order():
         order_data = {
             "status": status,
             "customer": {
-                "name": name,
-                "phone": phone,
                 "telegram_link": telegram_link,
                 "comment": comment,
             },
@@ -422,8 +418,6 @@ def create_order():
         text = (
             f"<b>Новый заказ #{order_number}</b>\n\n"
             f"<b>Статус:</b> {get_status_label(status)}\n"
-            f"<b>Покупатель:</b> {name}\n"
-            f"<b>Телефон:</b> {phone}\n"
             f"<b>Telegram link:</b> {telegram_link}\n"
             f"<b>Mini App user:</b> {first_name} | @{username if username != '—' else 'unknown'} | ID: {user_id}\n\n"
             f"<b>Состав заказа:</b>\n"

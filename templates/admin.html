@@ -349,8 +349,6 @@
       <div style="margin-bottom:12px;display:flex;gap:8px;">
         <select id="orderSearchField" class="rounded-2xl bg-white/10 border border-white/10 px-3 py-3 outline-none" style="flex-shrink:0;">
           <option value="number">Номер</option>
-          <option value="name">Имя</option>
-          <option value="phone">Телефон</option>
           <option value="telegram">Telegram</option>
         </select>
         <input
@@ -745,7 +743,6 @@
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;">
             <button onclick="openOrderDetails(${order.order_number})" style="text-align:left;min-width:0;flex:1;background:none;border:none;cursor:pointer;">
               <div style="font-family:var(--fn-display);font-weight:800;font-size:24px;letter-spacing:0.06em;color:var(--silver);line-height:1;">Заказ #${order.order_number}</div>
-              <div style="font-family:var(--fn-body);font-size:13px;font-weight:600;color:var(--silver-dim);margin-top:5px;letter-spacing:0.03em;">${esc(order.customer_name || 'Не указано')}</div>
               <div style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--brass-dim);margin-top:4px;">${statusLabel(order.status)}</div>
               <div style="font-family:var(--fn-display);font-size:18px;letter-spacing:0.04em;color:var(--silver);margin-top:4px;">${formatPrice(order.total)}</div>
               <div style="font-family:var(--fn-body);font-size:11px;color:var(--silver-faint);margin-top:3px;letter-spacing:0.03em;">${esc(formatDate(order.created_at))}</div>
@@ -845,8 +842,6 @@
 
         <div style="${panelStyle}display:flex;flex-direction:column;gap:7px;">
           <div style="${labelStyle}">Данные заказчика</div>
-          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Имя:</span> <span style="color:var(--silver);">${esc(order.customer_name || 'Не указано')}</span></div>
-          <div style="${metaStyle}"><span style="color:var(--silver-faint);">Телефон:</span> <span style="color:var(--silver);">${esc(order.customer_phone || 'Не указано')}</span></div>
           <div style="${metaStyle}"><span style="color:var(--silver-faint);">Telegram:</span> ${order.customer_telegram_link
             ? `<a onclick="tg?.openTelegramLink?.('https://t.me/${esc(order.customer_telegram_link.replace(/^@/, ''))}');return false;" href="#" style="color:var(--brass-dim);text-decoration:underline;cursor:pointer;">${esc(order.customer_telegram_link)}</a>`
             : `<span style="color:var(--silver);">Не указано</span>`

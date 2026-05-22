@@ -691,8 +691,6 @@
       </div>
       <div id="checkoutItemsPreview" class="glass rounded-2xl p-4 mb-5" style="font-size:13px;color:var(--silver-dim);letter-spacing:0.03em;"></div>
       <div class="space-y-3">
-        <input id="name" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Имя" />
-        <input id="phone" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Телефон" />
         <input id="telegram_link" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Telegram, например @username" />
         <textarea id="comment" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[100px]" placeholder="Комментарий к заказу"></textarea>
       </div>
@@ -1270,12 +1268,7 @@
     }
 
     function validateCheckoutForm() {
-      const name = document.getElementById('name').value.trim();
-      const phone = document.getElementById('phone').value.trim();
       const telegramLink = document.getElementById('telegram_link').value.trim();
-
-      if (!name) return 'Укажи имя';
-      if (!phone) return 'Укажи телефон';
       if (!telegramLink) return 'Укажи Telegram';
       if (!/^@[A-Za-z0-9_]{4,32}$/.test(telegramLink)) {
         return 'Telegram должен быть в формате @username';
@@ -1436,8 +1429,6 @@
 
       const payload = {
         customer: {
-          name: document.getElementById('name').value.trim(),
-          phone: document.getElementById('phone').value.trim(),
           telegram_link: document.getElementById('telegram_link').value.trim(),
           comment: document.getElementById('comment').value.trim(),
         },
@@ -1462,8 +1453,6 @@
       renderAll();
       checkoutModal.classList.add('hidden');
 
-      document.getElementById('name').value = '';
-      document.getElementById('phone').value = '';
       document.getElementById('telegram_link').value = '';
       document.getElementById('comment').value = '';
 
