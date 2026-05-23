@@ -784,6 +784,7 @@
       activeTab: 'catalog',
       // Таб, с которого открыли экран товара — нужен для корректного возврата
       prevTab: 'catalog',
+      prevScrollY: 0,
       cart: loadJson('mini_shop_cart', {}),
       favorites: loadJson('mini_shop_favorites', []),
       selectedProduct: null,
@@ -1323,6 +1324,9 @@
       renderCarousel();
       renderProductSizes();
 
+      // Запоминаем позицию скролла перед открытием
+      state.prevScrollY = window.scrollY;
+
       // Показываем экран товара
       productScreen.classList.remove('hidden');
       productScreen.scrollTop = 0;
@@ -1344,8 +1348,11 @@
         tg.BackButton.offClick(closeProductScreen);
       }
 
-      // Возвращаемся на таб, с которого пришли
+      // Возвращаемся на таб и восстанавливаем позицию скролла
       setTab(state.prevTab || 'catalog');
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: state.prevScrollY || 0, behavior: 'instant' });
+      });
     }
 
     function renderProductSizes() {
