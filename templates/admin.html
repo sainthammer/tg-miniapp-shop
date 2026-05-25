@@ -1500,18 +1500,33 @@
     (function() {
       const nav = document.getElementById('bottomNavWrap');
 
+      function scrollElIntoVisibleArea(el) {
+        const vvHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+        const rect = el.getBoundingClientRect();
+        const visibleBottom = vvHeight - 16;
+        if (rect.bottom <= visibleBottom) return;
+        const delta = rect.bottom - visibleBottom;
+        // scroll the closest scrollable ancestor, fallback to window
+        let node = el.parentElement;
+        while (node && node !== document.documentElement) {
+          const s = window.getComputedStyle(node);
+          if (/auto|scroll/.test(s.overflowY) || /auto|scroll/.test(s.overflow)) {
+            node.scrollTop += delta;
+            return;
+          }
+          node = node.parentElement;
+        }
+        window.scrollBy({ top: delta, behavior: 'smooth' });
+      }
+
       function handleViewport() {
         if (!window.visualViewport) return;
         const keyboardHeight = window.innerHeight - window.visualViewport.height;
         nav.style.display = keyboardHeight > 80 ? 'none' : '';
-
         if (keyboardHeight > 80) {
           const el = document.activeElement;
-          if (!el || (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA')) return;
-          const rect = el.getBoundingClientRect();
-          const visibleBottom = window.visualViewport.height - 16;
-          if (rect.bottom > visibleBottom) {
-            window.scrollBy({ top: rect.bottom - visibleBottom, behavior: 'smooth' });
+          if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
+            scrollElIntoVisibleArea(el);
           }
         }
       }
