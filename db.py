@@ -130,7 +130,9 @@ def init_db() -> None:
         cols = {row["name"] for row in conn.execute("PRAGMA table_info(products)").fetchall()}
         if "images_json" not in cols:
             conn.execute("ALTER TABLE products ADD COLUMN images_json TEXT NOT NULL DEFAULT '[]'")
-            conn.commit()
+        if "measurements" not in cols:
+            conn.execute("ALTER TABLE products ADD COLUMN measurements TEXT")
+        conn.commit()
 
     seed_defaults()
 
@@ -294,6 +296,7 @@ def add_product(
     description: str,
     sizes: list[str],
     extra_images: list[str] | None = None,
+    measurements: str | None = None,
 ):
     category = get_category_by_name(category_name)
     if not category:
@@ -304,8 +307,8 @@ def add_product(
     with get_connection() as conn:
         cur = conn.execute(
             """
-            INSERT INTO products (title, price, category_id, image, description, sizes_json, images_json, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO products (title, price, category_id, image, description, sizes_json, images_json, measurements, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 title,
@@ -315,6 +318,7 @@ def add_product(
                 description,
                 json_dumps(clean_sizes),
                 json_dumps(clean_extra),
+                measurements or None,
                 now_iso(),
             ),
         )
@@ -423,6 +427,7 @@ def update_product(product_id: int, updates: dict[str, Any]):
     price = updates.get("price", current["price"])
     image = updates.get("image", current["image"])
     description = updates.get("description", current["description"])
+    measurements = updates.get("measurements", current.get("measurements"))
     category_name = updates.get("category", current["category"])
     sizes = updates.get("sizes", current["sizes"])
     current_extra = current["images"][1:] if len(current.get("images", [])) > 1 else []
@@ -438,7 +443,7 @@ def update_product(product_id: int, updates: dict[str, Any]):
         conn.execute(
             """
             UPDATE products
-            SET title = ?, price = ?, category_id = ?, image = ?, description = ?, sizes_json = ?, images_json = ?
+            SET title = ?, price = ?, category_id = ?, image = ?, description = ?, sizes_json = ?, images_json = ?, measurements = ?
             WHERE id = ?
             """,
             (
@@ -449,6 +454,7 @@ def update_product(product_id: int, updates: dict[str, Any]):
                 description,
                 json_dumps(clean_sizes),
                 json_dumps(clean_extra),
+                measurements or None,
                 product_id,
             ),
         )

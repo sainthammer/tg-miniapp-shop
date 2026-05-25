@@ -384,6 +384,7 @@
         </div>
         <div style="margin-top:12px;">
           <textarea id="newProductDescription" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[100px]" placeholder="Описание"></textarea>
+          <textarea id="newProductMeasurements" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[80px]" placeholder="Замеры (необязательно): XS — грудь 84, талия 64&#10;S — грудь 88, талия 68"></textarea>
         </div>
         <div style="margin-top:12px;">
           <div id="newImageList" class="space-y-2 mb-2"></div>
@@ -540,6 +541,7 @@
           </button>
         </div>
         <textarea id="editProductDescription" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[110px]" placeholder="Описание"></textarea>
+        <textarea id="editProductMeasurements" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[80px]" placeholder="Замеры (необязательно)"></textarea>
       </div>
       <div class="mt-5 grid grid-cols-2 gap-3">
         <button id="saveEditProductBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">Сохранить</button>
@@ -1019,6 +1021,7 @@
       editProductCategory.value = product.category || '';
       editProductSizes.value = (product.sizes || []).join(',');
       editProductDescription.value = product.description || '';
+      document.getElementById('editProductMeasurements').value = product.measurements || '';
 
       editProductImages = product.images?.length ? [...product.images] : (product.image ? [product.image] : []);
       renderImageList('editImageList', editProductImages);
@@ -1046,6 +1049,7 @@
         category: editProductCategory.value.trim(),
         sizes: editProductSizes.value.split(',').map(s => s.trim()).filter(Boolean),
         description: editProductDescription.value.trim(),
+        measurements: document.getElementById('editProductMeasurements').value.trim() || undefined,
         image: editProductImages[0],
         extra_images: editProductImages.slice(1),
       };
@@ -1305,6 +1309,7 @@
         .map(s => s.trim())
         .filter(Boolean);
       const description = document.getElementById('newProductDescription').value.trim();
+      const measurements = document.getElementById('newProductMeasurements').value.trim();
 
       if (!title || !price || !category || !description) {
         tg?.showAlert?.('Заполни все поля товара');
@@ -1318,6 +1323,7 @@
       try {
         await apiPost('/api/admin/products', {
           title, price, category, sizes, description,
+          measurements: measurements || undefined,
           image: newProductImages[0],
           extra_images: newProductImages.slice(1),
         });
@@ -1327,6 +1333,7 @@
         document.getElementById('newProductCategory').value = '';
         document.getElementById('newProductSizes').value = '';
         document.getElementById('newProductDescription').value = '';
+        document.getElementById('newProductMeasurements').value = '';
         newProductImages = [];
         renderImageList('newImageList', newProductImages);
 

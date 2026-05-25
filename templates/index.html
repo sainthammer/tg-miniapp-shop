@@ -690,6 +690,15 @@
         </div>
         <div id="productModalPrice" style="font-family:var(--fn-display);font-weight:800;font-size:36px;letter-spacing:0.04em;color:var(--silver);line-height:1;margin-top:10px;"></div>
         <p id="productModalDescription" style="color:var(--silver-dim);font-size:14px;letter-spacing:0.02em;line-height:1.6;white-space:pre-wrap;margin-top:12px;"></p>
+        <div id="measurementsBlock" class="hidden" style="margin-top:12px;">
+          <button id="measurementsToggle" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(155,157,160,0.15);border-radius:3px;cursor:pointer;">
+            <span style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--silver-dim);">Замеры</span>
+            <svg id="measurementsChevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--silver-faint);transition:transform 0.2s ease;flex-shrink:0;"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+          <div id="measurementsBody" class="hidden" style="padding:12px 14px;border:1px solid rgba(155,157,160,0.15);border-top:none;border-radius:0 0 3px 3px;background:rgba(255,255,255,0.02);">
+            <p id="measurementsText" style="font-family:var(--fn-body);font-size:13px;color:var(--silver-dim);line-height:1.7;white-space:pre-wrap;margin:0;letter-spacing:0.02em;"></p>
+          </div>
+        </div>
         <hr class="metal-divider" style="margin-top:16px;" />
         <div class="engraved mb-3">Размер</div>
         <div id="productModalSizes" class="flex flex-wrap gap-2"></div>
@@ -1433,6 +1442,18 @@
       document.getElementById('productModalPrice').textContent = formatPrice(product.price);
       document.getElementById('productModalDescription').textContent = product.description;
 
+      const measurementsBlock = document.getElementById('measurementsBlock');
+      const measurementsBody = document.getElementById('measurementsBody');
+      const measurementsChevron = document.getElementById('measurementsChevron');
+      if (product.measurements) {
+        document.getElementById('measurementsText').textContent = product.measurements;
+        measurementsBlock.classList.remove('hidden');
+        measurementsBody.classList.add('hidden');
+        measurementsChevron.style.transform = '';
+      } else {
+        measurementsBlock.classList.add('hidden');
+      }
+
       const favBtn = document.getElementById('modalFavBtn');
       favBtn.dataset.favBtn = String(productId);
       const fav = isFavorite(productId);
@@ -1627,6 +1648,14 @@
     document.getElementById('catalogSearch').addEventListener('input', (e) => {
       state.search = e.target.value.trim();
       renderCatalog();
+    });
+
+    document.getElementById('measurementsToggle').addEventListener('click', () => {
+      const body = document.getElementById('measurementsBody');
+      const chevron = document.getElementById('measurementsChevron');
+      const isOpen = !body.classList.contains('hidden');
+      body.classList.toggle('hidden', isOpen);
+      chevron.style.transform = isOpen ? '' : 'rotate(90deg)';
     });
 
     document.getElementById('carouselPrev').addEventListener('click', () => carouselStep(-1));

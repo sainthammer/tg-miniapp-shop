@@ -658,6 +658,7 @@ def api_admin_create_product():
         description = (payload.get("description") or "").strip()
         sizes = payload.get("sizes") or []
         extra_images = [img for img in (payload.get("extra_images") or []) if isinstance(img, str) and img.strip()]
+        measurements = (payload.get("measurements") or "").strip() or None
 
         try:
             price = int(payload.get("price", 0))
@@ -667,7 +668,7 @@ def api_admin_create_product():
         if not title or not category or not image or not description or price <= 0:
             return json_error("All product fields are required", 400)
 
-        product = add_product(title, price, category, image, description, sizes, extra_images)
+        product = add_product(title, price, category, image, description, sizes, extra_images, measurements)
         if not product:
             return json_error("Invalid category", 400)
 
@@ -686,7 +687,7 @@ def api_admin_update_product(product_id: int):
         payload = request.get_json(force=True, silent=True) or {}
         updates = {}
 
-        for key in ("title", "price", "category", "image", "description", "sizes", "extra_images"):
+        for key in ("title", "price", "category", "image", "description", "sizes", "extra_images", "measurements"):
             if key in payload:
                 updates[key] = payload[key]
 
