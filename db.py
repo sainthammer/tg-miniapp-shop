@@ -106,8 +106,25 @@ def init_db() -> None:
                 first_name TEXT,
                 first_seen TEXT NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS promo_codes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                code TEXT NOT NULL UNIQUE,
+                type TEXT NOT NULL CHECK(type IN ('percent', 'fixed')),
+                value REAL NOT NULL,
+                is_active INTEGER NOT NULL DEFAULT 1,
+                expires_at TEXT,
+                created_at TEXT NOT NULL
+            );
             """)
         conn.commit()
+
+        # migrations
+        cols = {row["name"] for row in conn.execute("PRAGMA table_info(orders)").fetchall()}
+        if "promo_code" not in cols:
+            conn.execute("ALTER TABLE orders ADD COLUMN promo_code TEXT")
+        if "discount_amount" not in cols:
+            conn.execute("ALTER TABLE orders ADD COLUMN discount_amount REAL DEFAULT 0")
 
     with get_connection() as conn:
         cols = {row["name"] for row in conn.execute("PRAGMA table_info(products)").fetchall()}
@@ -700,3 +717,54 @@ def get_all_user_ids() -> list[str]:
     with get_connection() as conn:
         rows = conn.execute("SELECT telegram_user_id FROM users").fetchall()
     return [row["telegram_user_id"] for row in rows]
+
+
+def get_promo_code(code: str) -> dict[str, Any] | None:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM promo_codes WHERE code = ?",
+            (code.strip().upper(),),
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def calculate_discount(promo: dict[str, Any], cart_total: int) -> int:
+    if promo["type"] == "percent":
+        return round(cart_total * promo["value"] / 100)
+    else:
+        return min(int(promo["value"]), cart_total)
+
+
+def list_promo_codes() -> list[dict[str, Any]]:
+    with get_connection() as conn:
+        rows = conn.execute(
+            "SELECT * FROM promo_codes ORDER BY created_at DESC"
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def create_promo_code(code: str, type_: str, value: float, expires_at: str | None) -> bool:
+    try:
+        with get_connection() as conn:
+            conn.execute(
+                "INSERT INTO promo_codes (code, type, value, expires_at, created_at) VALUES (?, ?, ?, ?, ?)",
+                (code.strip().upper(), type_, value, expires_at or None, now_iso()),
+            )
+        return True
+    except sqlite3.IntegrityError:
+        return False
+
+
+def set_promo_active(promo_id: int, is_active: bool) -> None:
+    with get_connection() as conn:
+        conn.execute(
+            "UPDATE promo_codes SET is_active = ? WHERE id = ?",
+            (1 if is_active else 0, promo_id),
+        )
+        conn.commit()
+
+
+def delete_promo_code(promo_id: int) -> None:
+    with get_connection() as conn:
+        conn.execute("DELETE FROM promo_codes WHERE id = ?", (promo_id,))
+        conn.commit()
