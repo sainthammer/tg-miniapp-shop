@@ -434,21 +434,18 @@
       </button>
       <div id="promoFormPanel" class="hidden form-panel" style="margin-bottom:12px;">
         <div class="form-title" style="margin-bottom:12px;">Новый промокод</div>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
-          <input id="promoCodeInput" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Код (например SALE20)" style="text-transform:uppercase;box-sizing:border-box;" />
-          <div style="display:flex;gap:8px;min-width:0;">
-            <select id="promoTypeSelect" style="flex:1;min-width:0;border-radius:16px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.10);padding:12px;outline:none;color:inherit;font-family:var(--fn-body);font-size:14px;">
-              <option value="percent">Процент (%)</option>
-              <option value="fixed">Фикс. сумма (₽)</option>
-            </select>
-            <input id="promoValueInput" type="number" min="1" placeholder="Значение" style="flex:1;min-width:0;box-sizing:border-box;border-radius:16px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.10);padding:12px 16px;outline:none;color:inherit;font-family:var(--fn-body);font-size:14px;" />
-          </div>
-          <div style="overflow:hidden;border-radius:16px;">
-            <input id="promoExpiresInput" type="text" placeholder="Срок действия (необязательно)"
-              style="width:100%;box-sizing:border-box;color-scheme:dark;border-radius:16px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.10);padding:12px 16px;outline:none;color:inherit;font-family:var(--fn-body);font-size:14px;display:block;"
-              onfocus="this.type='date'"
-              onblur="if(!this.value)this.type='text'" />
-          </div>
+        <div class="grid grid-cols-2 gap-3" style="margin-bottom:14px;">
+          <input id="promoCodeInput" class="col-span-2 rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Код (например SALE20)" style="text-transform:uppercase;" />
+          <select id="promoTypeSelect" class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none">
+            <option value="percent">Процент (%)</option>
+            <option value="fixed">Фикс. сумма (₽)</option>
+          </select>
+          <input id="promoValueInput" type="number" min="1" class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Значение" />
+          <input id="promoExpiresInput" type="text" placeholder="Срок действия (необязательно)"
+            class="col-span-2 rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none"
+            style="color-scheme:dark;"
+            onfocus="this.type='date'"
+            onblur="if(!this.value)this.type='text'" />
         </div>
         <button id="promoCreateBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">Создать промокод</button>
         <div id="promoCreateResult" style="display:none;margin-top:10px;padding:10px 14px;border-radius:3px;font-family:var(--fn-body);font-size:13px;"></div>
@@ -764,25 +761,25 @@
           const activeLabel = p.is_active ? 'Активен' : 'Неактивен';
           const activeColor = p.is_active ? '#6fcf6f' : 'var(--silver-faint)';
           return `
-            <div style="background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);border:1px solid var(--m-border);border-top-color:var(--m-top);border-radius:4px;padding:12px 14px;">
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-                <div>
-                  <div style="font-family:var(--fn-display);font-size:20px;font-weight:800;letter-spacing:0.08em;color:var(--silver);">${esc(p.code)}</div>
-                  <div style="font-family:var(--fn-body);font-size:12px;color:var(--silver-dim);margin-top:3px;letter-spacing:0.04em;">
-                    Скидка: <b>${typeLabel}</b> · ${expires}
-                  </div>
-                  <div style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:${activeColor};margin-top:3px;">${activeLabel}</div>
+            <div style="background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);border:1px solid var(--m-border);border-top-color:var(--m-top);border-radius:4px;padding:14px 16px;">
+              <div style="margin-bottom:12px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+                  <div style="font-family:var(--fn-display);font-size:22px;font-weight:800;letter-spacing:0.08em;color:var(--silver);">${esc(p.code)}</div>
+                  <div style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:${activeColor};">${activeLabel}</div>
                 </div>
-                <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
-                  <button onclick="togglePromo(${p.id}, ${p.is_active ? 0 : 1})"
-                    style="font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:6px 10px;border-radius:3px;cursor:pointer;background:linear-gradient(180deg,#2c2c2c,#1e1e1e);border:1px solid rgba(140,141,143,0.30);color:var(--silver-dim);white-space:nowrap;">
-                    ${p.is_active ? 'Деактивировать' : 'Активировать'}
-                  </button>
-                  <button onclick="removePromo(${p.id})"
-                    style="font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:6px 10px;border-radius:3px;cursor:pointer;background:none;border:1px solid rgba(210,70,70,0.32);color:rgba(210,100,100,0.80);white-space:nowrap;">
-                    Удалить
-                  </button>
+                <div style="font-family:var(--fn-body);font-size:12px;color:var(--silver-dim);letter-spacing:0.04em;">
+                  Скидка: <b>${typeLabel}</b> · ${expires}
                 </div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button onclick="togglePromo(${p.id}, ${p.is_active ? 0 : 1})"
+                  style="flex:1;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:8px 10px;border-radius:3px;cursor:pointer;background:linear-gradient(180deg,#2c2c2c,#1e1e1e);border:1px solid rgba(140,141,143,0.30);color:var(--silver-dim);">
+                  ${p.is_active ? 'Деактивировать' : 'Активировать'}
+                </button>
+                <button onclick="removePromo(${p.id})"
+                  style="font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:8px 14px;border-radius:3px;cursor:pointer;background:none;border:1px solid rgba(210,70,70,0.32);color:rgba(210,100,100,0.80);">
+                  Удалить
+                </button>
               </div>
             </div>
           `;
