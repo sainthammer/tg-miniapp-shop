@@ -600,7 +600,25 @@
       </div>
       <div id="cartList" class="space-y-3"></div>
       <div id="cartEmpty" class="hidden glass rounded-[28px] p-6" style="color:var(--silver-dim);">Корзина пуста.</div>
+      <!-- Промокод -->
+      <div id="promoBlock" class="hidden glass rounded-[28px] p-4 mt-4">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="promoInput" type="text" placeholder="ПРОМОКОД"
+            style="flex:1;font-family:var(--fn-body);font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;background:rgba(255,255,255,0.06);border:1px solid rgba(140,141,143,0.22);border-radius:3px;padding:10px 12px;color:var(--silver);outline:none;" />
+          <button id="promoApplyBtn"
+            style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:10px 14px;border-radius:3px;cursor:pointer;background:linear-gradient(180deg,#1e1e1e 0%,#181818 100%);border:1px solid rgba(140,141,143,0.22);border-top-color:rgba(192,195,198,0.26);color:var(--silver-dim);white-space:nowrap;">
+            Применить
+          </button>
+          <button id="promoClearBtn" style="display:none;font-family:var(--fn-body);font-size:18px;line-height:1;color:var(--silver-faint);background:none;border:none;cursor:pointer;padding:4px;">✕</button>
+        </div>
+        <div id="promoMsg" style="margin-top:8px;font-family:var(--fn-body);font-size:12px;letter-spacing:0.04em;display:none;"></div>
+      </div>
+
       <div id="cartSummary" class="hidden glass rounded-[28px] p-5 mt-4">
+        <div id="cartDiscountRow" style="display:none;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-family:var(--fn-body);font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--silver-faint);">Скидка</span>
+          <span id="cartDiscountAmt" style="font-family:var(--fn-body);font-size:14px;font-weight:700;color:#6fcf6f;">−0 ₽</span>
+        </div>
         <div class="flex items-center justify-between">
           <span style="font-family:var(--fn-display);font-size:26px;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;color:var(--silver-faint);">Итого</span>
           <span id="cartSummaryTotal" style="font-family:var(--fn-display);font-size:36px;font-weight:800;letter-spacing:0.04em;color:var(--silver);line-height:1;">0 ₽</span>
@@ -785,6 +803,8 @@
       // Таб, с которого открыли экран товара — нужен для корректного возврата
       prevTab: 'catalog',
       prevScrollY: 0,
+      promoCode: '',
+      promoDiscount: 0,
       cart: loadJson('mini_shop_cart', {}),
       favorites: loadJson('mini_shop_favorites', []),
       selectedProduct: null,
@@ -817,6 +837,69 @@
     const navOrders = document.getElementById('navOrders');
     const cartBadge = document.getElementById('cartBadge');
     const favoritesBadge = document.getElementById('favoritesBadge');
+
+    async function applyPromo() {
+      const input = document.getElementById('promoInput');
+      const msg = document.getElementById('promoMsg');
+      const code = input.value.trim().toUpperCase();
+      if (!code) return;
+
+      msg.style.display = 'none';
+      const rawTotal = getRawTotal();
+
+      try {
+        const res = await fetch('/api/promo/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, cart_total: rawTotal }),
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          state.promoCode = code;
+          state.promoDiscount = data.discount_amount;
+          msg.textContent = '✓ ' + data.message;
+          msg.style.display = 'block';
+          msg.style.color = '#6fcf6f';
+          document.getElementById('promoClearBtn').style.display = 'block';
+          document.getElementById('promoApplyBtn').style.display = 'none';
+          input.disabled = true;
+        } else {
+          state.promoCode = '';
+          state.promoDiscount = 0;
+          msg.textContent = '✕ ' + data.error;
+          msg.style.display = 'block';
+          msg.style.color = '#e07070';
+        }
+      } catch {
+        state.promoCode = '';
+        state.promoDiscount = 0;
+        msg.textContent = '✕ Ошибка соединения';
+        msg.style.display = 'block';
+        msg.style.color = '#e07070';
+      }
+
+      renderCart();
+    }
+
+    function clearPromo() {
+      state.promoCode = '';
+      state.promoDiscount = 0;
+      const input = document.getElementById('promoInput');
+      const msg = document.getElementById('promoMsg');
+      input.value = '';
+      input.disabled = false;
+      msg.style.display = 'none';
+      document.getElementById('promoClearBtn').style.display = 'none';
+      document.getElementById('promoApplyBtn').style.display = 'block';
+      renderCart();
+    }
+
+    document.getElementById('promoApplyBtn').addEventListener('click', applyPromo);
+    document.getElementById('promoClearBtn').addEventListener('click', clearPromo);
+    document.getElementById('promoInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') applyPromo();
+    });
 
     function telegramHeaders() {
       return {
@@ -858,6 +941,11 @@
     }
 
     function getTotal() {
+      const raw = getItems().reduce((sum, item) => sum + item.price * item.quantity, 0);
+      return Math.max(0, raw - state.promoDiscount);
+    }
+
+    function getRawTotal() {
       return getItems().reduce((sum, item) => sum + item.price * item.quantity, 0);
     }
 
@@ -1148,6 +1236,16 @@
 
       cartEmpty.classList.toggle('hidden', items.length > 0);
       cartSummary.classList.toggle('hidden', items.length === 0);
+      document.getElementById('promoBlock').classList.toggle('hidden', items.length === 0);
+
+      const discountRow = document.getElementById('cartDiscountRow');
+      const discountAmt = document.getElementById('cartDiscountAmt');
+      if (state.promoDiscount > 0) {
+        discountRow.style.display = 'flex';
+        discountAmt.textContent = '−' + formatPrice(state.promoDiscount);
+      } else {
+        discountRow.style.display = 'none';
+      }
 
       cartList.innerHTML = items.map((item) => `
         <article style="
@@ -1239,9 +1337,16 @@
               <span style="color:var(--silver-dim);white-space:nowrap;">${formatPrice(item.price * item.quantity)}</span>
             </div>
           `).join('')}
-          <div style="border-top:1px solid rgba(155,157,160,0.18);padding-top:8px;margin-top:4px;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--silver-faint);">Итого</span>
-            <span style="font-family:var(--fn-display);font-weight:800;font-size:22px;letter-spacing:0.04em;color:var(--silver);">${formatPrice(getTotal())}</span>
+          <div style="border-top:1px solid rgba(155,157,160,0.18);padding-top:8px;margin-top:4px;">
+            ${state.promoDiscount > 0 ? `
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--silver-faint);">Скидка (${esc(state.promoCode)})</span>
+                <span style="font-family:var(--fn-body);font-size:13px;font-weight:700;color:#6fcf6f;">−${formatPrice(state.promoDiscount)}</span>
+              </div>` : ''}
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--silver-faint);">Итого</span>
+              <span style="font-family:var(--fn-display);font-weight:800;font-size:22px;letter-spacing:0.04em;color:var(--silver);">${formatPrice(getTotal())}</span>
+            </div>
           </div>
         </div>
       `;
@@ -1469,6 +1574,7 @@
         customer: {
           comment: document.getElementById('comment').value.trim(),
         },
+        promo_code: state.promoCode || undefined,
         items,
       };
 
@@ -1487,6 +1593,7 @@
       tg?.showAlert?.(`Спасибо за заказ ❤️\n\nЗаказ #${data.order_number} принят.\nСкоро с вами свяжется менеджер.`);
       state.cart = {};
       saveJson('mini_shop_cart', state.cart);
+      clearPromo();
       renderAll();
       checkoutModal.classList.add('hidden');
 
