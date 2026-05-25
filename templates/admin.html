@@ -320,6 +320,40 @@
     -webkit-box-orient: vertical; overflow: hidden;
   }
 
+  /* ── Accordion ── */
+  .accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 14px 16px;
+    border-radius: 4px;
+    background: var(--scratch-a), var(--scratch-b), linear-gradient(160deg,#1e1e1e 0%,#181818 100%);
+    border: 1px solid var(--m-border);
+    border-top-color: var(--m-top);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .accordion-header:active { filter: brightness(0.9); }
+  .accordion-title {
+    font-family: var(--fn-body);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--silver-dim);
+  }
+  .accordion-arrow {
+    transition: transform 0.25s ease;
+    color: var(--silver-faint);
+  }
+  .accordion-header.open .accordion-arrow { transform: rotate(90deg); }
+  .accordion-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  .accordion-body.open { max-height: 2000px; }
+
   /* ── Telegram fullscreen safe areas ── */
   .safe-top {
     padding-top: max(12px, calc(var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px)));
@@ -423,25 +457,65 @@
       <div id="categoriesList" class="space-y-3"></div>
     </section>
 
-    <section id="dropScreen" class="hidden">
-      <div class="form-panel">
-        <div class="form-title">Новый пост</div>
-        <div class="form-sub">Сообщение получат все пользователи, которые запускали бота.</div>
-        <textarea id="dropText" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[120px]" placeholder="Текст поста… Переносы строк сохраняются. Форматирование: &lt;b&gt;жирный&lt;/b&gt;, &lt;i&gt;курсив&lt;/i&gt;, &lt;code&gt;код&lt;/code&gt;" style="margin-bottom:10px;resize:vertical;"></textarea>
-        <div style="margin-bottom:12px;">
-          <input id="dropPhotoFile" type="file" accept="image/*" class="hidden" />
-          <button id="dropPhotoBtn" style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--silver-dim);background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.22);border-top-color:rgba(192,195,198,0.26);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);border-radius:3px;cursor:pointer;padding:8px 14px;display:flex;align-items:center;gap:6px;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-            Прикрепить фото
-          </button>
-          <div id="dropPhotoPreview" style="margin-top:8px;display:none;">
-            <img id="dropPhotoImg" style="max-height:120px;border-radius:3px;border:1px solid rgba(140,141,143,0.22);" />
-            <button id="dropPhotoClear" style="display:block;margin-top:4px;font-family:var(--fn-body);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--silver-faint);background:none;border:none;cursor:pointer;padding:0;">✕ убрать фото</button>
+    <section id="utilsScreen" class="hidden">
+
+      <!-- Аккордеон: Промокоды -->
+      <div style="margin-bottom:10px;">
+        <button class="accordion-header" id="accordionPromoHeader">
+          <span class="accordion-title">Промокоды</span>
+          <svg class="accordion-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <div class="accordion-body" id="accordionPromoBody">
+          <div class="form-panel" style="border-top:none;border-radius:0 0 4px 4px;">
+            <!-- Форма создания -->
+            <div class="form-title" style="margin-bottom:12px;">Новый промокод</div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+              <input id="promoCodeInput" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Код (например SALE20)" style="text-transform:uppercase;" />
+              <div style="display:flex;gap:8px;">
+                <select id="promoTypeSelect" class="rounded-2xl bg-white/10 border border-white/10 px-3 py-3 outline-none" style="flex:1;">
+                  <option value="percent">Процент (%)</option>
+                  <option value="fixed">Фикс. сумма (₽)</option>
+                </select>
+                <input id="promoValueInput" type="number" min="1" class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Значение" style="flex:1;" />
+              </div>
+              <input id="promoExpiresInput" type="date" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" />
+            </div>
+            <button id="promoCreateBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">Создать промокод</button>
+            <div id="promoCreateResult" style="display:none;margin-top:10px;padding:10px 14px;border-radius:3px;font-family:var(--fn-body);font-size:13px;"></div>
+
+            <!-- Список промокодов -->
+            <div id="promoList" style="margin-top:20px;display:flex;flex-direction:column;gap:8px;"></div>
           </div>
         </div>
-        <button id="dropSendBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">Отправить пост</button>
-        <div id="dropResult" style="display:none;margin-top:14px;padding:10px 14px;border-radius:3px;font-family:var(--fn-body);font-size:13px;letter-spacing:0.03em;"></div>
       </div>
+
+      <!-- Аккордеон: Пост -->
+      <div style="margin-bottom:10px;">
+        <button class="accordion-header" id="accordionPostHeader">
+          <span class="accordion-title">Пост</span>
+          <svg class="accordion-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <div class="accordion-body" id="accordionPostBody">
+          <div class="form-panel" style="border-top:none;border-radius:0 0 4px 4px;">
+            <div class="form-sub">Сообщение получат все пользователи, которые запускали бота.</div>
+            <textarea id="dropText" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[120px]" placeholder="Текст поста… Переносы строк сохраняются. Форматирование: &lt;b&gt;жирный&lt;/b&gt;, &lt;i&gt;курсив&lt;/i&gt;, &lt;code&gt;код&lt;/code&gt;" style="margin-bottom:10px;resize:vertical;"></textarea>
+            <div style="margin-bottom:12px;">
+              <input id="dropPhotoFile" type="file" accept="image/*" class="hidden" />
+              <button id="dropPhotoBtn" style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--silver-dim);background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.22);border-top-color:rgba(192,195,198,0.26);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);border-radius:3px;cursor:pointer;padding:8px 14px;display:flex;align-items:center;gap:6px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                Прикрепить фото
+              </button>
+              <div id="dropPhotoPreview" style="margin-top:8px;display:none;">
+                <img id="dropPhotoImg" style="max-height:120px;border-radius:3px;border:1px solid rgba(140,141,143,0.22);" />
+                <button id="dropPhotoClear" style="display:block;margin-top:4px;font-family:var(--fn-body);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--silver-faint);background:none;border:none;cursor:pointer;padding:0;">✕ убрать фото</button>
+              </div>
+            </div>
+            <button id="dropSendBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">Отправить пост</button>
+            <div id="dropResult" style="display:none;margin-top:14px;padding:10px 14px;border-radius:3px;font-family:var(--fn-body);font-size:13px;letter-spacing:0.03em;"></div>
+          </div>
+        </div>
+      </div>
+
     </section>
 
   </div>
@@ -475,11 +549,11 @@
         </svg>
         <span class="nav-label">Категории</span>
       </button>
-      <button id="navDrop" class="nav-btn">
+      <button id="navUtils" class="nav-btn">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
           <path d="M3 11l19-9-9 19-2-8-8-2z"></path>
         </svg>
-        <span class="nav-label">Пост</span>
+        <span class="nav-label">Утилиты</span>
       </button>
     </div>
   </div>
@@ -607,12 +681,12 @@
     const ordersScreen = document.getElementById('ordersScreen');
     const productsScreen = document.getElementById('productsScreen');
     const categoriesScreen = document.getElementById('categoriesScreen');
-    const dropScreen = document.getElementById('dropScreen');
+    const utilsScreen = document.getElementById('utilsScreen');
 
     const navOrders = document.getElementById('navOrders');
     const navProducts = document.getElementById('navProducts');
     const navCategories = document.getElementById('navCategories');
-    const navDrop = document.getElementById('navDrop');
+    const navUtils = document.getElementById('navUtils');
 
     const editProductModal = document.getElementById('editProductModal');
     const editProductTitle = document.getElementById('editProductTitle');
@@ -674,13 +748,13 @@
       ordersScreen.classList.toggle('hidden', tab !== 'orders');
       productsScreen.classList.toggle('hidden', tab !== 'products');
       categoriesScreen.classList.toggle('hidden', tab !== 'categories');
-      dropScreen.classList.toggle('hidden', tab !== 'drop');
+      utilsScreen.classList.toggle('hidden', tab !== 'utils');
 
-      [navOrders, navProducts, navCategories, navDrop].forEach((el) => el.classList.remove('active'));
+      [navOrders, navProducts, navCategories, navUtils].forEach((el) => el.classList.remove('active'));
       if (tab === 'orders') navOrders.classList.add('active');
       if (tab === 'products') navProducts.classList.add('active');
       if (tab === 'categories') navCategories.classList.add('active');
-      if (tab === 'drop') navDrop.classList.add('active');
+      if (tab === 'utils') { navUtils.classList.add('active'); loadPromos(); }
 
       if (tab !== 'products') {
         document.getElementById('addProductForm').classList.add('hidden');
@@ -704,6 +778,101 @@
       if (!response.ok || !data.ok) throw new Error(data.error || 'Request failed');
       return data;
     }
+
+    // Аккордеон
+    function initAccordion(headerId, bodyId) {
+      const header = document.getElementById(headerId);
+      const body = document.getElementById(bodyId);
+      header.addEventListener('click', () => {
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open', !isOpen);
+        header.classList.toggle('open', !isOpen);
+      });
+    }
+    initAccordion('accordionPromoHeader', 'accordionPromoBody');
+    initAccordion('accordionPostHeader', 'accordionPostBody');
+
+    // Промокоды
+    async function loadPromos() {
+      const list = document.getElementById('promoList');
+      try {
+        const response = await fetch('/api/admin/promos', { headers: headers(true) });
+        const res = await response.json();
+        if (!res.length) {
+          list.innerHTML = '<div style="font-family:var(--fn-body);font-size:13px;color:var(--silver-faint);">Промокодов пока нет.</div>';
+          return;
+        }
+        list.innerHTML = res.map(p => {
+          const typeLabel = p.type === 'percent' ? `${p.value}%` : `${p.value} ₽`;
+          const expires = p.expires_at ? `до ${p.expires_at}` : 'бессрочно';
+          const activeLabel = p.is_active ? 'Активен' : 'Неактивен';
+          const activeColor = p.is_active ? '#6fcf6f' : 'var(--silver-faint)';
+          return `
+            <div style="background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);border:1px solid var(--m-border);border-top-color:var(--m-top);border-radius:4px;padding:12px 14px;">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                <div>
+                  <div style="font-family:var(--fn-display);font-size:20px;font-weight:800;letter-spacing:0.08em;color:var(--silver);">${esc(p.code)}</div>
+                  <div style="font-family:var(--fn-body);font-size:12px;color:var(--silver-dim);margin-top:3px;letter-spacing:0.04em;">
+                    Скидка: <b>${typeLabel}</b> · ${expires}
+                  </div>
+                  <div style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:${activeColor};margin-top:3px;">${activeLabel}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+                  <button onclick="togglePromo(${p.id}, ${p.is_active ? 0 : 1})"
+                    style="font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:6px 10px;border-radius:3px;cursor:pointer;background:linear-gradient(180deg,#2c2c2c,#1e1e1e);border:1px solid rgba(140,141,143,0.30);color:var(--silver-dim);">
+                    ${p.is_active ? 'Деактивировать' : 'Активировать'}
+                  </button>
+                  <button onclick="removePromo(${p.id})"
+                    style="font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:6px 10px;border-radius:3px;cursor:pointer;background:none;border:1px solid rgba(210,70,70,0.32);color:rgba(210,100,100,0.80);">
+                    Удалить
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch {
+        list.innerHTML = '<div style="color:var(--silver-faint);font-size:13px;">Ошибка загрузки.</div>';
+      }
+    }
+
+    async function togglePromo(id, newActive) {
+      await apiPost(`/api/admin/promos/${id}/status`, { is_active: newActive });
+      loadPromos();
+    }
+
+    async function removePromo(id) {
+      await apiPost(`/api/admin/promos/${id}/delete`, {});
+      loadPromos();
+    }
+
+    window.togglePromo = togglePromo;
+    window.removePromo = removePromo;
+
+    document.getElementById('promoCreateBtn').addEventListener('click', async () => {
+      const code = document.getElementById('promoCodeInput').value.trim().toUpperCase();
+      const type = document.getElementById('promoTypeSelect').value;
+      const value = parseFloat(document.getElementById('promoValueInput').value);
+      const expires_at = document.getElementById('promoExpiresInput').value || null;
+      const result = document.getElementById('promoCreateResult');
+
+      result.style.display = 'none';
+      try {
+        await apiPost('/api/admin/promos', { code, type, value, expires_at });
+        result.textContent = '✓ Промокод создан';
+        result.style.color = '#6fcf6f';
+        result.style.background = 'rgba(111,207,111,0.08)';
+        document.getElementById('promoCodeInput').value = '';
+        document.getElementById('promoValueInput').value = '';
+        document.getElementById('promoExpiresInput').value = '';
+        loadPromos();
+      } catch (e) {
+        result.textContent = '✕ ' + (e.message || 'Ошибка соединения');
+        result.style.color = '#e07070';
+        result.style.background = 'rgba(210,70,70,0.08)';
+      }
+      result.style.display = 'block';
+    });
 
     let _ordersRequestId = 0;
 
@@ -1238,7 +1407,7 @@
     navOrders.addEventListener('click', () => setTab('orders'));
     navProducts.addEventListener('click', () => setTab('products'));
     navCategories.addEventListener('click', () => setTab('categories'));
-    navDrop.addEventListener('click', () => setTab('drop'));
+    navUtils.addEventListener('click', () => setTab('utils'));
 
     // Drop broadcast
     document.getElementById('dropPhotoBtn').addEventListener('click', () => {
