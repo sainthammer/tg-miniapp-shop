@@ -880,6 +880,7 @@
       }
 
       renderCart();
+      updateCounters();
     }
 
     function clearPromo() {
@@ -893,6 +894,7 @@
       document.getElementById('promoClearBtn').style.display = 'none';
       document.getElementById('promoApplyBtn').style.display = 'block';
       renderCart();
+      updateCounters();
     }
 
     document.getElementById('promoApplyBtn').addEventListener('click', applyPromo);
