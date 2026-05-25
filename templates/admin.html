@@ -1504,20 +1504,21 @@
         if (!window.visualViewport) return;
         const keyboardHeight = window.innerHeight - window.visualViewport.height;
         nav.style.display = keyboardHeight > 80 ? 'none' : '';
+
+        if (keyboardHeight > 80) {
+          const el = document.activeElement;
+          if (!el || (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA')) return;
+          const rect = el.getBoundingClientRect();
+          const visibleBottom = window.visualViewport.height - 16;
+          if (rect.bottom > visibleBottom) {
+            window.scrollBy({ top: rect.bottom - visibleBottom, behavior: 'smooth' });
+          }
+        }
       }
 
       if (window.visualViewport) {
         window.visualViewport.addEventListener('resize', handleViewport);
       }
-
-      // Scroll focused input/textarea into view when keyboard appears
-      document.addEventListener('focusin', function(e) {
-        const el = e.target;
-        if (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA') return;
-        setTimeout(() => {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 300);
-      });
 
       // Dismiss keyboard on tap outside input fields
       document.addEventListener('touchend', function(e) {
