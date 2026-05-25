@@ -348,6 +348,7 @@ def get_active_products() -> list[dict[str, Any]]:
                 p.description,
                 p.sizes_json,
                 p.images_json,
+                p.measurements,
                 p.is_active
             FROM products p
             JOIN categories c ON c.id = p.category_id
@@ -369,6 +370,7 @@ def get_all_products() -> list[dict[str, Any]]:
                 p.description,
                 p.sizes_json,
                 p.images_json,
+                p.measurements,
                 p.is_active
             FROM products p
             JOIN categories c ON c.id = p.category_id
@@ -394,6 +396,7 @@ def get_product_by_id(product_id: int) -> dict[str, Any] | None:
                 p.description,
                 p.sizes_json,
                 p.images_json,
+                p.measurements,
                 p.is_active
             FROM products p
             JOIN categories c ON c.id = p.category_id
