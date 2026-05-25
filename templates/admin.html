@@ -1510,6 +1510,15 @@
         window.visualViewport.addEventListener('resize', handleViewport);
       }
 
+      // Scroll focused input/textarea into view when keyboard appears
+      document.addEventListener('focusin', function(e) {
+        const el = e.target;
+        if (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA') return;
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+      });
+
       // Dismiss keyboard on tap outside input fields
       document.addEventListener('touchend', function(e) {
         const active = document.activeElement;
