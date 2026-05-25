@@ -6,7 +6,7 @@ import os
 import queue as _queue
 import sqlite3
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from threading import Thread
 from urllib.parse import parse_qsl, urlencode
@@ -33,10 +33,13 @@ from db import (
     add_category,
     add_order,
     add_product,
+    calculate_discount,
+    create_promo_code,
     deactivate_product,
     delete_category,
     delete_order,
     delete_product,
+    delete_promo_code,
     get_product_image_paths,
     get_active_products,
     get_all_products,
@@ -46,10 +49,13 @@ from db import (
     get_order,
     get_order_status_keys,
     get_product_map,
+    get_promo_code,
     get_status_label,
     get_user_orders,
     init_db,
     list_orders,
+    list_promo_codes,
+    set_promo_active,
     update_order_status,
     update_product,
     upsert_user,
@@ -319,6 +325,36 @@ def api_categories():
     return jsonify([item["name"] for item in get_categories()])
 
 
+@app.route("/api/promo/validate", methods=["POST"])
+def api_promo_validate():
+    try:
+        payload = request.get_json(force=True, silent=True) or {}
+        code = (payload.get("code") or "").strip().upper()
+        cart_total = int(payload.get("cart_total") or 0)
+
+        if not code:
+            return json_error("Укажи промокод", 400)
+
+        promo = get_promo_code(code)
+        if not promo:
+            return jsonify({"ok": False, "error": "Промокод не найден"})
+        if not promo["is_active"]:
+            return jsonify({"ok": False, "error": "Промокод неактивен"})
+        if promo["expires_at"]:
+            if date.fromisoformat(promo["expires_at"]) < date.today():
+                return jsonify({"ok": False, "error": "Срок действия промокода истёк"})
+
+        discount = calculate_discount(promo, cart_total)
+        if promo["type"] == "percent":
+            msg = f"−{int(promo['value'])}% применено"
+        else:
+            msg = f"−{rub(int(discount))} применено"
+
+        return jsonify({"ok": True, "discount_amount": discount, "message": msg})
+    except Exception as exc:
+        return json_error(str(exc), 500)
+
+
 @app.route("/api/my-orders")
 def api_my_orders():
     """Return active orders for the current Telegram user."""
@@ -388,6 +424,16 @@ def create_order():
         if not normalized_items:
             return json_error("Некорректные товары или размеры", 400)
 
+        # promo validation
+        promo_code_str = (payload.get("promo_code") or "").strip().upper()
+        discount_amount = 0
+        if promo_code_str:
+            promo = get_promo_code(promo_code_str)
+            if promo and promo["is_active"]:
+                if not promo["expires_at"] or date.fromisoformat(promo["expires_at"]) >= date.today():
+                    discount_amount = calculate_discount(promo, total)
+            total = max(0, total - discount_amount)
+
         status = "new"
 
         comment = customer.get("comment", "").strip()
@@ -404,6 +450,8 @@ def create_order():
             "telegram_user": tg_user,
             "items": normalized_items,
             "total": total,
+            "promo_code": promo_code_str or None,
+            "discount_amount": discount_amount,
         }
         saved_order = add_order(order_data)
         order_number = saved_order["order_number"]
@@ -412,6 +460,7 @@ def create_order():
         tg_profile = f'<a href="tg://user?id={user_id}">{first_name}</a>'
         items_block = "\n".join(lines)
         comment_block = f"\n\n<b>Комментарий:</b> {comment}" if comment else ""
+        promo_block = f"\n<b>Промокод:</b> {promo_code_str} (−{rub(discount_amount)})" if promo_code_str else ""
 
         text = (
             f"<b>Новый заказ #{order_number}</b>\n\n"
@@ -421,6 +470,7 @@ def create_order():
             f"<b>Состав заказа:</b>\n"
             f"{items_block}\n\n"
             f"<b>Итого:</b> {rub(total)}"
+            f"{promo_block}"
             f"{comment_block}"
         )
 
@@ -447,6 +497,77 @@ def create_order():
 # =========================================================
 # Admin API routes
 # =========================================================
+
+
+@app.route("/api/admin/promos")
+def api_admin_promos_list():
+    try:
+        require_admin_context()
+        return jsonify(list_promo_codes())
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 500)
+
+
+@app.route("/api/admin/promos", methods=["POST"])
+def api_admin_promos_create():
+    try:
+        require_admin_context()
+        payload = request.get_json(force=True, silent=True) or {}
+        code = (payload.get("code") or "").strip().upper()
+        type_ = payload.get("type", "")
+        value = float(payload.get("value") or 0)
+        expires_at = payload.get("expires_at") or None
+
+        if not code:
+            return json_error("Укажи код", 400)
+        if type_ not in ("percent", "fixed"):
+            return json_error("Тип должен быть percent или fixed", 400)
+        if value <= 0:
+            return json_error("Значение должно быть больше 0", 400)
+        if type_ == "percent" and value > 100:
+            return json_error("Процент не может быть больше 100", 400)
+        if expires_at:
+            try:
+                date.fromisoformat(expires_at)
+            except ValueError:
+                return json_error("Неверный формат даты (ожидается YYYY-MM-DD)", 400)
+
+        ok = create_promo_code(code, type_, value, expires_at)
+        if not ok:
+            return json_error("Промокод с таким кодом уже существует", 409)
+        return jsonify({"ok": True})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 500)
+
+
+@app.route("/api/admin/promos/<int:promo_id>/status", methods=["POST"])
+def api_admin_promos_status(promo_id: int):
+    try:
+        require_admin_context()
+        payload = request.get_json(force=True, silent=True) or {}
+        is_active = bool(payload.get("is_active", True))
+        set_promo_active(promo_id, is_active)
+        return jsonify({"ok": True})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 500)
+
+
+@app.route("/api/admin/promos/<int:promo_id>/delete", methods=["POST"])
+def api_admin_promos_delete(promo_id: int):
+    try:
+        require_admin_context()
+        delete_promo_code(promo_id)
+        return jsonify({"ok": True})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 500)
 
 
 @app.route("/api/admin/orders")

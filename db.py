@@ -516,9 +516,11 @@ def add_order(order_data: dict[str, Any]) -> dict[str, Any]:
                 telegram_username,
                 telegram_first_name,
                 total,
+                promo_code,
+                discount_amount,
                 created_at
             )
-            SELECT COALESCE(MAX(order_number), 0) + 1, ?, ?, ?, ?, ?, ?, ?
+            SELECT COALESCE(MAX(order_number), 0) + 1, ?, ?, ?, ?, ?, ?, ?, ?, ?
             FROM orders
             """,
             (
@@ -528,6 +530,8 @@ def add_order(order_data: dict[str, Any]) -> dict[str, Any]:
                 order_data["telegram_user"].get("username", ""),
                 order_data["telegram_user"].get("first_name", ""),
                 order_data["total"],
+                order_data.get("promo_code"),
+                order_data.get("discount_amount", 0),
                 now_iso(),
             ),
         )
