@@ -923,6 +923,7 @@
         state.selectedOrder = data.item;
         renderOrderDetails();
         orderDetailsModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
       } catch (error) {
         tg?.showAlert?.(error.message);
       }
@@ -931,6 +932,7 @@
     function closeOrderDetails() {
       state.selectedOrder = null;
       orderDetailsModal.classList.add('hidden');
+      document.body.style.overflow = '';
     }
 
     function renderOrderDetails() {
@@ -1027,12 +1029,14 @@
       renderImageList('editImageList', editProductImages);
 
       editProductModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
     }
 
     function closeEditProductModal() {
       state.editingProductId = null;
       editProductImages = [];
       editProductModal.classList.add('hidden');
+      document.body.style.overflow = '';
     }
 
     async function saveEditedProduct() {
