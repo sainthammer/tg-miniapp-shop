@@ -436,17 +436,18 @@
         <div class="form-title" style="margin-bottom:12px;">Новый промокод</div>
         <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
           <input id="promoCodeInput" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Код (например SALE20)" style="text-transform:uppercase;box-sizing:border-box;" />
-          <div style="display:flex;gap:8px;">
-            <select id="promoTypeSelect" class="rounded-2xl bg-white/10 border border-white/10 px-3 py-3 outline-none" style="flex:1;min-width:0;">
+          <div style="display:flex;gap:8px;min-width:0;">
+            <select id="promoTypeSelect" style="flex:1;min-width:0;border-radius:16px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.10);padding:12px;outline:none;color:inherit;font-family:var(--fn-body);font-size:14px;">
               <option value="percent">Процент (%)</option>
               <option value="fixed">Фикс. сумма (₽)</option>
             </select>
-            <input id="promoValueInput" type="number" min="1" class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" placeholder="Значение" style="flex:1;min-width:0;box-sizing:border-box;" />
+            <input id="promoValueInput" type="number" min="1" placeholder="Значение" style="flex:1;min-width:0;box-sizing:border-box;border-radius:16px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.10);padding:12px 16px;outline:none;color:inherit;font-family:var(--fn-body);font-size:14px;" />
           </div>
-          <label style="display:flex;flex-direction:column;gap:4px;">
-            <span style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--silver-faint);">Срок действия (необязательно)</span>
-            <input id="promoExpiresInput" type="date" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none" style="box-sizing:border-box;color-scheme:dark;" />
-          </label>
+          <input id="promoExpiresInput" type="text" placeholder="Срок действия (необязательно)"
+            class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none"
+            style="box-sizing:border-box;color-scheme:dark;"
+            onfocus="this.type='date'"
+            onblur="if(!this.value)this.type='text'" />
         </div>
         <button id="promoCreateBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">Создать промокод</button>
         <div id="promoCreateResult" style="display:none;margin-top:10px;padding:10px 14px;border-radius:3px;font-family:var(--fn-body);font-size:13px;"></div>
