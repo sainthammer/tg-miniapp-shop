@@ -10,6 +10,12 @@ services:
     volumes:
       - shop_data:/app/data
       - ./static/uploads:/app/static/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8080/')\" || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
 volumes:
   shop_data:
