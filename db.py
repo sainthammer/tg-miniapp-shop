@@ -826,5 +826,16 @@ def get_currency_rates() -> dict:
 
 
 def set_currency_rates(usd: float, byn: float) -> None:
-    set_setting("currency_usd_rate", str(usd))
-    set_setting("currency_byn_rate", str(byn))
+    now = now_iso()
+    with get_connection() as conn:
+        for key, val in [("currency_usd_rate", str(usd)), ("currency_byn_rate", str(byn))]:
+            conn.execute(
+                """
+                INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)
+                ON CONFLICT(key) DO UPDATE SET
+                    value = excluded.value,
+                    updated_at = excluded.updated_at
+                """,
+                (key, val, now),
+            )
+        conn.commit()

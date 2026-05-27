@@ -296,6 +296,9 @@ def api_admin_set_currency_rates():
             byn = float(payload.get("byn", 0))
         except (ValueError, TypeError):
             return json_error("Invalid rate values", 400)
+        import math
+        if not (math.isfinite(usd) and math.isfinite(byn)):
+            return json_error("Rates must be finite numbers", 400)
         if usd <= 0 or byn <= 0:
             return json_error("Rates must be positive", 400)
         set_currency_rates(usd, byn)
