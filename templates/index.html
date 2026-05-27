@@ -557,12 +557,15 @@
     <header class="site-header mb-4">
       <div class="site-header__inner">
         <img src="/static/xtinct-logo.png" class="site-header__logo" alt="XTINCT" />
-        <button id="managerBtn" class="mgr-btn">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-          Менеджер
-        </button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button id="currencyBtn" class="mgr-btn" style="min-width:42px;justify-content:center;">₽</button>
+          <button id="managerBtn" class="mgr-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            Менеджер
+          </button>
+        </div>
       </div>
     </header>
 
@@ -932,8 +935,23 @@
       localStorage.setItem(key, JSON.stringify(value));
     }
 
-    function formatPrice(value) {
-      return new Intl.NumberFormat('ru-RU').format(value) + ' ₽';
+    let activeCurrency = 'RUB';
+    let currencyRates = { usd: 90.0, byn: 28.0 };
+    const CURRENCIES = ['RUB', 'BYN', 'USD'];
+    const CURRENCY_LABELS = { RUB: '₽', BYN: 'Br', USD: '$' };
+
+    function formatPrice(rub) {
+      if (activeCurrency === 'USD') return '$' + Math.ceil(rub / currencyRates.usd);
+      if (activeCurrency === 'BYN') return Math.ceil(rub / currencyRates.byn) + ' Br';
+      return new Intl.NumberFormat('ru-RU').format(rub) + ' ₽';
+    }
+
+    async function loadCurrencyRates() {
+      try {
+        const resp = await fetch('/api/currency-rates');
+        const data = await resp.json();
+        if (data.ok) currencyRates = { usd: data.usd, byn: data.byn };
+      } catch(e) { /* keep defaults */ }
     }
 
     function formatDate(value) {
@@ -1549,6 +1567,17 @@
       window.open(link, '_blank');
     }
 
+    document.getElementById('currencyBtn').addEventListener('click', () => {
+      const idx = CURRENCIES.indexOf(activeCurrency);
+      activeCurrency = CURRENCIES[(idx + 1) % CURRENCIES.length];
+      document.getElementById('currencyBtn').textContent = CURRENCY_LABELS[activeCurrency];
+      renderAll();
+      if (state.selectedProduct) {
+        const el = document.getElementById('productModalPrice');
+        if (el) el.textContent = formatPrice(state.selectedProduct.price);
+      }
+    });
+
     const ADMIN_IDS = new Set({{ admin_ids | tojson }});
     const currentUserId = tg?.initDataUnsafe?.user?.id;
     const managerBtn = document.getElementById('managerBtn');
@@ -1674,7 +1703,7 @@
 
     (async function init() {
       renderCatalogSkeleton();
-      await Promise.all([loadProducts(), loadCategories()]);
+      await Promise.all([loadProducts(), loadCategories(), loadCurrencyRates()]);
       renderCategories();
       renderAll();
       setTab('catalog');
