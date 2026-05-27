@@ -428,6 +428,36 @@
 
     <section id="utilsScreen" class="hidden">
 
+      <!-- Курсы валют -->
+      <button id="toggleCurrencyFormBtn" style="width:100%;margin-bottom:10px;padding:10px 16px;font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--silver-dim);background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.22);border-top-color:rgba(192,195,198,0.26);border-bottom-color:rgba(0,0,0,0.28);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);border-radius:3px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="12" x2="16" y2="14"/></svg>
+        Курсы валют
+      </button>
+      <div id="currencyFormPanel" class="hidden form-panel" style="margin-bottom:12px;">
+        <div class="form-title" style="margin-bottom:14px;">Курсы валют</div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-family:var(--fn-body);font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--silver-dim);min-width:60px;">1 USD</span>
+            <input id="currencyUsdRate" type="number" step="0.01" min="0.01"
+              class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none"
+              style="width:120px;" placeholder="90.50" />
+            <span style="font-family:var(--fn-body);font-size:13px;color:var(--silver-dim);">₽</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-family:var(--fn-body);font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--silver-dim);min-width:60px;">1 BYN</span>
+            <input id="currencyBynRate" type="number" step="0.01" min="0.01"
+              class="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none"
+              style="width:120px;" placeholder="28.30" />
+            <span style="font-family:var(--fn-body);font-size:13px;color:var(--silver-dim);">₽</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+          <button id="fetchCurrencyBtn" style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--silver-dim);background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.22);border-top-color:rgba(192,195,198,0.26);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);border-radius:3px;cursor:pointer;padding:10px 14px;">Подгрузить с ЦБ РФ</button>
+          <button id="saveCurrencyBtn" class="rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">Сохранить</button>
+        </div>
+        <div id="currencyStatus" style="display:none;font-family:var(--fn-body);font-size:13px;letter-spacing:0.03em;padding:4px 0;"></div>
+      </div>
+
       <!-- Промокоды -->
       <button id="togglePromoFormBtn" style="width:100%;margin-bottom:10px;padding:10px 16px;font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--silver-dim);background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.22);border-top-color:rgba(192,195,198,0.26);border-bottom-color:rgba(0,0,0,0.28);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);border-radius:3px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -738,6 +768,77 @@
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.ok) throw new Error(data.error || 'Request failed');
       return data;
+    }
+
+    // ── Currency rates ──────────────────────────────────────────────────────
+    document.getElementById('toggleCurrencyFormBtn').addEventListener('click', () => {
+      const panel = document.getElementById('currencyFormPanel');
+      const wasHidden = panel.classList.toggle('hidden');
+      if (!wasHidden) loadCurrentCurrencyRates();
+    });
+
+    async function loadCurrentCurrencyRates() {
+      try {
+        const resp = await fetch('/api/admin/currency-rates', { headers: headers(true) });
+        const data = await resp.json();
+        if (data.ok) {
+          document.getElementById('currencyUsdRate').value = data.usd;
+          document.getElementById('currencyBynRate').value = data.byn;
+        }
+      } catch(e) {}
+    }
+
+    document.getElementById('fetchCurrencyBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('fetchCurrencyBtn');
+      btn.disabled = true;
+      btn.textContent = 'Загрузка…';
+      try {
+        const resp = await fetch('/api/admin/fetch-currency-rates', { headers: headers(true) });
+        const data = await resp.json();
+        if (data.ok) {
+          document.getElementById('currencyUsdRate').value = data.usd;
+          document.getElementById('currencyBynRate').value = data.byn;
+          showCurrencyStatus('Курсы подгружены с ЦБ РФ. Нажми «Сохранить» чтобы применить.', false);
+        } else {
+          showCurrencyStatus('Ошибка: ' + (data.error || 'неизвестная ошибка'), true);
+        }
+      } catch(e) {
+        showCurrencyStatus('Не удалось подключиться к ЦБ РФ', true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Подгрузить с ЦБ РФ';
+      }
+    });
+
+    document.getElementById('saveCurrencyBtn').addEventListener('click', async () => {
+      const usd = parseFloat(document.getElementById('currencyUsdRate').value);
+      const byn = parseFloat(document.getElementById('currencyBynRate').value);
+      if (!usd || !byn || usd <= 0 || byn <= 0) {
+        showCurrencyStatus('Введи корректные значения курсов', true);
+        return;
+      }
+      try {
+        const resp = await fetch('/api/admin/currency-rates', {
+          method: 'POST',
+          headers: headers(true),
+          body: JSON.stringify({ usd, byn }),
+        });
+        const data = await resp.json();
+        if (data.ok) {
+          showCurrencyStatus('Сохранено ' + new Date().toLocaleString('ru-RU'), false);
+        } else {
+          showCurrencyStatus('Ошибка: ' + (data.error || 'неизвестная ошибка'), true);
+        }
+      } catch(e) {
+        showCurrencyStatus('Ошибка сохранения', true);
+      }
+    });
+
+    function showCurrencyStatus(msg, isError) {
+      const el = document.getElementById('currencyStatus');
+      el.style.display = 'block';
+      el.style.color = isError ? '#f0b2b2' : 'var(--silver-dim)';
+      el.textContent = msg;
     }
 
     document.getElementById('togglePromoFormBtn').addEventListener('click', () => {
