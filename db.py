@@ -116,6 +116,12 @@ def init_db() -> None:
                 expires_at TEXT,
                 created_at TEXT NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS settings (
+                key        TEXT PRIMARY KEY,
+                value      TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
             """)
         conn.commit()
 
@@ -217,6 +223,11 @@ def seed_defaults() -> None:
                     ),
                 )
             conn.commit()
+
+        if not get_setting("currency_usd_rate"):
+            set_setting("currency_usd_rate", "90.0")
+        if not get_setting("currency_byn_rate"):
+            set_setting("currency_byn_rate", "28.0")
 
 
 def get_status_label(status: str) -> str:
@@ -781,3 +792,39 @@ def delete_promo_code(promo_id: int) -> None:
     with get_connection() as conn:
         conn.execute("DELETE FROM promo_codes WHERE id = ?", (promo_id,))
         conn.commit()
+
+
+def get_setting(key: str) -> str | None:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT value FROM settings WHERE key = ?", (key,)
+        ).fetchone()
+        return row["value"] if row else None
+
+
+def set_setting(key: str, value: str) -> None:
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)
+            ON CONFLICT(key) DO UPDATE SET
+                value = excluded.value,
+                updated_at = excluded.updated_at
+            """,
+            (key, value, now_iso()),
+        )
+        conn.commit()
+
+
+def get_currency_rates() -> dict:
+    usd = get_setting("currency_usd_rate")
+    byn = get_setting("currency_byn_rate")
+    return {
+        "usd": float(usd) if usd else 90.0,
+        "byn": float(byn) if byn else 28.0,
+    }
+
+
+def set_currency_rates(usd: float, byn: float) -> None:
+    set_setting("currency_usd_rate", str(usd))
+    set_setting("currency_byn_rate", str(byn))
