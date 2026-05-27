@@ -356,7 +356,7 @@
     position: relative; z-index: 1;
     height: 80px;
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 16px;
+    padding: 0 8px;
   }
   .site-header__slot { display: none; }
   .site-header__slot--right { display: none; }
@@ -373,10 +373,10 @@
   /* ── Manager button — engraved metal tag ── */
   .mgr-btn {
     display: inline-flex; align-items: center; gap: 5px;
-    padding: 8px 13px 8px 11px;
+    padding: 5px 9px 5px 7px;
     font-family: var(--fn-body);
-    font-size: 10px; font-weight: 700;
-    letter-spacing: 0.16em; text-transform: uppercase;
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
     color: var(--silver-dim);
     background:
       repeating-linear-gradient(
@@ -556,14 +556,15 @@
   <div class="max-w-6xl mx-auto px-3 safe-top pb-36">
     <header class="site-header mb-4">
       <div class="site-header__inner">
-        <img src="/static/xtinct-logo.png" class="site-header__logo" alt="XTINCT" />
-        <div style="display:flex;align-items:center;gap:8px;">
-          <button id="currencyBtn" class="mgr-btn" style="min-width:42px;justify-content:center;">₽</button>
+        <div style="flex:1;display:flex;justify-content:flex-start;padding-right:24px;">
+          <button id="currencyBtn" class="mgr-btn">
+            <span id="currencySymbol">RUB</span>
+          </button>
+        </div>
+        <img src="/static/xtinct-logo.png" class="site-header__logo" alt="XTINCT" style="position:absolute;left:50%;transform:translateX(-50%);max-width:210px;max-height:72px;" />
+        <div style="flex:1;display:flex;justify-content:flex-end;padding-left:24px;">
           <button id="managerBtn" class="mgr-btn">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            Менеджер
+            Вопрос
           </button>
         </div>
       </div>
@@ -938,7 +939,7 @@
     let activeCurrency = 'RUB';
     let currencyRates = { usd: 90.0, byn: 28.0 };
     const CURRENCIES = ['RUB', 'BYN', 'USD'];
-    const CURRENCY_LABELS = { RUB: '₽', BYN: 'Br', USD: '$' };
+    const CURRENCY_LABELS = { RUB: 'RUB', BYN: 'BYN', USD: 'USD' };
 
     function formatPrice(rub) {
       if (activeCurrency === 'USD') return '$' + Math.ceil(rub / currencyRates.usd);
@@ -1570,7 +1571,7 @@
     document.getElementById('currencyBtn').addEventListener('click', () => {
       const idx = CURRENCIES.indexOf(activeCurrency);
       activeCurrency = CURRENCIES[(idx + 1) % CURRENCIES.length];
-      document.getElementById('currencyBtn').textContent = CURRENCY_LABELS[activeCurrency];
+      document.getElementById('currencySymbol').textContent = CURRENCY_LABELS[activeCurrency];
       renderAll();
       if (state.selectedProduct) {
         const el = document.getElementById('productModalPrice');
@@ -1583,12 +1584,7 @@
     const managerBtn = document.getElementById('managerBtn');
 
     if (currentUserId && ADMIN_IDS.has(currentUserId)) {
-      managerBtn.innerHTML = `
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-          <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-        </svg>
-        Админка`;
+      managerBtn.textContent = 'Панель';
       managerBtn.addEventListener('click', () => { window.location.href = '/?mode=admin'; });
     } else {
       managerBtn.addEventListener('click', openManager);

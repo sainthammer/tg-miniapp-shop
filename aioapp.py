@@ -59,6 +59,8 @@ from db import (
     update_order_status,
     update_product,
     upsert_user,
+    get_currency_rates,
+    set_currency_rates,
 )
 
 # =========================================================
@@ -323,6 +325,83 @@ def api_products():
 def api_categories():
     """Return category names for the customer Mini App."""
     return jsonify([item["name"] for item in get_categories()])
+
+
+@app.route("/api/currency-rates")
+def api_currency_rates():
+    return jsonify({"ok": True, **get_currency_rates()})
+
+
+@app.route("/api/admin/currency-rates")
+def api_admin_get_currency_rates():
+    try:
+        require_admin_context()
+        return jsonify({"ok": True, **get_currency_rates()})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/currency-rates", methods=["POST"])
+def api_admin_set_currency_rates():
+    try:
+        require_admin_context()
+        payload = request.get_json(force=True, silent=True) or {}
+        try:
+            usd = float(payload.get("usd", 0))
+            byn = float(payload.get("byn", 0))
+        except (ValueError, TypeError):
+            return json_error("Invalid rate values", 400)
+        import math
+        if not (math.isfinite(usd) and math.isfinite(byn)):
+            return json_error("Rates must be finite numbers", 400)
+        if usd <= 0 or byn <= 0:
+            return json_error("Rates must be positive", 400)
+        set_currency_rates(usd, byn)
+        return jsonify({"ok": True})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/fetch-currency-rates")
+def api_admin_fetch_currency_rates():
+    try:
+        require_admin_context()
+        import urllib.request
+        import ssl
+        import xml.etree.ElementTree as ET
+
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        with urllib.request.urlopen(
+            "https://www.cbr.ru/scripts/XML_daily.asp", timeout=5, context=ctx
+        ) as resp:
+            xml_bytes = resp.read()
+
+        root = ET.fromstring(xml_bytes.decode("windows-1251"))
+        usd = None
+        byn = None
+        for valute in root.findall("Valute"):
+            char_code = valute.findtext("CharCode", "")
+            nominal = int(valute.findtext("Nominal", "1") or 1)
+            value_str = (valute.findtext("Value", "0") or "0").replace(",", ".")
+            rate = round(float(value_str) / nominal, 4)
+            if char_code == "USD":
+                usd = rate
+            elif char_code in ("BYN", "BYR"):
+                byn = rate
+
+        if usd is None or byn is None:
+            return json_error("Не удалось найти курсы в ответе ЦБ РФ", 502)
+        return jsonify({"ok": True, "usd": usd, "byn": byn})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(f"Ошибка загрузки курсов: {exc}", 502)
 
 
 @app.route("/api/promo/validate", methods=["POST"])

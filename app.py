@@ -314,10 +314,14 @@ def api_admin_fetch_currency_rates():
     try:
         require_admin_context()
         import urllib.request
+        import ssl
         import xml.etree.ElementTree as ET
 
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
         with urllib.request.urlopen(
-            "https://www.cbr.ru/scripts/XML_daily.asp", timeout=5
+            "https://www.cbr.ru/scripts/XML_daily.asp", timeout=5, context=ctx
         ) as resp:
             xml_bytes = resp.read()
 
