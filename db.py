@@ -138,6 +138,10 @@ def init_db() -> None:
             conn.execute("ALTER TABLE products ADD COLUMN images_json TEXT NOT NULL DEFAULT '[]'")
         if "measurements" not in cols:
             conn.execute("ALTER TABLE products ADD COLUMN measurements TEXT")
+        if "sold" not in cols:
+            conn.execute("ALTER TABLE products ADD COLUMN sold INTEGER NOT NULL DEFAULT 0")
+        if "original_category_id" not in cols:
+            conn.execute("ALTER TABLE products ADD COLUMN original_category_id INTEGER")
         conn.commit()
 
     seed_defaults()
@@ -268,15 +272,70 @@ def delete_category(category_id: int) -> dict[str, Any]:
     return {"ok": True}
 
 
+SOLD_CATEGORY_NAME = "Проданные"
+
+
 def get_categories() -> list[dict[str, Any]]:
     with get_connection() as conn:
         rows = conn.execute("""
             SELECT id, name
             FROM categories
             WHERE is_active = 1
-            ORDER BY name
-            """).fetchall()
+            ORDER BY CASE WHEN name = ? THEN 1 ELSE 0 END, name
+            """, (SOLD_CATEGORY_NAME,)).fetchall()
         return [dict(row) for row in rows]
+
+
+def get_or_create_sold_category() -> int:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT id FROM categories WHERE name = ?", (SOLD_CATEGORY_NAME,)
+        ).fetchone()
+        if row:
+            return row["id"]
+        cur = conn.execute(
+            "INSERT INTO categories (name, created_at) VALUES (?, ?)",
+            (SOLD_CATEGORY_NAME, now_iso()),
+        )
+        conn.commit()
+        return cur.lastrowid
+
+
+def mark_product_sold(product_id: int) -> bool:
+    sold_category_id = get_or_create_sold_category()
+    with get_connection() as conn:
+        cur = conn.execute(
+            """UPDATE products
+               SET sold = 1, original_category_id = category_id, category_id = ?
+               WHERE id = ?""",
+            (sold_category_id, product_id),
+        )
+        conn.commit()
+    return cur.rowcount > 0
+
+
+def unmark_product_sold(product_id: int) -> bool:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT original_category_id FROM products WHERE id = ?", (product_id,)
+        ).fetchone()
+        if not row:
+            return False
+        original_id = row["original_category_id"]
+        if not original_id:
+            fallback = conn.execute(
+                "SELECT id FROM categories WHERE name != ? AND is_active = 1 ORDER BY id LIMIT 1",
+                (SOLD_CATEGORY_NAME,),
+            ).fetchone()
+            if not fallback:
+                return False
+            original_id = fallback["id"]
+        cur = conn.execute(
+            "UPDATE products SET sold = 0, category_id = ?, original_category_id = NULL WHERE id = ?",
+            (original_id, product_id),
+        )
+        conn.commit()
+    return cur.rowcount > 0
 
 
 def list_categories_text() -> str:
@@ -344,6 +403,7 @@ def _map_product_row(row: sqlite3.Row) -> dict[str, Any]:
     extra = json_loads(item.pop("images_json", "[]"), [])
     item["images"] = [item["image"]] + extra
     item["is_active"] = bool(item.get("is_active", 1))
+    item["sold"] = bool(item.get("sold", 0))
     return item
 
 
@@ -360,7 +420,8 @@ def get_active_products() -> list[dict[str, Any]]:
                 p.sizes_json,
                 p.images_json,
                 p.measurements,
-                p.is_active
+                p.is_active,
+                p.sold
             FROM products p
             JOIN categories c ON c.id = p.category_id
             WHERE p.is_active = 1 AND c.is_active = 1
@@ -382,7 +443,8 @@ def get_all_products() -> list[dict[str, Any]]:
                 p.sizes_json,
                 p.images_json,
                 p.measurements,
-                p.is_active
+                p.is_active,
+                p.sold
             FROM products p
             JOIN categories c ON c.id = p.category_id
             ORDER BY p.id DESC
@@ -408,7 +470,8 @@ def get_product_by_id(product_id: int) -> dict[str, Any] | None:
                 p.sizes_json,
                 p.images_json,
                 p.measurements,
-                p.is_active
+                p.is_active,
+                p.sold
             FROM products p
             JOIN categories c ON c.id = p.category_id
             WHERE p.id = ?

@@ -61,6 +61,8 @@ from db import (
     upsert_user,
     get_currency_rates,
     set_currency_rates,
+    mark_product_sold,
+    unmark_product_sold,
 )
 
 # =========================================================
@@ -838,6 +840,34 @@ def api_admin_delete_product(product_id: int):
                 abs_path.unlink(missing_ok=True)
             except OSError:
                 pass
+        return jsonify({"ok": True})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/products/<int:product_id>/sell", methods=["POST"])
+def api_admin_sell_product(product_id: int):
+    try:
+        require_admin_context()
+        ok = mark_product_sold(product_id)
+        if not ok:
+            return json_error("Product not found", 404)
+        return jsonify({"ok": True})
+    except PermissionError as exc:
+        return json_error(str(exc), 403)
+    except Exception as exc:
+        return json_error(str(exc), 400)
+
+
+@app.route("/api/admin/products/<int:product_id>/unsell", methods=["POST"])
+def api_admin_unsell_product(product_id: int):
+    try:
+        require_admin_context()
+        ok = unmark_product_sold(product_id)
+        if not ok:
+            return json_error("Product not found or no categories available", 404)
         return jsonify({"ok": True})
     except PermissionError as exc:
         return json_error(str(exc), 403)

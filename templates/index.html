@@ -704,10 +704,13 @@
           </div>
         </div>
         <hr class="metal-divider" style="margin-top:16px;" />
-        <div class="engraved mb-3">Размер</div>
-        <div id="productModalSizes" class="flex flex-wrap gap-2"></div>
-        <div style="margin-top:20px;">
-          <button id="addProductFromModal" class="btn-cta">В корзину</button>
+        <div id="modalSoldBadge" class="hidden" style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--silver-faint);margin-bottom:4px;">Продано</div>
+        <div id="modalPurchaseBlock">
+          <div class="engraved mb-3">Размер</div>
+          <div id="productModalSizes" class="flex flex-wrap gap-2"></div>
+          <div style="margin-top:20px;">
+            <button id="addProductFromModal" class="btn-cta">В корзину</button>
+          </div>
         </div>
       </div>
     </div>
@@ -943,7 +946,7 @@
 
     function formatPrice(rub) {
       if (activeCurrency === 'USD') return '$' + Math.ceil(rub / currencyRates.usd);
-      if (activeCurrency === 'BYN') return Math.ceil(rub / currencyRates.byn) + ' Br';
+      if (activeCurrency === 'BYN') return Math.ceil(rub / currencyRates.byn) + ' BYN';
       return new Intl.NumberFormat('ru-RU').format(rub) + ' ₽';
     }
 
@@ -1165,7 +1168,10 @@
               <div style="font-family:var(--fn-display);font-weight:800;font-size:22px;letter-spacing:0.04em;color:var(--silver);margin-top:8px;line-height:1.1;">
                 ${formatPrice(product.price)}
               </div>
-              <button onclick="quickAdd(${product.id})" class="btn-cta" style="margin-top:8px;">В корзину</button>
+              ${product.sold
+                ? `<div style="margin-top:8px;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--silver-faint);">Продано</div>`
+                : `<button onclick="quickAdd(${product.id})" class="btn-cta" style="margin-top:8px;">В корзину</button>`
+              }
             </div>
           </div>
         </article>
@@ -1210,10 +1216,13 @@
               <div style="font-family:var(--fn-display);font-weight:800;font-size:19px;letter-spacing:0.04em;color:var(--silver);margin-top:8px;line-height:1;">
                 ${formatPrice(product.price)}
               </div>
-              <div style="font-family:var(--fn-body);font-size:11px;color:var(--silver-faint);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.02em;">
-                ${sizes.length ? sizes.map(esc).join(' · ') : 'без размеров'}
-              </div>
-              <button onclick="quickAdd(${product.id})" class="btn-cta" style="margin-top:8px;">В корзину</button>
+              ${product.sold
+                ? `<div style="margin-top:6px;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--silver-faint);">Продано</div>`
+                : `<div style="font-family:var(--fn-body);font-size:11px;color:var(--silver-faint);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.02em;">
+                    ${sizes.length ? sizes.map(esc).join(' · ') : 'без размеров'}
+                  </div>
+                  <button onclick="quickAdd(${product.id})" class="btn-cta" style="margin-top:8px;">В корзину</button>`
+              }
             </div>
           </div>
         </article>
@@ -1237,7 +1246,9 @@
     function renderCatalog() {
       const words = state.search.toLowerCase().split(/\s+/).filter(Boolean);
       const list = state.products.filter((item) => {
-        const matchCat = state.category === 'Все' || item.category === state.category;
+        const matchCat = state.category === 'Все'
+          ? !item.sold
+          : item.category === state.category;
         const tokens = (item.title + ' ' + item.category).toLowerCase().split(/\s+/);
         const matchSearch = words.length === 0 || words.every(w => {
           const stem = w.length > 3 ? w.slice(0, -1) : w;
@@ -1479,6 +1490,10 @@
       favBtn.innerHTML = fav
         ? `<span style="display:block;width:20px;height:20px;background:url(/static/button-bg.jpg) center/cover;-webkit-mask-image:url(${HEART_MASK});-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;mask-image:url(${HEART_MASK});mask-size:contain;mask-repeat:no-repeat;"></span>`
         : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(148,150,158,0.60)" stroke-width="1.8"><path d="M12 21s-7.2-4.4-9.6-8.4C.7 9.8 2.1 5.8 6 4.8c2.1-.5 4.1.2 6 2.1 1.9-1.9 3.9-2.6 6-2.1 3.9 1 5.3 5 3.6 7.8C19.2 16.6 12 21 12 21Z"/></svg>`;
+
+      const isSold = !!product.sold;
+      document.getElementById('modalSoldBadge').classList.toggle('hidden', !isSold);
+      document.getElementById('modalPurchaseBlock').classList.toggle('hidden', isSold);
 
       renderCarousel();
       renderProductSizes();

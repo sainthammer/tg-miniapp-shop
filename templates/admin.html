@@ -1179,10 +1179,12 @@
 
       const query = (document.getElementById('productSearchInput')?.value || '').trim().toLowerCase();
       const category = (document.getElementById('productCategoryFilter')?.value || '');
-      const visible = state.products.filter(p =>
-        (!query || p.title.toLowerCase().includes(query)) &&
-        (!category || p.category === category)
-      );
+      const SOLD_CAT = 'Проданные';
+      const visible = state.products.filter(p => {
+        if (category === SOLD_CAT) return p.sold;
+        if (category) return !p.sold && p.category === category;
+        return !p.sold;
+      }).filter(p => !query || p.title.toLowerCase().includes(query));
 
       if (!state.products.length) {
         root.innerHTML = `<div class="glass rounded-[22px] p-6" style="color:var(--silver-dim);font-family:var(--fn-body);font-size:14px;letter-spacing:0.04em;">Товаров пока нет.</div>`;
@@ -1210,7 +1212,7 @@
             <div style="font-family:var(--fn-body);font-size:15px;font-weight:700;color:var(--silver);letter-spacing:0.02em;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${esc(product.title)}</div>
             <div style="font-family:var(--fn-display);font-weight:800;font-size:20px;letter-spacing:0.04em;color:var(--silver);margin-top:5px;line-height:1;">${formatPrice(product.price)}</div>
             <div style="font-family:var(--fn-body);font-size:12px;color:var(--silver-faint);margin-top:3px;letter-spacing:0.03em;">Размеры: ${(product.sizes || []).map(esc).join(' · ') || 'не указаны'}</div>
-            <div style="font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${product.is_active ? 'var(--brass-dim)' : 'var(--silver-faint)'};margin-top:3px;">${product.is_active ? '● Активен' : '○ Скрыт'}</div>
+            <div style="font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${product.sold ? 'var(--silver-faint)' : product.is_active ? 'var(--brass-dim)' : 'var(--silver-faint)'};margin-top:3px;">${product.sold ? 'Продано' : product.is_active ? '● Активен' : '○ Скрыт'}</div>
           </div>
 
           <div style="display:grid;grid-template-columns:1fr;gap:5px;min-width:100px;flex-shrink:0;">
@@ -1218,16 +1220,25 @@
               style="background:var(--scratch-a),linear-gradient(180deg,#2e2e2e 0%,#1e1e1e 55%,#242424 100%);border:1px solid rgba(140,141,143,0.40);border-top-color:rgba(218,220,224,0.55);border-bottom-color:rgba(0,0,0,0.48);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);color:var(--silver);font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:8px 10px;border-radius:3px;cursor:pointer;">
               Изменить
             </button>
-            ${product.is_active
-              ? `<button onclick="hideProduct(${product.id})"
-                  style="background:linear-gradient(180deg,#5e1414 0%,#3c0c0c 100%);border:1px solid rgba(210,70,70,0.32);border-top-color:rgba(218,75,75,0.42);color:#f0b2b2;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:8px 10px;border-radius:3px;cursor:pointer;">
-                  Скрыть
-                </button>`
-              : `<button onclick="showProduct(${product.id})"
+            ${product.sold
+              ? `<button onclick="unsellProduct(${product.id})"
                   style="background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.20);color:var(--silver-dim);font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:8px 10px;border-radius:3px;cursor:pointer;">
-                  Показать
+                  Отменить
                 </button>`
+              : product.is_active
+                ? `<button onclick="hideProduct(${product.id})"
+                    style="background:linear-gradient(180deg,#5e1414 0%,#3c0c0c 100%);border:1px solid rgba(210,70,70,0.32);border-top-color:rgba(218,75,75,0.42);color:#f0b2b2;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:8px 10px;border-radius:3px;cursor:pointer;">
+                    Скрыть
+                  </button>`
+                : `<button onclick="showProduct(${product.id})"
+                    style="background:linear-gradient(180deg,#1e1e1e,#181818);border:1px solid rgba(140,141,143,0.20);color:var(--silver-dim);font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:8px 10px;border-radius:3px;cursor:pointer;">
+                    Показать
+                  </button>`
             }
+            ${!product.sold ? `<button onclick="sellProduct(${product.id})"
+              style="background:linear-gradient(180deg,#3a2e10 0%,#2a200a 100%);border:1px solid rgba(200,160,60,0.32);border-top-color:rgba(210,170,70,0.42);color:#c8a060;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:8px 10px;border-radius:3px;cursor:pointer;">
+              Продано
+            </button>` : ''}
             <button onclick="deleteProduct(${product.id})"
               style="background:linear-gradient(180deg,#4a0e0e 0%,#2e0808 100%);border:1px solid rgba(210,70,70,0.28);color:#e8a0a0;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:8px 10px;border-radius:3px;cursor:pointer;">
               Удалить
@@ -1334,6 +1345,30 @@
       } catch (error) {
         tg?.showAlert?.(error.message);
       }
+    }
+
+    async function unsellProduct(productId) {
+      tg?.showConfirm('Снять отметку «Продано»? Товар вернётся в первую доступную категорию.', async (confirmed) => {
+        if (!confirmed) return;
+        try {
+          await apiPost(`/api/admin/products/${productId}/unsell`);
+          await loadProducts();
+        } catch (error) {
+          tg?.showAlert?.(error.message);
+        }
+      });
+    }
+
+    async function sellProduct(productId) {
+      tg?.showConfirm('Пометить товар как проданный? Он переместится в категорию «Проданные».', async (confirmed) => {
+        if (!confirmed) return;
+        try {
+          await apiPost(`/api/admin/products/${productId}/sell`);
+          await loadProducts();
+        } catch (error) {
+          tg?.showAlert?.(error.message);
+        }
+      });
     }
 
     async function deleteProduct(productId) {
