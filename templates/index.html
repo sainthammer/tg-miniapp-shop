@@ -1160,9 +1160,9 @@
                   ${esc(product.title)}
                 </h3>
               </div>
-              <button onclick="toggleFavorite(${product.id})" data-fav-btn="${product.id}" data-fav-size="16"
+              ${product.sold ? `<div style="flex-shrink:0;width:32px;height:32px;"></div>` : `<button onclick="toggleFavorite(${product.id})" data-fav-btn="${product.id}" data-fav-size="16"
                 style="flex-shrink:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;border:none;padding:0;transition:opacity .14s ease;"
-              >${favIcon}</button>
+              >${favIcon}</button>`}
             </div>
             <div style="margin-top:auto;display:flex;flex-direction:column;gap:0;">
               <div style="font-family:var(--fn-display);font-weight:800;font-size:22px;letter-spacing:0.04em;color:var(--silver);margin-top:8px;line-height:1.1;">
@@ -1208,9 +1208,9 @@
                   ${esc(product.title)}
                 </h3>
               </div>
-              <button onclick="toggleFavorite(${product.id})" data-fav-btn="${product.id}" data-fav-size="14"
+              ${product.sold ? `<div style="flex-shrink:0;width:28px;height:28px;"></div>` : `<button onclick="toggleFavorite(${product.id})" data-fav-btn="${product.id}" data-fav-size="14"
                 style="flex-shrink:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;border:none;padding:0;transition:opacity .14s ease;"
-              >${favIcon}</button>
+              >${favIcon}</button>`}
             </div>
             <div style="margin-top:auto;display:flex;flex-direction:column;gap:0;">
               <div style="font-family:var(--fn-display);font-weight:800;font-size:19px;letter-spacing:0.04em;color:var(--silver);margin-top:8px;line-height:1;">
@@ -1494,6 +1494,7 @@
       const isSold = !!product.sold;
       document.getElementById('modalSoldBadge').classList.toggle('hidden', !isSold);
       document.getElementById('modalPurchaseBlock').classList.toggle('hidden', isSold);
+      favBtn.style.display = isSold ? 'none' : '';
 
       renderCarousel();
       renderProductSizes();
