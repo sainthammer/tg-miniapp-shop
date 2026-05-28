@@ -564,7 +564,7 @@
         <img src="/static/xtinct-logo.png" class="site-header__logo" alt="XTINCT" style="position:absolute;left:50%;transform:translateX(-50%);max-width:210px;max-height:72px;" />
         <div style="flex:1;display:flex;justify-content:flex-end;padding-left:24px;">
           <button id="managerBtn" class="mgr-btn">
-            Вопрос
+            Помощь
           </button>
         </div>
       </div>
@@ -1599,7 +1599,7 @@
     const managerBtn = document.getElementById('managerBtn');
 
     if (currentUserId && ADMIN_IDS.has(currentUserId)) {
-      managerBtn.textContent = 'Панель';
+      managerBtn.textContent = 'Админка';
       managerBtn.addEventListener('click', () => { window.location.href = '/?mode=admin'; });
     } else {
       managerBtn.addEventListener('click', openManager);

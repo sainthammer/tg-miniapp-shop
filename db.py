@@ -306,7 +306,7 @@ def mark_product_sold(product_id: int) -> bool:
     with get_connection() as conn:
         cur = conn.execute(
             """UPDATE products
-               SET sold = 1, original_category_id = category_id, category_id = ?
+               SET sold = 1, is_active = 1, original_category_id = category_id, category_id = ?
                WHERE id = ?""",
             (sold_category_id, product_id),
         )
