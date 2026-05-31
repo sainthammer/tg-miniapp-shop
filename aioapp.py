@@ -50,7 +50,6 @@ from db import (
     get_order_status_keys,
     get_product_map,
     get_promo_code,
-    get_status_label,
     get_user_orders,
     init_db,
     list_orders,
@@ -83,6 +82,7 @@ PORT = int(os.getenv("PORT", "8080"))
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN is not set. Put it in the .env file.")
 
+
 # Поддержка нескольких администраторов через ADMIN_CHAT_IDS (через запятую).
 # Для обратной совместимости также читается старый ADMIN_CHAT_ID.
 def _parse_admin_ids() -> set[int]:
@@ -99,6 +99,7 @@ def _parse_admin_ids() -> set[int]:
                 except ValueError:
                     print(f"WARN: cannot parse admin id '{part}', skipping")
     return ids
+
 
 ADMIN_CHAT_IDS: set[int] = _parse_admin_ids()
 
@@ -248,7 +249,9 @@ def build_admin_inline() -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton(
                     text="Открыть админку",
-                    web_app=WebAppInfo(url=_build_url(APP_URL.rstrip("/"), mode="admin")),
+                    web_app=WebAppInfo(
+                        url=_build_url(APP_URL.rstrip("/"), mode="admin")
+                    ),
                 )
             ]
         ]
@@ -302,14 +305,15 @@ def require_admin_context() -> dict:
 # =========================================================
 
 
-
 @app.route("/")
 def index():
     """Render customer app or admin app depending on query mode."""
     mode = (request.args.get("mode") or "").strip().lower()
     if mode == "admin":
         return render_template("admin.html")
-    return render_template("index.html", manager_link=MANAGER_LINK, admin_ids=sorted(ADMIN_CHAT_IDS))
+    return render_template(
+        "index.html", manager_link=MANAGER_LINK, admin_ids=sorted(ADMIN_CHAT_IDS)
+    )
 
 
 # =========================================================
@@ -356,6 +360,7 @@ def api_admin_set_currency_rates():
         except (ValueError, TypeError):
             return json_error("Invalid rate values", 400)
         import math
+
         if not (math.isfinite(usd) and math.isfinite(byn)):
             return json_error("Rates must be finite numbers", 400)
         if usd <= 0 or byn <= 0:
@@ -489,7 +494,7 @@ def create_order():
 
             size_label = f" | Размер: {size}" if size else ""
             lines.append(
-                f'• {product["title"]} × {quantity}{size_label} — {rub(subtotal)}'
+                f"• {product['title']} × {quantity}{size_label} — {rub(subtotal)}"
             )
             normalized_items.append(
                 {
@@ -511,7 +516,10 @@ def create_order():
         if promo_code_str:
             promo = get_promo_code(promo_code_str)
             if promo and promo["is_active"]:
-                if not promo["expires_at"] or date.fromisoformat(promo["expires_at"]) >= date.today():
+                if (
+                    not promo["expires_at"]
+                    or date.fromisoformat(promo["expires_at"]) >= date.today()
+                ):
                     discount_amount = calculate_discount(promo, total)
             total = max(0, total - discount_amount)
 
@@ -541,7 +549,11 @@ def create_order():
         tg_profile = f'<a href="tg://user?id={user_id}">{first_name}</a>'
         items_block = "\n".join(lines)
         comment_block = f"\n\n<b>Комментарий:</b> {comment}" if comment else ""
-        promo_block = f"\n<b>Промокод:</b> {promo_code_str} (−{rub(discount_amount)})" if promo_code_str else ""
+        promo_block = (
+            f"\n<b>Промокод:</b> {promo_code_str} (−{rub(discount_amount)})"
+            if promo_code_str
+            else ""
+        )
 
         text = (
             f"<b>Новый заказ #{order_number}</b>\n\n"
@@ -663,14 +675,16 @@ def api_admin_orders():
         offset = (page - 1) * per_page
         items = list_orders(per_page, offset, search, field)
         total = count_orders(search, field)
-        return jsonify({
-            "ok": True,
-            "items": items,
-            "total": total,
-            "page": page,
-            "per_page": per_page,
-            "total_pages": max(1, -(-total // per_page)),
-        })
+        return jsonify(
+            {
+                "ok": True,
+                "items": items,
+                "total": total,
+                "page": page,
+                "per_page": per_page,
+                "total_pages": max(1, -(-total // per_page)),
+            }
+        )
     except PermissionError as exc:
         return json_error(str(exc), 403)
     except Exception as exc:
@@ -738,7 +752,11 @@ def api_admin_create_product():
         image = (payload.get("image") or "").strip()
         description = (payload.get("description") or "").strip()
         sizes = payload.get("sizes") or []
-        extra_images = [img for img in (payload.get("extra_images") or []) if isinstance(img, str) and img.strip()]
+        extra_images = [
+            img
+            for img in (payload.get("extra_images") or [])
+            if isinstance(img, str) and img.strip()
+        ]
         measurements = (payload.get("measurements") or "").strip() or None
 
         try:
@@ -749,7 +767,16 @@ def api_admin_create_product():
         if not title or not category or not image or not description or price <= 0:
             return json_error("All product fields are required", 400)
 
-        product = add_product(title, price, category, image, description, sizes, extra_images, measurements)
+        product = add_product(
+            title,
+            price,
+            category,
+            image,
+            description,
+            sizes,
+            extra_images,
+            measurements,
+        )
         if not product:
             return json_error("Invalid category", 400)
 
@@ -768,7 +795,16 @@ def api_admin_update_product(product_id: int):
         payload = request.get_json(force=True, silent=True) or {}
         updates = {}
 
-        for key in ("title", "price", "category", "image", "description", "sizes", "extra_images", "measurements"):
+        for key in (
+            "title",
+            "price",
+            "category",
+            "image",
+            "description",
+            "sizes",
+            "extra_images",
+            "measurements",
+        ):
             if key in payload:
                 updates[key] = payload[key]
 
@@ -996,7 +1032,9 @@ def api_admin_broadcast():
         return json_error(str(exc), 500)
 
 
-async def _broadcast(text: str, photo_bytes: bytes | None, photo_name: str | None) -> dict:
+async def _broadcast(
+    text: str, photo_bytes: bytes | None, photo_name: str | None
+) -> dict:
     safe_text = html.escape(text) if text else ""
     user_ids = get_all_user_ids()
     sent = 0
@@ -1169,7 +1207,10 @@ async def send_db_backup() -> None:
     caption = f"Бэкап БД · {ts} UTC"
 
     await asyncio.gather(
-        *[bot.send_document(admin_id, doc, caption=caption) for admin_id in ADMIN_CHAT_IDS],
+        *[
+            bot.send_document(admin_id, doc, caption=caption)
+            for admin_id in ADMIN_CHAT_IDS
+        ],
         return_exceptions=True,
     )
 

@@ -26,12 +26,10 @@ from db import (
     get_active_products,
     get_all_products,
     get_categories,
-    get_category_by_name,
     get_currency_rates,
     get_next_order_number,
     get_order,
     get_order_status_keys,
-    get_product_by_id,
     get_product_map,
     get_status_label,
     get_user_orders,
@@ -163,7 +161,6 @@ DEV_MODE = os.getenv("DEV_MODE", "0").strip() == "1"
 
 
 from aiogram.utils.web_app import check_webapp_signature
-from urllib.parse import parse_qsl
 import json
 
 
@@ -214,7 +211,6 @@ def save_telegram_photo(message) -> str:
     return f"/static/uploads/{filename}"
 
 
-from flask import redirect, request, url_for
 
 
 @app.route("/")
@@ -297,6 +293,7 @@ def api_admin_set_currency_rates():
         except (ValueError, TypeError):
             return json_error("Invalid rate values", 400)
         import math
+
         if not (math.isfinite(usd) and math.isfinite(byn)):
             return json_error("Rates must be finite numbers", 400)
         if usd <= 0 or byn <= 0:
@@ -399,7 +396,7 @@ def create_order():
 
             size_label = f" | Размер: {size}" if size else ""
             lines.append(
-                f'• {product["title"]} × {quantity}{size_label} — {rub(subtotal)}'
+                f"• {product['title']} × {quantity}{size_label} — {rub(subtotal)}"
             )
             normalized_items.append(
                 {
@@ -538,7 +535,11 @@ def api_admin_create_product():
         image = (payload.get("image") or "").strip()
         description = (payload.get("description") or "").strip()
         sizes = payload.get("sizes") or []
-        extra_images = [img for img in (payload.get("extra_images") or []) if isinstance(img, str) and img.strip()]
+        extra_images = [
+            img
+            for img in (payload.get("extra_images") or [])
+            if isinstance(img, str) and img.strip()
+        ]
         try:
             price = int(payload.get("price", 0))
         except Exception:
@@ -547,7 +548,9 @@ def api_admin_create_product():
         if not title or not category or not image or not description or price <= 0:
             return json_error("All product fields are required", 400)
 
-        product = add_product(title, price, category, image, description, sizes, extra_images)
+        product = add_product(
+            title, price, category, image, description, sizes, extra_images
+        )
         if not product:
             return json_error("Invalid category", 400)
         return jsonify({"ok": True, "item": product})
@@ -563,7 +566,15 @@ def api_admin_update_product(product_id: int):
         require_admin_context()
         payload = request.get_json(force=True, silent=True) or {}
         updates = {}
-        for key in ("title", "price", "category", "image", "description", "sizes", "extra_images"):
+        for key in (
+            "title",
+            "price",
+            "category",
+            "image",
+            "description",
+            "sizes",
+            "extra_images",
+        ):
             if key in payload:
                 updates[key] = payload[key]
         if "price" in updates:

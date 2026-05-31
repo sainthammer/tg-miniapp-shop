@@ -126,20 +126,29 @@ def init_db() -> None:
         conn.commit()
 
         # migrations
-        cols = {row["name"] for row in conn.execute("PRAGMA table_info(orders)").fetchall()}
+        cols = {
+            row["name"] for row in conn.execute("PRAGMA table_info(orders)").fetchall()
+        }
         if "promo_code" not in cols:
             conn.execute("ALTER TABLE orders ADD COLUMN promo_code TEXT")
         if "discount_amount" not in cols:
             conn.execute("ALTER TABLE orders ADD COLUMN discount_amount REAL DEFAULT 0")
 
     with get_connection() as conn:
-        cols = {row["name"] for row in conn.execute("PRAGMA table_info(products)").fetchall()}
+        cols = {
+            row["name"]
+            for row in conn.execute("PRAGMA table_info(products)").fetchall()
+        }
         if "images_json" not in cols:
-            conn.execute("ALTER TABLE products ADD COLUMN images_json TEXT NOT NULL DEFAULT '[]'")
+            conn.execute(
+                "ALTER TABLE products ADD COLUMN images_json TEXT NOT NULL DEFAULT '[]'"
+            )
         if "measurements" not in cols:
             conn.execute("ALTER TABLE products ADD COLUMN measurements TEXT")
         if "sold" not in cols:
-            conn.execute("ALTER TABLE products ADD COLUMN sold INTEGER NOT NULL DEFAULT 0")
+            conn.execute(
+                "ALTER TABLE products ADD COLUMN sold INTEGER NOT NULL DEFAULT 0"
+            )
         if "original_category_id" not in cols:
             conn.execute("ALTER TABLE products ADD COLUMN original_category_id INTEGER")
         conn.commit()
@@ -264,7 +273,10 @@ def delete_category(category_id: int) -> dict[str, Any]:
             "SELECT COUNT(*) as n FROM products WHERE category_id = ?", (category_id,)
         ).fetchone()["n"]
         if count > 0:
-            return {"ok": False, "error": f"Нельзя удалить: в категории {count} товар(ов)"}
+            return {
+                "ok": False,
+                "error": f"Нельзя удалить: в категории {count} товар(ов)",
+            }
         cur = conn.execute("DELETE FROM categories WHERE id = ?", (category_id,))
         conn.commit()
     if cur.rowcount == 0:
@@ -277,12 +289,15 @@ SOLD_CATEGORY_NAME = "Проданные"
 
 def get_categories() -> list[dict[str, Any]]:
     with get_connection() as conn:
-        rows = conn.execute("""
+        rows = conn.execute(
+            """
             SELECT id, name
             FROM categories
             WHERE is_active = 1
             ORDER BY CASE WHEN name = ? THEN 1 ELSE 0 END, name
-            """, (SOLD_CATEGORY_NAME,)).fetchall()
+            """,
+            (SOLD_CATEGORY_NAME,),
+        ).fetchall()
         return [dict(row) for row in rows]
 
 
@@ -342,7 +357,7 @@ def list_categories_text() -> str:
     categories = get_categories()
     if not categories:
         return "Категорий пока нет."
-    return "\n".join(f'• {item["name"]} (ID: {item["id"]})' for item in categories)
+    return "\n".join(f"• {item['name']} (ID: {item['id']})" for item in categories)
 
 
 def get_category_by_name(name: str) -> dict[str, Any] | None:
@@ -490,7 +505,7 @@ def list_all_products_text() -> str:
         status = "активен" if row["is_active"] else "скрыт"
         sizes = ", ".join(row["sizes"]) or "без размеров"
         lines.append(
-            f'#{row["id"]} | {row["title"]} | {row["price"]} ₽ | {row["category"]} | {sizes} | {status}'
+            f"#{row['id']} | {row['title']} | {row['price']} ₽ | {row['category']} | {sizes} | {status}"
         )
     return "\n".join(lines)
 
@@ -656,10 +671,13 @@ def add_order(order_data: dict[str, Any]) -> dict[str, Any]:
 def _order_search_clause(search: str, field: str) -> tuple[str, tuple]:
     q = f"%{search.lower().lstrip('@')}%"
     clauses = {
-        "number":   ("(order_number || '') LIKE ?", (f"%{search}%",)),
-        "name":     ("LOWER(COALESCE(customer_name, '')) LIKE ?", (q,)),
-        "phone":    ("LOWER(COALESCE(customer_phone, '')) LIKE ?", (q,)),
-        "telegram": ("REPLACE(LOWER(COALESCE(customer_telegram_link, '')), '@', '') LIKE ?", (q,)),
+        "number": ("(order_number || '') LIKE ?", (f"%{search}%",)),
+        "name": ("LOWER(COALESCE(customer_name, '')) LIKE ?", (q,)),
+        "phone": ("LOWER(COALESCE(customer_phone, '')) LIKE ?", (q,)),
+        "telegram": (
+            "REPLACE(LOWER(COALESCE(customer_telegram_link, '')), '@', '') LIKE ?",
+            (q,),
+        ),
     }
     return clauses.get(field, clauses["number"])
 
@@ -674,7 +692,9 @@ def count_orders(search: str = "", field: str = "number") -> int:
         return conn.execute("SELECT COUNT(*) FROM orders").fetchone()[0]
 
 
-def list_orders(limit: int = 20, offset: int = 0, search: str = "", field: str = "number") -> list[dict[str, Any]]:
+def list_orders(
+    limit: int = 20, offset: int = 0, search: str = "", field: str = "number"
+) -> list[dict[str, Any]]:
     with get_connection() as conn:
         if search:
             clause, params = _order_search_clause(search, field)
@@ -785,7 +805,9 @@ def get_user_orders(
     return [get_order(int(row["order_number"])) for row in rows]
 
 
-def upsert_user(user_id: str, username: str | None = None, first_name: str | None = None) -> None:
+def upsert_user(
+    user_id: str, username: str | None = None, first_name: str | None = None
+) -> None:
     with get_connection() as conn:
         conn.execute(
             """
@@ -830,7 +852,9 @@ def list_promo_codes() -> list[dict[str, Any]]:
         return [dict(r) for r in rows]
 
 
-def create_promo_code(code: str, type_: str, value: float, expires_at: str | None) -> bool:
+def create_promo_code(
+    code: str, type_: str, value: float, expires_at: str | None
+) -> bool:
     try:
         with get_connection() as conn:
             conn.execute(
@@ -891,7 +915,10 @@ def get_currency_rates() -> dict:
 def set_currency_rates(usd: float, byn: float) -> None:
     now = now_iso()
     with get_connection() as conn:
-        for key, val in [("currency_usd_rate", str(usd)), ("currency_byn_rate", str(byn))]:
+        for key, val in [
+            ("currency_usd_rate", str(usd)),
+            ("currency_byn_rate", str(byn)),
+        ]:
             conn.execute(
                 """
                 INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)
