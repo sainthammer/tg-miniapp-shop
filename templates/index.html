@@ -1713,6 +1713,12 @@
       if (Math.abs(delta) > 50) carouselStep(delta < 0 ? 1 : -1);
     }, { passive: true });
 
+    categoriesEl.addEventListener('wheel', (e) => {
+      if (e.deltaY === 0) return;
+      e.preventDefault();
+      categoriesEl.scrollLeft += e.deltaY + e.deltaX;
+    }, { passive: false });
+
     (async function init() {
       renderCatalogSkeleton();
       await Promise.all([loadProducts(), loadCategories(), loadCurrencyRates()]);
