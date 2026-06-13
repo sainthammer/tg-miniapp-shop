@@ -412,6 +412,7 @@
       </div>
 
       <div id="productsList" class="space-y-3"></div>
+      <div id="adminProductsPagination" style="display:none;justify-content:center;align-items:center;gap:12px;margin-top:16px;"></div>
     </section>
 
     <section id="categoriesScreen" class="hidden">
@@ -660,6 +661,7 @@
       ordersPage: 1,
       ordersTotalPages: 1,
       ordersTotal: 0,
+      adminProductsPage: 1,
       products: [],
       categories: [],
       editingProductId: null,
@@ -1174,6 +1176,8 @@
       }
     }
 
+    const ADMIN_PRODUCTS_PAGE_SIZE = 20;
+
     function renderProducts() {
       const root = document.getElementById('productsList');
 
@@ -1188,15 +1192,25 @@
 
       if (!state.products.length) {
         root.innerHTML = `<div class="glass rounded-[22px] p-6" style="color:var(--silver-dim);font-family:var(--fn-body);font-size:14px;letter-spacing:0.04em;">Товаров пока нет.</div>`;
+        document.getElementById('adminProductsPagination').style.display = 'none';
         return;
       }
 
       if (!visible.length) {
         root.innerHTML = `<div class="glass rounded-[22px] p-6" style="color:var(--silver-dim);font-family:var(--fn-body);font-size:14px;letter-spacing:0.04em;">Ничего не найдено.</div>`;
+        document.getElementById('adminProductsPagination').style.display = 'none';
         return;
       }
 
-      root.innerHTML = visible.map(product => `
+      const totalPages = Math.max(1, Math.ceil(visible.length / ADMIN_PRODUCTS_PAGE_SIZE));
+      if (state.adminProductsPage > totalPages) state.adminProductsPage = totalPages;
+      if (state.adminProductsPage < 1) state.adminProductsPage = 1;
+      const start = (state.adminProductsPage - 1) * ADMIN_PRODUCTS_PAGE_SIZE;
+      const pageItems = visible.slice(start, start + ADMIN_PRODUCTS_PAGE_SIZE);
+
+      renderAdminProductsPagination(totalPages);
+
+      root.innerHTML = pageItems.map(product => `
         <article style="
           background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);
           border:1px solid var(--m-border);border-top-color:var(--m-top);
@@ -1247,6 +1261,41 @@
         </article>
       `).join('');
     }
+
+    function renderAdminProductsPagination(totalPages) {
+      const el = document.getElementById('adminProductsPagination');
+      if (totalPages <= 1) {
+        el.style.display = 'none';
+        return;
+      }
+      const page = state.adminProductsPage;
+      el.style.display = 'flex';
+
+      const btnStyle = (disabled) => `
+        font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
+        padding:9px 18px;border-radius:3px;cursor:${disabled ? 'default' : 'pointer'};
+        transition:filter .12s ease;
+        background:linear-gradient(180deg,#1e1e1e 0%,#181818 100%);
+        border:1px solid rgba(140,141,143,${disabled ? '0.10' : '0.22'});
+        border-top-color:rgba(192,195,198,${disabled ? '0.10' : '0.24'});
+        color:${disabled ? 'var(--silver-faint)' : 'var(--silver-dim)'};
+        opacity:${disabled ? '0.40' : '1'};
+      `;
+
+      el.innerHTML = `
+        <button onclick="setAdminProductsPage(${page - 1})" ${page <= 1 ? 'disabled' : ''} style="${btnStyle(page <= 1)}">←</button>
+        <span style="font-family:var(--fn-body);font-size:12px;font-weight:600;letter-spacing:0.10em;color:var(--silver-faint);padding:0 4px;">${page} / ${totalPages}</span>
+        <button onclick="setAdminProductsPage(${page + 1})" ${page >= totalPages ? 'disabled' : ''} style="${btnStyle(page >= totalPages)}">→</button>
+      `;
+    }
+
+    function setAdminProductsPage(n) {
+      state.adminProductsPage = n;
+      renderProducts();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.setAdminProductsPage = setAdminProductsPage;
 
     function fillCategorySelects() {
       const options = '<option value="">Выбери категорию</option>' +
@@ -1575,10 +1624,12 @@
 
     // Поиск товаров по названию — клиентская фильтрация без запроса на сервер
     document.getElementById('productSearchInput').addEventListener('input', () => {
+      state.adminProductsPage = 1;
       renderProducts();
     });
 
     document.getElementById('productCategoryFilter').addEventListener('change', () => {
+      state.adminProductsPage = 1;
       renderProducts();
     });
 
