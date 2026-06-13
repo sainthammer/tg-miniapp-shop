@@ -1,1731 +1,2502 @@
 <!doctype html>
 <html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>XTINCT</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;500;600;700;800;900&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-  /* ══════════════════════════════════════════
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+        />
+        <title>XTINCT</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;500;600;700;800;900&family=Barlow:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <script src="https://telegram.org/js/telegram-web-app.js"></script>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            /* ══════════════════════════════════════════
      XTINCT — Scratched Metal Design System
   ══════════════════════════════════════════ */
 
-  :root {
-    --m-black:   #090909;
-    --m-dark:    #101010;
-    --m-mid:     #161616;
-    --m-surf:    #1c1c1c;
-    --m-border:  rgba(155,157,160,0.15);
-    --m-top:     rgba(218,220,224,0.22);
-    --m-shine:   rgba(255,255,255,0.06);
-    --m-shadow:  rgba(0,0,0,0.58);
-    --silver:    #ccd0da;
-    --silver-dim: rgba(165,168,176,0.68);
-    --silver-faint: rgba(148,150,158,0.44);
-    --brass:     #dce4f0;
-    --brass-dim: rgba(208,218,240,0.58);
-    --danger-bd: rgba(210,70,70,0.32);
-    --fn-display: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
-    --fn-body:    'Barlow', 'Arial', sans-serif;
+            :root {
+                --m-black: #090909;
+                --m-dark: #101010;
+                --m-mid: #161616;
+                --m-surf: #1c1c1c;
+                --m-border: rgba(155, 157, 160, 0.15);
+                --m-top: rgba(218, 220, 224, 0.22);
+                --m-shine: rgba(255, 255, 255, 0.06);
+                --m-shadow: rgba(0, 0, 0, 0.58);
+                --silver: #ccd0da;
+                --silver-dim: rgba(165, 168, 176, 0.68);
+                --silver-faint: rgba(148, 150, 158, 0.44);
+                --brass: #dce4f0;
+                --brass-dim: rgba(208, 218, 240, 0.58);
+                --danger-bd: rgba(210, 70, 70, 0.32);
+                --fn-display:
+                    "Big Shoulders Display", "Arial Narrow", sans-serif;
+                --fn-body: "Barlow", "Arial", sans-serif;
 
-    /* Scratch layers — three angles, three densities */
-    --scratch-a: repeating-linear-gradient(
-      17deg, transparent 0, transparent 1.6px,
-      rgba(255,255,255,0.027) 1.6px, rgba(255,255,255,0.027) 2px);
-    --scratch-b: repeating-linear-gradient(
-      -9deg, transparent 0, transparent 4px,
-      rgba(255,255,255,0.013) 4px, rgba(255,255,255,0.013) 4.4px);
-    --scratch-c: repeating-linear-gradient(
-      76deg, transparent 0, transparent 9px,
-      rgba(255,255,255,0.006) 9px, rgba(255,255,255,0.006) 9.5px);
-  }
+                /* Scratch layers — three angles, three densities */
+                --scratch-a: repeating-linear-gradient(
+                    17deg,
+                    transparent 0,
+                    transparent 1.6px,
+                    rgba(255, 255, 255, 0.027) 1.6px,
+                    rgba(255, 255, 255, 0.027) 2px
+                );
+                --scratch-b: repeating-linear-gradient(
+                    -9deg,
+                    transparent 0,
+                    transparent 4px,
+                    rgba(255, 255, 255, 0.013) 4px,
+                    rgba(255, 255, 255, 0.013) 4.4px
+                );
+                --scratch-c: repeating-linear-gradient(
+                    76deg,
+                    transparent 0,
+                    transparent 9px,
+                    rgba(255, 255, 255, 0.006) 9px,
+                    rgba(255, 255, 255, 0.006) 9.5px
+                );
+            }
 
-  *, *::before, *::after { box-sizing: border-box; }
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+            }
 
-  body {
-    font-family: var(--fn-body);
-    background: none;
-    min-height: 100vh;
-    color: var(--silver);
-    -webkit-font-smoothing: antialiased;
-  }
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    background-image:
-      var(--scratch-a), var(--scratch-b), var(--scratch-c),
-      linear-gradient(rgba(8,8,8,0.78), rgba(8,8,8,0.78)),
-      url(/static/metal-bg.jpg);
-    background-size: auto, auto, auto, cover, cover;
-    background-position: center;
-  }
+            body {
+                font-family: var(--fn-body);
+                background: none;
+                min-height: 100vh;
+                color: var(--silver);
+                -webkit-font-smoothing: antialiased;
+            }
+            body::before {
+                content: "";
+                position: fixed;
+                inset: 0;
+                z-index: -1;
+                background-image:
+                    var(--scratch-a), var(--scratch-b), var(--scratch-c),
+                    linear-gradient(rgba(8, 8, 8, 0.78), rgba(8, 8, 8, 0.78)),
+                    url(/static/metal-bg.jpg);
+                background-size: auto, auto, auto, cover, cover;
+                background-position: center;
+            }
 
-  /* ── Metal panel ── */
-  .glass {
-    background:
-      var(--scratch-a), var(--scratch-b),
-      linear-gradient(160deg, #1e1e1e 0%, #181818 45%, #1a1a1a 100%);
-    border: 1px solid var(--m-border);
-    border-top-color: var(--m-top);
-    border-left-color: rgba(192,194,197,0.18);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.05),
-      inset 0 -1px 0 rgba(0,0,0,0.40) !important;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
+            /* ── Metal panel ── */
+            .glass {
+                background:
+                    var(--scratch-a), var(--scratch-b),
+                    linear-gradient(
+                        160deg,
+                        #1e1e1e 0%,
+                        #181818 45%,
+                        #1a1a1a 100%
+                    );
+                border: 1px solid var(--m-border);
+                border-top-color: var(--m-top);
+                border-left-color: rgba(192, 194, 197, 0.18);
+                box-shadow:
+                    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.4) !important;
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+            }
 
-  /* ── Product image skeleton (экран товара) ── */
-  .modal-img-wrap {
-    position: relative;
-    min-height: 220px;
-    border-radius: 3px;
-    overflow: hidden;
-    background: linear-gradient(to bottom, #111111, #0d0d0d);
-    border-bottom: 1px solid rgba(155,157,160,0.14);
-  }
-  .modal-img-wrap::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(255,255,255,0.05) 40%,
-      rgba(255,255,255,0.09) 50%,
-      rgba(255,255,255,0.05) 60%,
-      transparent 100%);
-    background-size: 200% 100%;
-    animation: img-shimmer 1.6s ease-in-out infinite;
-    pointer-events: none;
-  }
-  .modal-img-wrap.loaded::after { display: none; }
-  @keyframes img-shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
-  #productModalImage {
-    display: block;
-    width: 100%;
-    height: auto;
-    opacity: 0;
-    transition: opacity 0.35s ease;
-  }
-  #productModalImage.img-ready { opacity: 1; }
+            /* ── Product image skeleton (экран товара) ── */
+            .modal-img-wrap {
+                position: relative;
+                min-height: 220px;
+                border-radius: 3px;
+                overflow: hidden;
+                background: linear-gradient(to bottom, #111111, #0d0d0d);
+                border-bottom: 1px solid rgba(155, 157, 160, 0.14);
+            }
+            .modal-img-wrap::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(
+                    90deg,
+                    transparent 0%,
+                    rgba(255, 255, 255, 0.05) 40%,
+                    rgba(255, 255, 255, 0.09) 50%,
+                    rgba(255, 255, 255, 0.05) 60%,
+                    transparent 100%
+                );
+                background-size: 200% 100%;
+                animation: img-shimmer 1.6s ease-in-out infinite;
+                pointer-events: none;
+            }
+            .modal-img-wrap.loaded::after {
+                display: none;
+            }
+            @keyframes img-shimmer {
+                0% {
+                    background-position: 200% 0;
+                }
+                100% {
+                    background-position: -200% 0;
+                }
+            }
+            #productModalImage {
+                display: block;
+                width: 100%;
+                height: auto;
+                opacity: 0;
+                transition: opacity 0.35s ease;
+            }
+            #productModalImage.img-ready {
+                opacity: 1;
+            }
 
-  /* ── Экран продукта (fullscreen) ── */
-  #productScreen {
-    position: fixed;
-    inset: 0;
-    z-index: 55;
-    overflow-y: auto;
-    background-image:
-      var(--scratch-a), var(--scratch-b), var(--scratch-c),
-      linear-gradient(rgba(8,8,8,0.78), rgba(8,8,8,0.78)),
-      url(/static/metal-bg.jpg);
-    background-size: auto, auto, auto, cover, cover;
-    background-position: center;
-    -webkit-overflow-scrolling: touch;
-  }
+            /* ── Экран продукта (fullscreen) ── */
+            #productScreen {
+                position: fixed;
+                inset: 0;
+                z-index: 55;
+                overflow-y: auto;
+                background-image:
+                    var(--scratch-a), var(--scratch-b), var(--scratch-c),
+                    linear-gradient(rgba(8, 8, 8, 0.78), rgba(8, 8, 8, 0.78)),
+                    url(/static/metal-bg.jpg);
+                background-size: auto, auto, auto, cover, cover;
+                background-position: center;
+                -webkit-overflow-scrolling: touch;
+            }
 
-  /* ── Scrollbars ── */
-  .hide-scrollbar::-webkit-scrollbar { display: none; }
-  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            /* ── Scrollbars ── */
+            .hide-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .hide-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
 
-  /* ── Border-radius: machined edges everywhere ── */
-  .rounded-\[22px\],.rounded-\[24px\],.rounded-\[28px\] { border-radius: 4px !important; }
-  .rounded-2xl { border-radius: 4px !important; }
-  .rounded-xl  { border-radius: 3px !important; }
-  .rounded-full { border-radius: 3px !important; }
-  .rounded-lg  { border-radius: 3px !important; }
+            /* ── Border-radius: machined edges everywhere ── */
+            .rounded-\[22px\],
+            .rounded-\[24px\],
+            .rounded-\[28px\] {
+                border-radius: 4px !important;
+            }
+            .rounded-2xl {
+                border-radius: 4px !important;
+            }
+            .rounded-xl {
+                border-radius: 3px !important;
+            }
+            .rounded-full {
+                border-radius: 3px !important;
+            }
+            .rounded-lg {
+                border-radius: 3px !important;
+            }
 
-  /* ── Primary action buttons ── */
-  .bg-white.text-slate-900 {
-    background: linear-gradient(rgba(255,255,255,0.06), rgba(0,0,0,0.18)), url(/static/button-bg.jpg) center/cover !important;
-    border: 1px solid rgba(255,255,255,0.20) !important;
-    border-top-color: rgba(255,255,255,0.42) !important;
-    border-bottom-color: rgba(0,0,0,0.28) !important;
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.30),
-      inset 0 -1px 0 rgba(0,0,0,0.18) !important;
-    color: #0a0c14 !important;
-    letter-spacing: 0.12em !important;
-    text-transform: uppercase !important;
-    font-weight: 700 !important;
-    font-family: var(--fn-body) !important;
-    font-size: 13px !important;
-    line-height: 1.4 !important;
-    padding-top: 14px !important;
-    padding-bottom: 14px !important;
-    transition: filter .12s ease !important;
-  }
-  .bg-white.text-slate-900:active { filter: brightness(0.88) !important; }
+            /* ── Primary action buttons ── */
+            .bg-white.text-slate-900 {
+                background:
+                    linear-gradient(
+                        rgba(255, 255, 255, 0.06),
+                        rgba(0, 0, 0, 0.18)
+                    ),
+                    url(/static/button-bg.jpg) center/cover !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                border-top-color: rgba(255, 255, 255, 0.42) !important;
+                border-bottom-color: rgba(0, 0, 0, 0.28) !important;
+                box-shadow:
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.18) !important;
+                color: #0a0c14 !important;
+                letter-spacing: 0.12em !important;
+                text-transform: uppercase !important;
+                font-weight: 700 !important;
+                font-family: var(--fn-body) !important;
+                font-size: 13px !important;
+                line-height: 1.4 !important;
+                padding-top: 14px !important;
+                padding-bottom: 14px !important;
+                transition: filter 0.12s ease !important;
+            }
+            .bg-white.text-slate-900:active {
+                filter: brightness(0.88) !important;
+            }
 
-  /* ── Reusable metal card panel ── */
-  .metal-card {
-    background: var(--scratch-a), var(--scratch-b), linear-gradient(160deg, #1e1e1e 0%, #181818 100%);
-    border: 1px solid var(--m-border);
-    border-top-color: var(--m-top);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-    border-radius: 4px;
-  }
+            /* ── Reusable metal card panel ── */
+            .metal-card {
+                background:
+                    var(--scratch-a), var(--scratch-b),
+                    linear-gradient(160deg, #1e1e1e 0%, #181818 100%);
+                border: 1px solid var(--m-border);
+                border-top-color: var(--m-top);
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+                border-radius: 4px;
+            }
 
-  /* ── CTA button — scratched metal texture ── */
-  .btn-cta {
-    width: 100%;
-    padding: 13px 0;
-    font-family: var(--fn-body);
-    font-size: 11px; font-weight: 700;
-    letter-spacing: 0.14em; text-transform: uppercase;
-    color: #1a1c24;
-    background: url(/static/button-bg.jpg) center/cover;
-    border: 1px solid rgba(130,132,136,0.22);
-    border-top-color: rgba(228,232,238,0.34);
-    border-bottom-color: rgba(0,0,0,0.55);
-    box-shadow:
-      inset 0 2px 6px rgba(0,0,0,0.52),
-      inset 0 -1px 0 rgba(0,0,0,0.42),
-      0 1px 0 rgba(255,255,255,0.04);
-    border-radius: 3px; cursor: pointer;
-    transition: filter .12s ease;
-    position: relative;
-    overflow: hidden;
-  }
-  .btn-cta::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(220,226,238,0.18) 8%,
-      rgba(235,240,250,0.68) 30%,
-      rgba(242,246,254,0.88) 50%,
-      rgba(235,240,250,0.68) 70%,
-      rgba(220,226,238,0.18) 92%,
-      transparent 100%
-    );
-    z-index: 3;
-  }
-  .btn-cta::after {
-    content: '';
-    position: absolute;
-    top: 0; bottom: 0;
-    left: -60%; width: 55%;
-    background: linear-gradient(
-      100deg,
-      transparent 0%,
-      rgba(255,255,255,0.000) 38%,
-      rgba(255,255,255,0.028) 50%,
-      rgba(255,255,255,0.000) 62%,
-      transparent 100%
-    );
-    transform: skewX(-18deg);
-    pointer-events: none;
-    z-index: 2;
-  }
-  .btn-cta:hover { filter: brightness(1.08); border-top-color: rgba(242,246,254,0.52); }
-  .btn-cta:active { filter: brightness(0.82); }
+            /* ── CTA button — scratched metal texture ── */
+            .btn-cta {
+                width: 100%;
+                padding: 13px 0;
+                font-family: var(--fn-body);
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: #1a1c24;
+                background: url(/static/button-bg.jpg) center/cover;
+                border: 1px solid rgba(130, 132, 136, 0.22);
+                border-top-color: rgba(228, 232, 238, 0.34);
+                border-bottom-color: rgba(0, 0, 0, 0.55);
+                box-shadow:
+                    inset 0 2px 6px rgba(0, 0, 0, 0.52),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.42),
+                    0 1px 0 rgba(255, 255, 255, 0.04);
+                border-radius: 3px;
+                cursor: pointer;
+                transition: filter 0.12s ease;
+                position: relative;
+                overflow: hidden;
+            }
+            .btn-cta::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 1px;
+                background: linear-gradient(
+                    90deg,
+                    transparent 0%,
+                    rgba(220, 226, 238, 0.18) 8%,
+                    rgba(235, 240, 250, 0.68) 30%,
+                    rgba(242, 246, 254, 0.88) 50%,
+                    rgba(235, 240, 250, 0.68) 70%,
+                    rgba(220, 226, 238, 0.18) 92%,
+                    transparent 100%
+                );
+                z-index: 3;
+            }
+            .btn-cta::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: -60%;
+                width: 55%;
+                background: linear-gradient(
+                    100deg,
+                    transparent 0%,
+                    rgba(255, 255, 255, 0) 38%,
+                    rgba(255, 255, 255, 0.028) 50%,
+                    rgba(255, 255, 255, 0) 62%,
+                    transparent 100%
+                );
+                transform: skewX(-18deg);
+                pointer-events: none;
+                z-index: 2;
+            }
+            .btn-cta:hover {
+                filter: brightness(1.08);
+                border-top-color: rgba(242, 246, 254, 0.52);
+            }
+            .btn-cta:active {
+                filter: brightness(0.82);
+            }
 
-  /* ── Catalog skeleton loader ── */
-  .skeleton-card {
-    background: linear-gradient(160deg, #1a1a1a 0%, #161616 100%);
-    border: 1px solid rgba(155,157,160,0.10);
-    border-radius: 4px;
-    overflow: hidden;
-    animation: skeleton-pulse 1.6s ease-in-out infinite;
-  }
-  .skeleton-img {
-    width: 100%; aspect-ratio: 3/4;
-    background: linear-gradient(90deg, #1c1c1c 25%, #242424 50%, #1c1c1c 75%);
-    background-size: 200% 100%;
-    animation: skeleton-shine 1.6s ease-in-out infinite;
-  }
-  .skeleton-line {
-    height: 10px; border-radius: 2px;
-    background: linear-gradient(90deg, #1c1c1c 25%, #242424 50%, #1c1c1c 75%);
-    background-size: 200% 100%;
-    animation: skeleton-shine 1.6s ease-in-out infinite;
-  }
-  @keyframes skeleton-pulse {
-    0%, 100% { opacity: 0.7; }
-    50% { opacity: 1; }
-  }
-  @keyframes skeleton-shine {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
+            /* ── Catalog skeleton loader ── */
+            .skeleton-card {
+                background: linear-gradient(160deg, #1a1a1a 0%, #161616 100%);
+                border: 1px solid rgba(155, 157, 160, 0.1);
+                border-radius: 4px;
+                overflow: hidden;
+                animation: skeleton-pulse 1.6s ease-in-out infinite;
+            }
+            .skeleton-img {
+                width: 100%;
+                aspect-ratio: 3/4;
+                background: linear-gradient(
+                    90deg,
+                    #1c1c1c 25%,
+                    #242424 50%,
+                    #1c1c1c 75%
+                );
+                background-size: 200% 100%;
+                animation: skeleton-shine 1.6s ease-in-out infinite;
+            }
+            .skeleton-line {
+                height: 10px;
+                border-radius: 2px;
+                background: linear-gradient(
+                    90deg,
+                    #1c1c1c 25%,
+                    #242424 50%,
+                    #1c1c1c 75%
+                );
+                background-size: 200% 100%;
+                animation: skeleton-shine 1.6s ease-in-out infinite;
+            }
+            @keyframes skeleton-pulse {
+                0%,
+                100% {
+                    opacity: 0.7;
+                }
+                50% {
+                    opacity: 1;
+                }
+            }
+            @keyframes skeleton-shine {
+                0% {
+                    background-position: 200% 0;
+                }
+                100% {
+                    background-position: -200% 0;
+                }
+            }
 
-  /* ── Danger buttons ── */
-  .bg-red-500\/80, .bg-red-700\/70 {
-    background:
-      var(--scratch-a),
-      linear-gradient(180deg, #5e1414 0%, #3c0c0c 100%) !important;
-    border: 1px solid var(--danger-bd) !important;
-    border-top-color: rgba(218,75,75,0.42) !important;
-    color: #f0b2b2 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.09em !important;
-    font-weight: 700 !important;
-    font-family: var(--fn-body) !important;
-    font-size: 11px !important;
-  }
+            /* ── Danger buttons ── */
+            .bg-red-500\/80,
+            .bg-red-700\/70 {
+                background:
+                    var(--scratch-a),
+                    linear-gradient(180deg, #5e1414 0%, #3c0c0c 100%) !important;
+                border: 1px solid var(--danger-bd) !important;
+                border-top-color: rgba(218, 75, 75, 0.42) !important;
+                color: #f0b2b2 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.09em !important;
+                font-weight: 700 !important;
+                font-family: var(--fn-body) !important;
+                font-size: 11px !important;
+            }
 
-  /* ── Form inputs ── */
-  input:not([type=file]), textarea, select {
-    background:
-      repeating-linear-gradient(17deg, transparent 0, transparent 3px,
-        rgba(255,255,255,0.006) 3px, rgba(255,255,255,0.006) 3.4px),
-      linear-gradient(to bottom, #0c0c0c, #101010) !important;
-    border-color: rgba(140,141,143,0.24) !important;
-    border-bottom-color: rgba(192,194,198,0.14) !important;
-    color: #dcdeed !important;
-    font-family: var(--fn-body) !important;
-    font-size: 16px !important;
-    letter-spacing: 0.04em !important;
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.36) !important;
-  }
-  input::placeholder, textarea::placeholder {
-    color: rgba(155,155,180,0.38) !important;
-    letter-spacing: 0.06em;
-  }
-  select option { background: #141414; color: #dcdce4; }
+            /* ── Form inputs ── */
+            input:not([type="file"]),
+            textarea,
+            select {
+                background:
+                    repeating-linear-gradient(
+                        17deg,
+                        transparent 0,
+                        transparent 3px,
+                        rgba(255, 255, 255, 0.006) 3px,
+                        rgba(255, 255, 255, 0.006) 3.4px
+                    ),
+                    linear-gradient(to bottom, #0c0c0c, #101010) !important;
+                border-color: rgba(140, 141, 143, 0.24) !important;
+                border-bottom-color: rgba(192, 194, 198, 0.14) !important;
+                color: #dcdeed !important;
+                font-family: var(--fn-body) !important;
+                font-size: 16px !important;
+                letter-spacing: 0.04em !important;
+                box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.36) !important;
+            }
+            input::placeholder,
+            textarea::placeholder {
+                color: rgba(155, 155, 180, 0.38) !important;
+                letter-spacing: 0.06em;
+            }
+            select option {
+                background: #141414;
+                color: #dcdce4;
+            }
 
-  /* ── Site header ── */
-  .site-header {
-    background: url(/static/button-bg.jpg) center/cover;
-    border: 1px solid rgba(130,132,136,0.22);
-    border-top-color: rgba(228,232,238,0.34);
-    border-bottom-color: rgba(0,0,0,0.55);
-    box-shadow:
+            /* ── Site header ── */
+            .site-header {
+                background: url(/static/button-bg.jpg) center/cover;
+                border: 1px solid rgba(130, 132, 136, 0.22);
+                border-top-color: rgba(228, 232, 238, 0.34);
+                border-bottom-color: rgba(0, 0, 0, 0.55);
+                box-shadow:
       /* recessed inner top shadow — machined recess */
-      inset 0 2px 6px rgba(0,0,0,0.52),
-      /* inner bottom highlight — the lower machined edge */
-      inset 0 -1px 0 rgba(0,0,0,0.42),
-      /* subtle outer glow along the top bright edge */
-      0 1px 0 rgba(255,255,255,0.04);
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
-  }
-
-  /* Top-edge bright line — the sharpest machined edge highlight */
-  .site-header::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(220,226,238,0.18) 8%,
-      rgba(235,240,250,0.68) 30%,
-      rgba(242,246,254,0.88) 50%,
-      rgba(235,240,250,0.68) 70%,
-      rgba(220,226,238,0.18) 92%,
-      transparent 100%
-    );
-    z-index: 3;
-  }
-
-  /* Diagonal light streak — light catching brushed surface at an angle */
-  .site-header::after {
-    content: '';
-    position: absolute;
-    top: 0; bottom: 0;
-    left: -60%;
-    width: 55%;
-    background: linear-gradient(
-      100deg,
-      transparent 0%,
-      rgba(255,255,255,0.000) 38%,
-      rgba(255,255,255,0.028) 50%,
-      rgba(255,255,255,0.000) 62%,
-      transparent 100%
-    );
-    transform: skewX(-18deg);
-    pointer-events: none;
-    z-index: 2;
-  }
-
-  .site-header__inner {
-    position: relative; z-index: 1;
-    height: 80px;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 8px;
-  }
-  .site-header__slot { display: none; }
-  .site-header__slot--right { display: none; }
-  .site-header__logo {
-    max-height: 58px;
-    width: auto;
-    filter: invert(1);
-    mix-blend-mode: screen;
-    flex-shrink: 0;
-    pointer-events: none;
-    user-select: none;
-  }
-
-  /* ── Manager button — engraved metal tag ── */
-  .mgr-btn {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 5px 9px 5px 7px;
-    font-family: var(--fn-body);
-    font-size: 9px; font-weight: 700;
-    letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--silver-dim);
-    background:
-      repeating-linear-gradient(
-        180deg,
-        transparent 0, transparent 1px,
-        rgba(255,255,255,0.012) 1px, rgba(255,255,255,0.012) 2px
-      ),
-      linear-gradient(175deg, #1c1c1c 0%, #141414 55%, #181818 100%);
-    border: 1px solid rgba(130,132,138,0.28);
-    border-top-color: rgba(200,208,224,0.30);
-    border-bottom-color: rgba(0,0,0,0.44);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.04),
-      inset 0 -1px 0 rgba(0,0,0,0.28),
-      inset 1px 0 0 rgba(255,255,255,0.02);
-    border-radius: 3px; cursor: pointer;
-    transition: filter .14s ease, box-shadow .14s ease;
-    position: relative;
-    white-space: nowrap;
-  }
-  .mgr-btn:hover {
-    color: var(--silver);
-    border-top-color: rgba(210,220,240,0.42);
-    filter: brightness(1.08);
-  }
-  .mgr-btn:active {
-    filter: brightness(0.82);
-    box-shadow:
-      inset 0 2px 4px rgba(0,0,0,0.42),
-      inset 0 -1px 0 rgba(0,0,0,0.20);
-  }
-
-  /* ── Bottom nav bar — Segmented Metal Bar ── */
-  .site-nav {
-    position: fixed;
-    bottom: 0; left: 0; right: 0; z-index: 50;
-    display: flex;
-    background:
-      var(--scratch-a),
-      linear-gradient(0deg, #040404 0%, #090909 100%);
-    border-top: 1px solid rgba(188,190,194,0.12);
-    box-shadow: 0 -2px 0 rgba(255,255,255,0.025), 0 -6px 20px rgba(0,0,0,0.70);
-    padding: 7px 10px max(10px, env(safe-area-inset-bottom));
-  }
-  /* Корпус — вдавленный паз */
-  .site-nav::before {
-    content: '';
-    position: absolute;
-    inset: 7px 10px max(10px, env(safe-area-inset-bottom));
-    border-radius: 8px;
-    background: #070707;
-    border: 1px solid rgba(188,190,194,0.10);
-    box-shadow: inset 0 2px 6px rgba(0,0,0,0.70), inset 0 1px 2px rgba(0,0,0,0.90);
-    pointer-events: none;
-  }
-  .site-nav__tab {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 4px;
-    height: 50px;
-    color: rgba(180,183,192,0.60);
-    position: relative;
-    z-index: 1;
-    background: none; border: none; border-radius: 6px;
-    cursor: pointer;
-    margin: 0 2px;
-    padding: 0;
-    font-family: var(--fn-body);
-    transition: color .14s ease, background .14s ease, box-shadow .14s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-  /* Разделители между неактивными сегментами */
-  .site-nav__tab + .site-nav__tab::before {
-    content: '';
-    position: absolute;
-    left: -2px; top: 22%; bottom: 22%;
-    width: 1px;
-    background: rgba(188,190,194,0.08);
-  }
-  .site-nav__tab:active { transform: scale(0.95); }
-  .site-nav__tab.active {
-    color: var(--silver);
-    background:
-      var(--scratch-a), var(--scratch-b),
-      linear-gradient(180deg, #222222 0%, #1a1a1a 60%, #181818 100%);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.10),
-      inset 1px 0 0 rgba(255,255,255,0.04),
-      inset -1px 0 0 rgba(255,255,255,0.04),
-      inset 0 -1px 0 rgba(0,0,0,0.60),
-      0 -1px 4px rgba(220,228,240,0.08);
-  }
-  /* Убираем разделитель у активного и соседнего */
-  .site-nav__tab.active::before,
-  .site-nav__tab.active + .site-nav__tab::before { display: none; }
-  /* Верхняя edge-линия активного сегмента */
-  .site-nav__tab.active::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 18%; right: 18%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(220,222,226,0.50) 30%, rgba(220,222,226,0.50) 70%, transparent);
-  }
-  .nav-icon { width: 20px; height: 20px; display: block; flex-shrink: 0; }
-  .nav-label {
-    display: block;
-    font-family: var(--fn-body);
-    font-size: 9px; font-weight: 500;
-    letter-spacing: 0.03em; line-height: 1;
-  }
-  .site-nav__tab.active .nav-label { color: var(--silver-dim); }
-
-  /* ── Badge ── */
-  .badge {
-    position: absolute; top: 4px; right: calc(50% - 18px);
-    min-width: 15px; height: 15px; padding: 0 3px;
-    border-radius: 2px;
-    background: var(--brass); color: #0a0a10;
-    font-size: 9px; font-weight: 800;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-family: var(--fn-body); letter-spacing: 0;
-    z-index: 2;
-  }
-
-  /* ── Section headings ── */
-  .section-title {
-    font-family: var(--fn-display);
-    font-size: 34px; font-weight: 800; letter-spacing: 0.08em;
-    color: var(--silver); line-height: 1;
-  }
-  .section-sub {
-    font-family: var(--fn-body);
-    font-size: 13px; color: var(--silver-faint);
-    margin-top: 4px; letter-spacing: 0.04em;
-  }
-
-  /* ── Engraved label ── */
-  .engraved {
-    font-family: var(--fn-body);
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--silver-faint);
-  }
-
-  /* ── Metal divider ── */
-  .metal-divider {
-    border: none; height: 1px;
-    background: linear-gradient(
-      90deg, transparent,
-      rgba(175,175,200,0.18) 30%, rgba(175,175,200,0.30) 50%,
-      rgba(175,175,200,0.18) 70%, transparent);
-    margin: 14px 0;
-  }
-
-  /* ── line-clamp utilities ── */
-  .line-clamp-2 {
-    display: -webkit-box; -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical; overflow: hidden;
-  }
-  .line-clamp-3 {
-    display: -webkit-box; -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical; overflow: hidden;
-  }
-
-  /* ── Telegram fullscreen safe areas ── */
-  .safe-top {
-    padding-top: max(12px, calc(var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px)));
-  }
-  .modal-safe-top {
-    padding-top: max(16px, calc(var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px))) !important;
-  }
-  </style>
-</head>
-<body>
-  <div class="max-w-6xl mx-auto px-3 safe-top pb-36">
-    <header class="site-header mb-4">
-      <div class="site-header__inner">
-        <div style="flex:1;display:flex;justify-content:flex-start;padding-right:24px;">
-          <button id="currencyBtn" class="mgr-btn">
-            <span id="currencySymbol">RUB</span>
-          </button>
-        </div>
-        <img src="/static/xtinct-logo.png" class="site-header__logo" alt="XTINCT" style="position:absolute;left:50%;transform:translateX(-50%);max-width:210px;max-height:72px;" />
-        <div style="flex:1;display:flex;justify-content:flex-end;padding-left:24px;">
-          <button id="managerBtn" class="mgr-btn">
-            Помощь
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <section id="catalogFilters" class="mb-4">
-      <div style="position:relative;margin-bottom:10px;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:rgba(148,150,158,0.44);pointer-events:none;z-index:1;">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input
-          id="catalogSearch"
-          type="search"
-          placeholder="Поиск по названию"
-          autocomplete="off"
-          style="width:100%;padding:10px 14px 10px 36px;border-radius:3px;outline:none;"
-        />
-      </div>
-      <div id="categories" class="flex gap-2 overflow-auto hide-scrollbar pb-1"></div>
-    </section>
-
-    <main id="catalogScreen" class="grid grid-cols-2 gap-3"></main>
-
-    <section id="favoritesScreen" class="hidden">
-      <div class="mb-5">
-        <h2 class="section-title">Избранное</h2>
-        <p class="section-sub">Товары, которые ты сохранил.</p>
-      </div>
-      <div id="favoritesGrid" class="grid grid-cols-1 gap-3"></div>
-      <div id="favoritesEmpty" class="hidden glass rounded-[28px] p-6" style="color:var(--silver-dim);">В избранном пока ничего нет.</div>
-    </section>
-
-    <section id="cartScreen" class="hidden">
-      <div class="mb-5">
-        <h2 class="section-title">Корзина</h2>
-        <p class="section-sub">Проверь размеры и состав заказа перед оформлением.</p>
-      </div>
-      <div id="cartList" class="space-y-3"></div>
-      <div id="cartEmpty" class="hidden glass rounded-[28px] p-6" style="color:var(--silver-dim);">Корзина пуста.</div>
-      <!-- Промокод -->
-      <div id="promoBlock" class="hidden glass rounded-[28px] p-4 mt-4">
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input id="promoInput" type="text" placeholder="ПРОМОКОД"
-            style="flex:1;font-family:var(--fn-body);font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;background:rgba(255,255,255,0.06);border:1px solid rgba(140,141,143,0.22);border-radius:3px;padding:10px 12px;color:var(--silver);outline:none;" />
-          <button id="promoApplyBtn"
-            style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:10px 14px;border-radius:3px;cursor:pointer;background:linear-gradient(180deg,#1e1e1e 0%,#181818 100%);border:1px solid rgba(140,141,143,0.22);border-top-color:rgba(192,195,198,0.26);color:var(--silver-dim);white-space:nowrap;">
-            Применить
-          </button>
-          <button id="promoClearBtn" style="display:none;font-family:var(--fn-body);font-size:18px;line-height:1;color:var(--silver-faint);background:none;border:none;cursor:pointer;padding:4px;">✕</button>
-        </div>
-        <div id="promoMsg" style="margin-top:8px;font-family:var(--fn-body);font-size:12px;letter-spacing:0.04em;display:none;"></div>
-      </div>
-
-      <div id="cartSummary" class="hidden glass rounded-[28px] p-5 mt-4">
-        <div id="cartDiscountRow" style="display:none;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <span style="font-family:var(--fn-body);font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--silver-faint);">Скидка</span>
-          <span id="cartDiscountAmt" style="font-family:var(--fn-body);font-size:14px;font-weight:700;color:#6fcf6f;">−0 ₽</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span style="font-family:var(--fn-display);font-size:26px;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;color:var(--silver-faint);">Итого</span>
-          <span id="cartSummaryTotal" style="font-family:var(--fn-display);font-size:36px;font-weight:800;letter-spacing:0.04em;color:var(--silver);line-height:1;">0 ₽</span>
-        </div>
-        <button id="goCheckoutFromCart" class="btn-cta" style="margin-top:16px;">Перейти к оформлению</button>
-      </div>
-    </section>
-
-    <section id="ordersScreen" class="hidden">
-      <div class="mb-5">
-        <h2 class="section-title">Мои заказы</h2>
-        <p class="section-sub">Все незавершенные заказы из этого Telegram аккаунта.</p>
-      </div>
-      <div id="ordersList" class="space-y-3"></div>
-      <div id="ordersEmpty" class="hidden glass rounded-[28px] p-6" style="color:var(--silver-dim);">Активных заказов пока нет.</div>
-    </section>
-  </div>
-
-  <nav id="bottomNavWrap" class="site-nav">
-    <button id="navCatalog" class="site-nav__tab active">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <path d="M3 10.5 12 3l9 7.5"></path>
-        <path d="M5 9.5V20h14V9.5"></path>
-      </svg>
-      <span class="nav-label">Каталог</span>
-    </button>
-    <button id="navFavorites" class="site-nav__tab">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 21s-7.2-4.4-9.6-8.4C.7 9.8 2.1 5.8 6 4.8c2.1-.5 4.1.2 6 2.1 1.9-1.9 3.9-2.6 6-2.1 3.9 1 5.3 5 3.6 7.8C19.2 16.6 12 21 12 21Z"/>
-      </svg>
-      <span class="nav-label">Избранное</span>
-      <span id="favoritesBadge" class="badge hidden"></span>
-    </button>
-    <button id="navCart" class="site-nav__tab">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <circle cx="9" cy="20" r="1.5"></circle>
-        <circle cx="18" cy="20" r="1.5"></circle>
-        <path d="M3 4h2l2.4 10.2A2 2 0 0 0 9.35 16H18a2 2 0 0 0 1.94-1.5L21 8H7"></path>
-      </svg>
-      <span class="nav-label">Корзина</span>
-      <span id="cartBadge" class="badge hidden"></span>
-    </button>
-    <button id="navOrders" class="site-nav__tab">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <path d="M6 4h12v16H6z"></path>
-        <path d="M9 8h6"></path><path d="M9 12h6"></path><path d="M9 16h4"></path>
-      </svg>
-      <span class="nav-label">Заказы</span>
-    </button>
-  </nav>
-
-  <!-- Экран товара (fullscreen) -->
-  <div id="productScreen" class="hidden">
-    <div class="max-w-lg mx-auto px-3 modal-safe-top pb-8">
-      <!-- Фото с каруселью -->
-      <div class="relative w-full modal-img-wrap" id="modalImgWrap" style="margin-top:12px;">
-        <img id="productModalImage" alt="" onerror="this.onerror=null;this.src=PLACEHOLDER_IMG;this.classList.add('img-ready');document.getElementById('modalImgWrap').classList.add('loaded');" />
-        <button id="carouselPrev" class="hidden absolute top-1/2 -translate-y-1/2 flex items-center justify-center" style="left:10px;width:36px;height:36px;background:rgba(7,7,12,0.62);border:1px solid rgba(155,155,180,0.28);color:var(--silver);font-size:20px;border-radius:3px;cursor:pointer;">‹</button>
-        <button id="carouselNext" class="hidden absolute top-1/2 -translate-y-1/2 flex items-center justify-center" style="right:10px;width:36px;height:36px;background:rgba(7,7,12,0.62);border:1px solid rgba(155,155,180,0.28);color:var(--silver);font-size:20px;border-radius:3px;cursor:pointer;">›</button>
-        <div id="carouselCounter" class="hidden absolute" style="bottom:10px;right:10px;background:rgba(7,7,12,0.65);border:1px solid rgba(155,155,180,0.22);color:var(--silver-dim);font-family:var(--fn-body);font-size:11px;letter-spacing:0.08em;padding:3px 8px;border-radius:3px;"></div>
-      </div>
-      <!-- Инфо-блок -->
-      <div class="glass" style="margin-top:12px;border-radius:4px;padding:18px 16px;">
-        <div class="engraved" id="productModalCategory"></div>
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:6px;">
-          <h2 id="productModalTitle" style="font-family:var(--fn-display);font-size:30px;letter-spacing:0.08em;color:var(--silver);line-height:1.1;flex:1;min-width:0;"></h2>
-          <button id="modalFavBtn" data-fav-btn="modal" data-fav-size="24"
-            style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;border:none;padding:0;transition:opacity .14s ease;flex-shrink:0;margin-top:2px;"></button>
-        </div>
-        <div id="productModalPrice" style="font-family:var(--fn-display);font-weight:800;font-size:36px;letter-spacing:0.04em;color:var(--silver);line-height:1;margin-top:10px;"></div>
-        <p id="productModalDescription" style="color:var(--silver-dim);font-size:14px;letter-spacing:0.02em;line-height:1.6;white-space:pre-wrap;margin-top:12px;"></p>
-        <div id="measurementsBlock" class="hidden" style="margin-top:12px;">
-          <button id="measurementsToggle" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(155,157,160,0.15);border-radius:3px;cursor:pointer;">
-            <span style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--silver-dim);">Замеры</span>
-            <svg id="measurementsChevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--silver-faint);transition:transform 0.2s ease;flex-shrink:0;"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-          <div id="measurementsBody" class="hidden" style="padding:12px 14px;border:1px solid rgba(155,157,160,0.15);border-top:none;border-radius:0 0 3px 3px;background:rgba(255,255,255,0.02);">
-            <p id="measurementsText" style="font-family:var(--fn-body);font-size:13px;color:var(--silver-dim);line-height:1.7;white-space:pre-wrap;margin:0;letter-spacing:0.02em;"></p>
-          </div>
-        </div>
-        <hr class="metal-divider" style="margin-top:16px;" />
-        <div id="modalSoldBadge" class="hidden" style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--silver-faint);margin-bottom:4px;">Продано</div>
-        <div id="modalPurchaseBlock">
-          <div class="engraved mb-3">Размер</div>
-          <div id="productModalSizes" class="flex flex-wrap gap-2"></div>
-          <div style="margin-top:20px;">
-            <button id="addProductFromModal" class="btn-cta">В корзину</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Checkout modal -->
-  <div id="checkoutModal" class="hidden fixed inset-0 z-[60] p-4 overflow-auto modal-safe-top" style="background:rgba(4,4,8,0.74);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);">
-    <div class="max-w-lg mx-auto mt-6 mb-28 glass rounded-[28px] p-5">
-      <div class="flex items-center justify-between gap-3 mb-5">
-        <h2 style="font-family:var(--fn-display);font-size:28px;letter-spacing:0.10em;color:var(--silver);line-height:1;">Оформление заказа</h2>
-        <button id="closeModal" style="color:var(--silver-dim);font-size:20px;line-height:1;background:none;border:none;cursor:pointer;padding:4px;">✕</button>
-      </div>
-      <div id="checkoutItemsPreview" class="glass rounded-2xl p-4 mb-5" style="font-size:13px;color:var(--silver-dim);letter-spacing:0.03em;"></div>
-      <div class="space-y-3">
-        <textarea id="comment" class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[100px]" placeholder="Комментарий к заказу"></textarea>
-      </div>
-      <div class="mt-5" style="display:flex;flex-direction:column;gap:10px;">
-        <button id="sendOrder" class="w-full rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold">Отправить заказ</button>
-        <button id="askQuestionBtn" onclick="openManager()" style="width:100%;font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;padding:13px 0;border-radius:3px;cursor:pointer;transition:filter .12s ease;background:linear-gradient(180deg,#1e1e1e 0%,#181818 100%);border:1px solid rgba(140,141,143,0.18);border-top-color:rgba(192,195,198,0.22);color:var(--silver-dim);">Задать вопрос</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const tg = window.Telegram?.WebApp;
-    tg?.ready();
-    tg?.expand();
-    tg?.disableVerticalSwipes?.();
-    tg?.requestFullscreen?.();
-    const _scrollTop = () => window.scrollTo({ top: 0, behavior: 'instant' });
-    tg?.onEvent?.('fullscreenChanged', () => { requestAnimationFrame(_scrollTop); });
-    tg?.onEvent?.('fullscreenFailed', () => { requestAnimationFrame(_scrollTop); });
-    requestAnimationFrame(_scrollTop);
-
-    // Скрываем навбар когда клавиатура открыта (visualViewport shrinks on iOS)
-    const _navbar = document.getElementById('bottomNavWrap');
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', () => {
-        const keyboardHeight = window.innerHeight - window.visualViewport.height;
-        _navbar.style.transform = keyboardHeight > 100 ? `translateY(${keyboardHeight}px)` : '';
-      });
-    }
-
-    // Закрытие клавиатуры по тапу: первый тап только закрывает, клик не срабатывает
-    let _kbOpen = false;
-    document.addEventListener('touchstart', (e) => {
-      const active = document.activeElement;
-      const isInput = active && active.matches('input, textarea, select');
-      if (isInput && !e.target.closest('input, textarea, select')) {
-        active.blur();
-        e.preventDefault();
-      }
-    }, { passive: false });
-
-    const HEART_MASK = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M12 21s-7.2-4.4-9.6-8.4C.7 9.8 2.1 5.8 6 4.8c2.1-.5 4.1.2 6 2.1 1.9-1.9 3.9-2.6 6-2.1 3.9 1 5.3 5 3.6 7.8C19.2 16.6 12 21 12 21Z"/></svg>');
-
-    const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect width='400' height='400' fill='%231a1a1a'/%3E%3Crect x='150' y='152' width='100' height='82' rx='4' fill='none' stroke='%23383838' stroke-width='2'/%3E%3Ccircle cx='200' cy='190' r='17' fill='none' stroke='%23383838' stroke-width='2'/%3E%3Ccircle cx='200' cy='190' r='7' fill='%23383838'/%3E%3Crect x='161' y='144' width='22' height='11' rx='2' fill='%23383838'/%3E%3Ctext x='200' y='262' text-anchor='middle' font-family='Arial' font-size='11' fill='%23444444' letter-spacing='3'%3EНЕТ%20ФОТО%3C/text%3E%3C/svg%3E";
-
-    function esc(str) {
-      return String(str ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function renderCarousel() {
-      const product = state.selectedProduct;
-      const images = (product?.images?.length ? product.images : [product?.image]).filter(Boolean);
-      const idx = state.selectedImageIndex;
-
-      const img = document.getElementById('productModalImage');
-      const wrap = document.getElementById('modalImgWrap');
-      img.classList.remove('img-ready');
-      wrap.classList.remove('loaded');
-      img.onload = () => { img.classList.add('img-ready'); wrap.classList.add('loaded'); };
-      img.src = esc(images[idx] || '');
-      img.alt = esc(product?.title || '');
-
-      const multi = images.length > 1;
-      document.getElementById('carouselPrev').classList.toggle('hidden', !multi);
-      document.getElementById('carouselNext').classList.toggle('hidden', !multi);
-      document.getElementById('carouselCounter').classList.toggle('hidden', !multi);
-      if (multi) {
-        document.getElementById('carouselCounter').textContent = `${idx + 1} / ${images.length}`;
-      }
-    }
-
-    function carouselStep(delta) {
-      const images = (state.selectedProduct?.images?.length
-        ? state.selectedProduct.images
-        : [state.selectedProduct?.image]
-      ).filter(Boolean);
-      if (!images.length) return;
-      state.selectedImageIndex = (state.selectedImageIndex + delta + images.length) % images.length;
-      renderCarousel();
-    }
-
-    const state = {
-      products: [],
-      categories: [],
-      category: 'Все',
-      search: '',
-      activeTab: 'catalog',
-      // Таб, с которого открыли экран товара — нужен для корректного возврата
-      prevTab: 'catalog',
-      prevScrollY: 0,
-      promoCode: '',
-      promoDiscount: 0,
-      cart: loadJson('mini_shop_cart', {}),
-      favorites: loadJson('mini_shop_favorites', []),
-      selectedProduct: null,
-      selectedSize: '',
-      selectedImageIndex: 0,
-      myOrders: [],
-    };
-
-    const catalogScreen = document.getElementById('catalogScreen');
-    const favoritesScreen = document.getElementById('favoritesScreen');
-    const cartScreen = document.getElementById('cartScreen');
-    const ordersScreen = document.getElementById('ordersScreen');
-    const favoritesGrid = document.getElementById('favoritesGrid');
-    const favoritesEmpty = document.getElementById('favoritesEmpty');
-    const cartList = document.getElementById('cartList');
-    const cartEmpty = document.getElementById('cartEmpty');
-    const cartSummary = document.getElementById('cartSummary');
-    const cartSummaryTotal = document.getElementById('cartSummaryTotal');
-    const categoriesEl = document.getElementById('categories');
-    const checkoutModal = document.getElementById('checkoutModal');
-    const productScreen = document.getElementById('productScreen');
-    const checkoutItemsPreview = document.getElementById('checkoutItemsPreview');
-    const catalogFilters = document.getElementById('catalogFilters');
-    const ordersList = document.getElementById('ordersList');
-    const ordersEmpty = document.getElementById('ordersEmpty');
-
-    const navCatalog = document.getElementById('navCatalog');
-    const navFavorites = document.getElementById('navFavorites');
-    const navCart = document.getElementById('navCart');
-    const navOrders = document.getElementById('navOrders');
-    const cartBadge = document.getElementById('cartBadge');
-    const favoritesBadge = document.getElementById('favoritesBadge');
-
-    async function applyPromo() {
-      const input = document.getElementById('promoInput');
-      const msg = document.getElementById('promoMsg');
-      const code = input.value.trim().toUpperCase();
-      if (!code) return;
-
-      msg.style.display = 'none';
-      const rawTotal = getRawTotal();
-
-      try {
-        const res = await fetch('/api/promo/validate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, cart_total: rawTotal }),
-        });
-        const data = await res.json();
-
-        if (data.ok) {
-          state.promoCode = code;
-          state.promoDiscount = data.discount_amount;
-          msg.textContent = '✓ ' + data.message;
-          msg.style.display = 'block';
-          msg.style.color = '#6fcf6f';
-          document.getElementById('promoClearBtn').style.display = 'block';
-          document.getElementById('promoApplyBtn').style.display = 'none';
-          input.disabled = true;
-        } else {
-          state.promoCode = '';
-          state.promoDiscount = 0;
-          msg.textContent = '✕ ' + data.error;
-          msg.style.display = 'block';
-          msg.style.color = '#e07070';
-        }
-      } catch {
-        state.promoCode = '';
-        state.promoDiscount = 0;
-        msg.textContent = '✕ Ошибка соединения';
-        msg.style.display = 'block';
-        msg.style.color = '#e07070';
-      }
-
-      renderCart();
-      updateCounters();
-    }
-
-    function clearPromo() {
-      state.promoCode = '';
-      state.promoDiscount = 0;
-      const input = document.getElementById('promoInput');
-      const msg = document.getElementById('promoMsg');
-      input.value = '';
-      input.disabled = false;
-      msg.style.display = 'none';
-      document.getElementById('promoClearBtn').style.display = 'none';
-      document.getElementById('promoApplyBtn').style.display = 'block';
-      renderCart();
-      updateCounters();
-    }
-
-    document.getElementById('promoApplyBtn').addEventListener('click', applyPromo);
-    document.getElementById('promoClearBtn').addEventListener('click', clearPromo);
-    document.getElementById('promoInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') applyPromo();
-    });
-
-    function telegramHeaders() {
-      return {
-        'Content-Type': 'application/json',
-        'X-Telegram-Init-Data': tg?.initData || '',
-      };
-    }
-
-    function loadJson(key, fallback) {
-      try {
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : fallback;
-      } catch {
-        return fallback;
-      }
-    }
-
-    function saveJson(key, value) {
-      localStorage.setItem(key, JSON.stringify(value));
-    }
-
-    let activeCurrency = 'RUB';
-    let currencyRates = { usd: 90.0, byn: 28.0 };
-    const CURRENCIES = ['RUB', 'BYN', 'USD'];
-    const CURRENCY_LABELS = { RUB: 'RUB', BYN: 'BYN', USD: 'USD' };
-
-    function formatPrice(rub) {
-      if (activeCurrency === 'USD') return '$' + Math.ceil(rub / currencyRates.usd);
-      if (activeCurrency === 'BYN') return Math.ceil(rub / currencyRates.byn) + ' BYN';
-      return new Intl.NumberFormat('ru-RU').format(rub) + ' ₽';
-    }
-
-    async function loadCurrencyRates() {
-      try {
-        const resp = await fetch('/api/currency-rates');
-        const data = await resp.json();
-        if (data.ok) currencyRates = { usd: data.usd, byn: data.byn };
-      } catch(e) { /* keep defaults */ }
-    }
-
-    function formatDate(value) {
-      if (!value) return '—';
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return String(value).replace('T', ' ');
-      return date.toLocaleString('ru-RU');
-    }
-
-    function getCartKey(productId, size) {
-      return `${productId}::${size || ''}`;
-    }
-
-    function getItems() {
-      return Object.values(state.cart);
-    }
-
-    function getTotal() {
-      const raw = getItems().reduce((sum, item) => sum + item.price * item.quantity, 0);
-      return Math.max(0, raw - state.promoDiscount);
-    }
-
-    function getRawTotal() {
-      return getItems().reduce((sum, item) => sum + item.price * item.quantity, 0);
-    }
-
-    function getCount() {
-      return getItems().reduce((sum, item) => sum + item.quantity, 0);
-    }
-
-    function isFavorite(productId) {
-      return state.favorites.includes(productId);
-    }
-
-    function toggleFavorite(productId) {
-      if (isFavorite(productId)) {
-        state.favorites = state.favorites.filter((id) => id !== productId);
-      } else {
-        state.favorites.push(productId);
-      }
-      saveJson('mini_shop_favorites', state.favorites);
-      updateCounters();
-
-      const fav = isFavorite(productId);
-      document.querySelectorAll(`[data-fav-btn="${productId}"]`).forEach(btn => {
-        const size = btn.dataset.favSize || '14';
-        btn.innerHTML = fav
-          ? `<span style="display:block;width:${size}px;height:${size}px;background:url(/static/button-bg.jpg) center/cover;-webkit-mask-image:url(${HEART_MASK});-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;mask-image:url(${HEART_MASK});mask-size:contain;mask-repeat:no-repeat;"></span>`
-          : `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="rgba(148,150,158,0.40)" stroke-width="1.8"><path d="M12 21s-7.2-4.4-9.6-8.4C.7 9.8 2.1 5.8 6 4.8c2.1-.5 4.1.2 6 2.1 1.9-1.9 3.9-2.6 6-2.1 3.9 1 5.3 5 3.6 7.8C19.2 16.6 12 21 12 21Z"/></svg>`;
-      });
-
-      renderFavorites();
-    }
-
-    function updateCounters() {
-      const cartCount = getCount();
-      const existingIds = new Set(state.products.map(p => p.id));
-      state.favorites = state.favorites.filter(id => existingIds.has(id));
-      saveJson('mini_shop_favorites', state.favorites);
-      const favCount = state.favorites.length;
-
-      cartSummaryTotal.textContent = formatPrice(getTotal());
-
-      if (cartCount > 0) {
-        cartBadge.textContent = cartCount;
-        cartBadge.classList.remove('hidden');
-      } else {
-        cartBadge.classList.add('hidden');
-      }
-
-      if (favCount > 0) {
-        favoritesBadge.textContent = favCount;
-        favoritesBadge.classList.remove('hidden');
-      } else {
-        favoritesBadge.classList.add('hidden');
-      }
-    }
-
-    function addToCart(productId, size) {
-      const product = state.products.find((item) => item.id === productId);
-      if (!product) return;
-
-      const chosenSize = size || '';
-      if ((product.sizes || []).length && !chosenSize) {
-        tg?.showAlert?.('Сначала выбери размер');
-        return;
-      }
-
-      const key = getCartKey(productId, chosenSize);
-      if (!state.cart[key]) {
-        state.cart[key] = { ...product, size: chosenSize, quantity: 1, cartKey: key };
-      } else {
-        tg?.showAlert?.('Этот товар уже в корзине');
-        return;
-      }
-
-      saveJson('mini_shop_cart', state.cart);
-      updateCounters();
-      renderAll();
-    }
-
-    function removeFromCart(cartKey) {
-      delete state.cart[cartKey];
-      saveJson('mini_shop_cart', state.cart);
-      updateCounters();
-      renderAll();
-    }
-
-    function setCategory(name) {
-      state.category = name;
-      renderCategories();
-      renderCatalog();
-    }
-
-    function setTab(tab) {
-      // Если экран товара открыт и нажали таб напрямую — закрываем без вызова setTab рекурсии
-      if (!productScreen.classList.contains('hidden')) {
-        productScreen.classList.add('hidden');
-        state.selectedProduct = null;
-        if (tg?.BackButton) {
-          tg.BackButton.hide();
-          tg.BackButton.offClick(closeProductScreen);
-        }
-      }
-
-      state.activeTab = tab;
-      window.scrollTo({ top: 0, behavior: 'instant' });
-      if (tab !== 'catalog') {
-        state.search = '';
-        const si = document.getElementById('catalogSearch');
-        if (si) si.value = '';
-      }
-
-      catalogScreen.classList.toggle('hidden', tab !== 'catalog');
-      favoritesScreen.classList.toggle('hidden', tab !== 'favorites');
-      cartScreen.classList.toggle('hidden', tab !== 'cart');
-      ordersScreen.classList.toggle('hidden', tab !== 'orders');
-      catalogFilters.classList.toggle('hidden', tab !== 'catalog');
-
-      [navCatalog, navFavorites, navCart, navOrders].forEach((el) => el.classList.remove('active'));
-      if (tab === 'catalog') navCatalog.classList.add('active');
-      if (tab === 'favorites') navFavorites.classList.add('active');
-      if (tab === 'cart') navCart.classList.add('active');
-      if (tab === 'orders') navOrders.classList.add('active');
-
-      updateCounters();
-      renderAll();
-
-      if (tab === 'orders') loadMyOrders();
-    }
-
-    function renderCategories() {
-      const categories = ['Все', ...state.categories];
-      categoriesEl.innerHTML = categories.map((name) => {
-        const active = state.category === name;
-        return `
-          <button
-            onclick="setCategory(${esc(JSON.stringify(name))})"
-            style="
-              font-family:var(--fn-body);
-              font-size:11px;font-weight:700;
-              letter-spacing:0.13em;text-transform:uppercase;
-              padding:7px 14px;border-radius:3px;
-              white-space:nowrap;cursor:pointer;
-              transition:filter .12s ease;
-              ${active
-                ? `background:linear-gradient(180deg,#2c2c2c 0%,#202020 100%);border:1px solid rgba(195,210,238,0.45);border-top-color:rgba(210,224,244,0.62);color:var(--brass);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);`
-                : `background:linear-gradient(180deg,#1e1e1e 0%,#181818 100%);border:1px solid rgba(140,141,143,0.18);border-top-color:rgba(192,195,198,0.22);color:var(--silver-dim);`
-              }
-            "
-          >${esc(name)}</button>
-        `;
-      }).join('');
-    }
-
-    function productCardFavorite(product) {
-      const favorite = isFavorite(product.id);
-      const sizes = product.sizes || [];
-      const favIcon = favorite
-        ? `<span style="display:block;width:16px;height:16px;background:url(/static/button-bg.jpg) center/cover;-webkit-mask-image:url(${HEART_MASK});-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;mask-image:url(${HEART_MASK});mask-size:contain;mask-repeat:no-repeat;"></span>`
-        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(148,150,158,0.40)" stroke-width="1.8"><path d="M12 21s-7.2-4.4-9.6-8.4C.7 9.8 2.1 5.8 6 4.8c2.1-.5 4.1.2 6 2.1 1.9-1.9 3.9-2.6 6-2.1 3.9 1 5.3 5 3.6 7.8C19.2 16.6 12 21 12 21Z"/></svg>`;
-
-      return `
-        <article style="
-          background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);
-          border:1px solid var(--m-border);border-top-color:var(--m-top);
-          box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
-          overflow:hidden;border-radius:4px;
-        ">
-          <button onclick="openProductModal(${product.id})" style="display:block;width:100%;text-align:left;">
-            <img src="${esc(product.image)}" alt="${esc(product.title)}"
-              onerror="this.onerror=null;this.src=PLACEHOLDER_IMG"
-              style="width:100%;height:260px;object-fit:cover;display:block;border-bottom:1px solid rgba(155,157,160,0.12);" />
-          </button>
-          <div style="padding:14px;display:flex;flex-direction:column;">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
-              <div style="min-width:0;">
-                <div style="font-family:var(--fn-body);font-size:9px;font-weight:600;letter-spacing:0.24em;text-transform:uppercase;color:var(--brass-dim);">
-                  ${esc(product.category)}
+                    inset 0 2px 6px rgba(0, 0, 0, 0.52),
+                    /* inner bottom highlight — the lower machined edge */ inset
+                        0 -1px 0 rgba(0, 0, 0, 0.42),
+                    /* subtle outer glow along the top bright edge */ 0 1px 0
+                        rgba(255, 255, 255, 0.04);
+                border-radius: 4px;
+                overflow: hidden;
+                position: relative;
+            }
+
+            /* Top-edge bright line — the sharpest machined edge highlight */
+            .site-header::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 1px;
+                background: linear-gradient(
+                    90deg,
+                    transparent 0%,
+                    rgba(220, 226, 238, 0.18) 8%,
+                    rgba(235, 240, 250, 0.68) 30%,
+                    rgba(242, 246, 254, 0.88) 50%,
+                    rgba(235, 240, 250, 0.68) 70%,
+                    rgba(220, 226, 238, 0.18) 92%,
+                    transparent 100%
+                );
+                z-index: 3;
+            }
+
+            /* Diagonal light streak — light catching brushed surface at an angle */
+            .site-header::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: -60%;
+                width: 55%;
+                background: linear-gradient(
+                    100deg,
+                    transparent 0%,
+                    rgba(255, 255, 255, 0) 38%,
+                    rgba(255, 255, 255, 0.028) 50%,
+                    rgba(255, 255, 255, 0) 62%,
+                    transparent 100%
+                );
+                transform: skewX(-18deg);
+                pointer-events: none;
+                z-index: 2;
+            }
+
+            .site-header__inner {
+                position: relative;
+                z-index: 1;
+                height: 80px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 8px;
+            }
+            .site-header__slot {
+                display: none;
+            }
+            .site-header__slot--right {
+                display: none;
+            }
+            .site-header__logo {
+                max-height: 58px;
+                width: auto;
+                filter: invert(1);
+                mix-blend-mode: screen;
+                flex-shrink: 0;
+                pointer-events: none;
+                user-select: none;
+            }
+
+            /* ── Manager button — engraved metal tag ── */
+            .mgr-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                padding: 5px 9px 5px 7px;
+                font-family: var(--fn-body);
+                font-size: 9px;
+                font-weight: 700;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: var(--silver-dim);
+                background:
+                    repeating-linear-gradient(
+                        180deg,
+                        transparent 0,
+                        transparent 1px,
+                        rgba(255, 255, 255, 0.012) 1px,
+                        rgba(255, 255, 255, 0.012) 2px
+                    ),
+                    linear-gradient(
+                        175deg,
+                        #1c1c1c 0%,
+                        #141414 55%,
+                        #181818 100%
+                    );
+                border: 1px solid rgba(130, 132, 138, 0.28);
+                border-top-color: rgba(200, 208, 224, 0.3);
+                border-bottom-color: rgba(0, 0, 0, 0.44);
+                box-shadow:
+                    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.28),
+                    inset 1px 0 0 rgba(255, 255, 255, 0.02);
+                border-radius: 3px;
+                cursor: pointer;
+                transition:
+                    filter 0.14s ease,
+                    box-shadow 0.14s ease;
+                position: relative;
+                white-space: nowrap;
+            }
+            .mgr-btn:hover {
+                color: var(--silver);
+                border-top-color: rgba(210, 220, 240, 0.42);
+                filter: brightness(1.08);
+            }
+            .mgr-btn:active {
+                filter: brightness(0.82);
+                box-shadow:
+                    inset 0 2px 4px rgba(0, 0, 0, 0.42),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+            }
+
+            /* ── Bottom nav bar — Segmented Metal Bar ── */
+            .site-nav {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 50;
+                display: flex;
+                background:
+                    var(--scratch-a),
+                    linear-gradient(0deg, #040404 0%, #090909 100%);
+                border-top: 1px solid rgba(188, 190, 194, 0.12);
+                box-shadow:
+                    0 -2px 0 rgba(255, 255, 255, 0.025),
+                    0 -6px 20px rgba(0, 0, 0, 0.7);
+                padding: 7px 10px max(10px, env(safe-area-inset-bottom));
+            }
+            /* Корпус — вдавленный паз */
+            .site-nav::before {
+                content: "";
+                position: absolute;
+                inset: 7px 10px max(10px, env(safe-area-inset-bottom));
+                border-radius: 8px;
+                background: #070707;
+                border: 1px solid rgba(188, 190, 194, 0.1);
+                box-shadow:
+                    inset 0 2px 6px rgba(0, 0, 0, 0.7),
+                    inset 0 1px 2px rgba(0, 0, 0, 0.9);
+                pointer-events: none;
+            }
+            .site-nav__tab {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+                height: 50px;
+                color: rgba(180, 183, 192, 0.6);
+                position: relative;
+                z-index: 1;
+                background: none;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                margin: 0 2px;
+                padding: 0;
+                font-family: var(--fn-body);
+                transition:
+                    color 0.14s ease,
+                    background 0.14s ease,
+                    box-shadow 0.14s ease;
+                -webkit-tap-highlight-color: transparent;
+            }
+            /* Разделители между неактивными сегментами */
+            .site-nav__tab + .site-nav__tab::before {
+                content: "";
+                position: absolute;
+                left: -2px;
+                top: 22%;
+                bottom: 22%;
+                width: 1px;
+                background: rgba(188, 190, 194, 0.08);
+            }
+            .site-nav__tab:active {
+                transform: scale(0.95);
+            }
+            .site-nav__tab.active {
+                color: var(--silver);
+                background:
+                    var(--scratch-a), var(--scratch-b),
+                    linear-gradient(
+                        180deg,
+                        #222222 0%,
+                        #1a1a1a 60%,
+                        #181818 100%
+                    );
+                box-shadow:
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                    inset 1px 0 0 rgba(255, 255, 255, 0.04),
+                    inset -1px 0 0 rgba(255, 255, 255, 0.04),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.6),
+                    0 -1px 4px rgba(220, 228, 240, 0.08);
+            }
+            /* Убираем разделитель у активного и соседнего */
+            .site-nav__tab.active::before,
+            .site-nav__tab.active + .site-nav__tab::before {
+                display: none;
+            }
+            /* Верхняя edge-линия активного сегмента */
+            .site-nav__tab.active::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 18%;
+                right: 18%;
+                height: 1px;
+                background: linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(220, 222, 226, 0.5) 30%,
+                    rgba(220, 222, 226, 0.5) 70%,
+                    transparent
+                );
+            }
+            .nav-icon {
+                width: 20px;
+                height: 20px;
+                display: block;
+                flex-shrink: 0;
+            }
+            .nav-label {
+                display: block;
+                font-family: var(--fn-body);
+                font-size: 9px;
+                font-weight: 500;
+                letter-spacing: 0.03em;
+                line-height: 1;
+            }
+            .site-nav__tab.active .nav-label {
+                color: var(--silver-dim);
+            }
+
+            /* ── Badge ── */
+            .badge {
+                position: absolute;
+                top: 4px;
+                right: calc(50% - 18px);
+                min-width: 15px;
+                height: 15px;
+                padding: 0 3px;
+                border-radius: 2px;
+                background: var(--brass);
+                color: #0a0a10;
+                font-size: 9px;
+                font-weight: 800;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-family: var(--fn-body);
+                letter-spacing: 0;
+                z-index: 2;
+            }
+
+            /* ── Section headings ── */
+            .section-title {
+                font-family: var(--fn-display);
+                font-size: 34px;
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                color: var(--silver);
+                line-height: 1;
+            }
+            .section-sub {
+                font-family: var(--fn-body);
+                font-size: 13px;
+                color: var(--silver-faint);
+                margin-top: 4px;
+                letter-spacing: 0.04em;
+            }
+
+            /* ── Engraved label ── */
+            .engraved {
+                font-family: var(--fn-body);
+                font-size: 10px;
+                font-weight: 600;
+                letter-spacing: 0.22em;
+                text-transform: uppercase;
+                color: var(--silver-faint);
+            }
+
+            /* ── Metal divider ── */
+            .metal-divider {
+                border: none;
+                height: 1px;
+                background: linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(175, 175, 200, 0.18) 30%,
+                    rgba(175, 175, 200, 0.3) 50%,
+                    rgba(175, 175, 200, 0.18) 70%,
+                    transparent
+                );
+                margin: 14px 0;
+            }
+
+            /* ── line-clamp utilities ── */
+            .line-clamp-2 {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            .line-clamp-3 {
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            /* ── Telegram fullscreen safe areas ── */
+            .safe-top {
+                padding-top: max(
+                    12px,
+                    calc(
+                        var(--tg-safe-area-inset-top, 0px) +
+                            var(--tg-content-safe-area-inset-top, 0px)
+                    )
+                );
+            }
+            .modal-safe-top {
+                padding-top: max(
+                    16px,
+                    calc(
+                        var(--tg-safe-area-inset-top, 0px) +
+                            var(--tg-content-safe-area-inset-top, 0px)
+                    )
+                ) !important;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="max-w-6xl mx-auto px-3 safe-top pb-36">
+            <header class="site-header mb-4">
+                <div class="site-header__inner">
+                    <div
+                        style="
+                            flex: 1;
+                            display: flex;
+                            justify-content: flex-start;
+                            padding-right: 24px;
+                        "
+                    >
+                        <button id="currencyBtn" class="mgr-btn">
+                            <span id="currencySymbol">RUB</span>
+                        </button>
+                    </div>
+                    <img
+                        src="/static/xtinct-logo.png"
+                        class="site-header__logo"
+                        alt="XTINCT"
+                        style="
+                            position: absolute;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            max-width: 210px;
+                            max-height: 72px;
+                        "
+                    />
+                    <div
+                        style="
+                            flex: 1;
+                            display: flex;
+                            justify-content: flex-end;
+                            padding-left: 24px;
+                        "
+                    >
+                        <button id="managerBtn" class="mgr-btn">Помощь</button>
+                    </div>
                 </div>
-                <h3 style="font-family:var(--fn-body);font-size:16px;font-weight:600;margin-top:4px;line-height:1.25;color:var(--silver);letter-spacing:0.01em;">
-                  ${esc(product.title)}
-                </h3>
-              </div>
-              ${product.sold ? `<div style="flex-shrink:0;width:32px;height:32px;"></div>` : `<button onclick="toggleFavorite(${product.id})" data-fav-btn="${product.id}" data-fav-size="16"
-                style="flex-shrink:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;border:none;padding:0;transition:opacity .14s ease;"
-              >${favIcon}</button>`}
-            </div>
-            <div style="margin-top:auto;display:flex;flex-direction:column;gap:0;">
-              <div style="font-family:var(--fn-display);font-weight:800;font-size:22px;letter-spacing:0.04em;color:var(--silver);margin-top:8px;line-height:1.1;">
-                ${formatPrice(product.price)}
-              </div>
-              ${product.sold
-                ? `<div style="margin-top:8px;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--silver-faint);">Продано</div>`
-                : `<button onclick="quickAdd(${product.id})" class="btn-cta" style="margin-top:8px;">В корзину</button>`
-              }
-            </div>
-          </div>
-        </article>
-      `;
-    }
+            </header>
 
-    function productCard(product) {
-      const favorite = isFavorite(product.id);
-      const sizes = product.sizes || [];
-      const favIcon = favorite
-        ? `<span style="display:block;width:14px;height:14px;background:url(/static/button-bg.jpg) center/cover;-webkit-mask-image:url(${HEART_MASK});-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;mask-image:url(${HEART_MASK});mask-size:contain;mask-repeat:no-repeat;"></span>`
-        : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(148,150,158,0.40)" stroke-width="1.8"><path d="M12 21s-7.2-4.4-9.6-8.4C.7 9.8 2.1 5.8 6 4.8c2.1-.5 4.1.2 6 2.1 1.9-1.9 3.9-2.6 6-2.1 3.9 1 5.3 5 3.6 7.8C19.2 16.6 12 21 12 21Z"/></svg>`;
-
-      return `
-        <article style="
-          background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);
-          border:1px solid var(--m-border);border-top-color:var(--m-top);
-          box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
-          overflow:hidden;border-radius:4px;
-          display:flex;flex-direction:column;
-        ">
-          <button onclick="openProductModal(${product.id})" style="display:block;width:100%;text-align:left;flex-shrink:0;">
-            <img src="${esc(product.image)}" alt="${esc(product.title)}"
-              onerror="this.onerror=null;this.src=PLACEHOLDER_IMG"
-              style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block;border-bottom:1px solid rgba(155,157,160,0.12);" />
-          </button>
-          <div style="padding:10px;flex:1;display:flex;flex-direction:column;">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;">
-              <div style="min-width:0;flex:1;">
-                <div style="font-family:var(--fn-body);font-size:9px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:var(--brass-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                  ${esc(product.category)}
+            <section id="catalogFilters" class="mb-4">
+                <div style="position: relative; margin-bottom: 10px">
+                    <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        style="
+                            position: absolute;
+                            left: 13px;
+                            top: 50%;
+                            transform: translateY(-50%);
+                            color: rgba(148, 150, 158, 0.44);
+                            pointer-events: none;
+                            z-index: 1;
+                        "
+                    >
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                    </svg>
+                    <input
+                        id="catalogSearch"
+                        type="search"
+                        placeholder="Поиск по названию"
+                        autocomplete="off"
+                        style="
+                            width: 100%;
+                            padding: 10px 14px 10px 36px;
+                            border-radius: 3px;
+                            outline: none;
+                        "
+                    />
                 </div>
-                <h3 style="font-family:var(--fn-body);font-size:13px;font-weight:600;margin-top:3px;line-height:1.3;color:var(--silver);letter-spacing:0.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
-                  ${esc(product.title)}
-                </h3>
-              </div>
-              ${product.sold ? `<div style="flex-shrink:0;width:28px;height:28px;"></div>` : `<button onclick="toggleFavorite(${product.id})" data-fav-btn="${product.id}" data-fav-size="14"
-                style="flex-shrink:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;border:none;padding:0;transition:opacity .14s ease;"
-              >${favIcon}</button>`}
-            </div>
-            <div style="margin-top:auto;display:flex;flex-direction:column;gap:0;">
-              <div style="font-family:var(--fn-display);font-weight:800;font-size:19px;letter-spacing:0.04em;color:var(--silver);margin-top:8px;line-height:1;">
-                ${formatPrice(product.price)}
-              </div>
-              ${product.sold
-                ? `<div style="margin-top:6px;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--silver-faint);">Продано</div>`
-                : `<div style="font-family:var(--fn-body);font-size:11px;color:var(--silver-faint);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.02em;">
-                    ${sizes.length ? sizes.map(esc).join(' · ') : 'без размеров'}
-                  </div>
-                  <button onclick="quickAdd(${product.id})" class="btn-cta" style="margin-top:8px;">В корзину</button>`
-              }
-            </div>
-          </div>
-        </article>
-      `;
-    }
+                <div
+                    id="categories"
+                    class="flex gap-2 overflow-auto hide-scrollbar pb-1"
+                ></div>
+            </section>
 
-    function renderCatalogSkeleton() {
-      catalogScreen.innerHTML = Array.from({length: 6}).map(() => `
-        <div class="skeleton-card">
-          <div class="skeleton-img"></div>
-          <div style="padding:10px;display:flex;flex-direction:column;gap:8px;">
-            <div class="skeleton-line" style="width:60%;"></div>
-            <div class="skeleton-line" style="width:85%;"></div>
-            <div class="skeleton-line" style="width:40%;margin-top:4px;height:14px;"></div>
-            <div class="skeleton-line" style="height:34px;margin-top:4px;border-radius:3px;"></div>
-          </div>
+            <main id="catalogScreen" class="grid grid-cols-2 gap-3"></main>
+            <div
+                id="catalogPagination"
+                class="hidden"
+                style="
+                    display: none;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 12px;
+                    margin-top: 16px;
+                "
+            ></div>
+
+            <section id="favoritesScreen" class="hidden">
+                <div class="mb-5">
+                    <h2 class="section-title">Избранное</h2>
+                    <p class="section-sub">Товары, которые ты сохранил.</p>
+                </div>
+                <div id="favoritesGrid" class="grid grid-cols-1 gap-3"></div>
+                <div
+                    id="favoritesEmpty"
+                    class="hidden glass rounded-[28px] p-6"
+                    style="color: var(--silver-dim)"
+                >
+                    В избранном пока ничего нет.
+                </div>
+            </section>
+
+            <section id="cartScreen" class="hidden">
+                <div class="mb-5">
+                    <h2 class="section-title">Корзина</h2>
+                    <p class="section-sub">
+                        Проверь размеры и состав заказа перед оформлением.
+                    </p>
+                </div>
+                <div id="cartList" class="space-y-3"></div>
+                <div
+                    id="cartEmpty"
+                    class="hidden glass rounded-[28px] p-6"
+                    style="color: var(--silver-dim)"
+                >
+                    Корзина пуста.
+                </div>
+                <!-- Промокод -->
+                <div
+                    id="promoBlock"
+                    class="hidden glass rounded-[28px] p-4 mt-4"
+                >
+                    <div style="display: flex; gap: 8px; align-items: center">
+                        <input
+                            id="promoInput"
+                            type="text"
+                            placeholder="ПРОМОКОД"
+                            style="
+                                flex: 1;
+                                font-family: var(--fn-body);
+                                font-size: 13px;
+                                font-weight: 700;
+                                letter-spacing: 0.14em;
+                                text-transform: uppercase;
+                                background: rgba(255, 255, 255, 0.06);
+                                border: 1px solid rgba(140, 141, 143, 0.22);
+                                border-radius: 3px;
+                                padding: 10px 12px;
+                                color: var(--silver);
+                                outline: none;
+                            "
+                        />
+                        <button
+                            id="promoApplyBtn"
+                            style="
+                                font-family: var(--fn-body);
+                                font-size: 11px;
+                                font-weight: 700;
+                                letter-spacing: 0.12em;
+                                text-transform: uppercase;
+                                padding: 10px 14px;
+                                border-radius: 3px;
+                                cursor: pointer;
+                                background: linear-gradient(
+                                    180deg,
+                                    #1e1e1e 0%,
+                                    #181818 100%
+                                );
+                                border: 1px solid rgba(140, 141, 143, 0.22);
+                                border-top-color: rgba(192, 195, 198, 0.26);
+                                color: var(--silver-dim);
+                                white-space: nowrap;
+                            "
+                        >
+                            Применить
+                        </button>
+                        <button
+                            id="promoClearBtn"
+                            style="
+                                display: none;
+                                font-family: var(--fn-body);
+                                font-size: 18px;
+                                line-height: 1;
+                                color: var(--silver-faint);
+                                background: none;
+                                border: none;
+                                cursor: pointer;
+                                padding: 4px;
+                            "
+                        >
+                            ✕
+                        </button>
+                    </div>
+                    <div
+                        id="promoMsg"
+                        style="
+                            margin-top: 8px;
+                            font-family: var(--fn-body);
+                            font-size: 12px;
+                            letter-spacing: 0.04em;
+                            display: none;
+                        "
+                    ></div>
+                </div>
+
+                <div
+                    id="cartSummary"
+                    class="hidden glass rounded-[28px] p-5 mt-4"
+                >
+                    <div
+                        id="cartDiscountRow"
+                        style="
+                            display: none;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 6px;
+                        "
+                    >
+                        <span
+                            style="
+                                font-family: var(--fn-body);
+                                font-size: 12px;
+                                font-weight: 700;
+                                letter-spacing: 0.12em;
+                                text-transform: uppercase;
+                                color: var(--silver-faint);
+                            "
+                            >Скидка</span
+                        >
+                        <span
+                            id="cartDiscountAmt"
+                            style="
+                                font-family: var(--fn-body);
+                                font-size: 14px;
+                                font-weight: 700;
+                                color: #6fcf6f;
+                            "
+                            >−0 ₽</span
+                        >
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span
+                            style="
+                                font-family: var(--fn-display);
+                                font-size: 26px;
+                                font-weight: 800;
+                                letter-spacing: 0.2em;
+                                text-transform: uppercase;
+                                color: var(--silver-faint);
+                            "
+                            >Итого</span
+                        >
+                        <span
+                            id="cartSummaryTotal"
+                            style="
+                                font-family: var(--fn-display);
+                                font-size: 36px;
+                                font-weight: 800;
+                                letter-spacing: 0.04em;
+                                color: var(--silver);
+                                line-height: 1;
+                            "
+                            >0 ₽</span
+                        >
+                    </div>
+                    <button
+                        id="goCheckoutFromCart"
+                        class="btn-cta"
+                        style="margin-top: 16px"
+                    >
+                        Перейти к оформлению
+                    </button>
+                </div>
+            </section>
+
+            <section id="ordersScreen" class="hidden">
+                <div class="mb-5">
+                    <h2 class="section-title">Мои заказы</h2>
+                    <p class="section-sub">
+                        Все незавершенные заказы из этого Telegram аккаунта.
+                    </p>
+                </div>
+                <div id="ordersList" class="space-y-3"></div>
+                <div
+                    id="ordersEmpty"
+                    class="hidden glass rounded-[28px] p-6"
+                    style="color: var(--silver-dim)"
+                >
+                    Активных заказов пока нет.
+                </div>
+            </section>
         </div>
-      `).join('');
-    }
 
-    function renderCatalog() {
-      const words = state.search.toLowerCase().split(/\s+/).filter(Boolean);
-      const list = state.products.filter((item) => {
-        const matchCat = state.category === 'Все'
-          ? !item.sold
-          : item.category === state.category;
-        const tokens = (item.title + ' ' + item.category).toLowerCase().split(/\s+/);
-        const matchSearch = words.length === 0 || words.every(w => {
-          const stem = w.length > 3 ? w.slice(0, -1) : w;
-          return tokens.some(t => t.startsWith(stem));
-        });
-        return matchCat && matchSearch;
-      });
-
-      const empty = words.length > 0
-        ? 'Ничего не найдено.'
-        : 'В этой категории товаров пока нет.';
-
-      catalogScreen.innerHTML = list.length
-        ? list.map(productCard).join('')
-        : `<div class="glass rounded-[28px] p-6 col-span-full" style="color:var(--silver-dim);">${empty}</div>`;
-    }
-
-    function renderFavorites() {
-      const list = state.products.filter((item) => state.favorites.includes(item.id));
-      favoritesEmpty.classList.toggle('hidden', list.length > 0);
-      favoritesGrid.innerHTML = list.map(productCardFavorite).join('');
-    }
-
-    function renderCart() {
-      const items = getItems();
-
-      cartEmpty.classList.toggle('hidden', items.length > 0);
-      cartSummary.classList.toggle('hidden', items.length === 0);
-      document.getElementById('promoBlock').classList.toggle('hidden', items.length === 0);
-
-      const discountRow = document.getElementById('cartDiscountRow');
-      const discountAmt = document.getElementById('cartDiscountAmt');
-      if (state.promoDiscount > 0) {
-        discountRow.style.display = 'flex';
-        discountAmt.textContent = '−' + formatPrice(state.promoDiscount);
-      } else {
-        discountRow.style.display = 'none';
-      }
-
-      cartList.innerHTML = items.map((item) => `
-        <article style="
-          background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);
-          border:1px solid var(--m-border);border-top-color:var(--m-top);
-          box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
-          border-radius:4px;padding:14px;display:flex;gap:14px;align-items:center;
-        ">
-          <button onclick="openProductModal(${item.id})" style="background:none;border:none;padding:0;cursor:pointer;flex-shrink:0;">
-            <img src="${esc(item.image)}" alt="${esc(item.title)}"
-              onerror="this.onerror=null;this.src=PLACEHOLDER_IMG"
-              style="width:76px;height:76px;border-radius:3px;object-fit:cover;display:block;border:1px solid rgba(155,157,160,0.14);" />
-          </button>
-          <div style="flex:1;min-width:0;">
-            <div style="font-family:var(--fn-body);font-size:9px;font-weight:700;letter-spacing:0.24em;text-transform:uppercase;color:var(--brass-dim);">${esc(item.category)}</div>
-            <button onclick="openProductModal(${item.id})" style="background:none;border:none;padding:0;cursor:pointer;text-align:left;width:100%;">
-              <div style="font-family:var(--fn-body);font-size:16px;font-weight:700;color:var(--silver);letter-spacing:0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(item.title)}</div>
+        <nav id="bottomNavWrap" class="site-nav">
+            <button id="navCatalog" class="site-nav__tab active">
+                <svg
+                    class="nav-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                >
+                    <path d="M3 10.5 12 3l9 7.5"></path>
+                    <path d="M5 9.5V20h14V9.5"></path>
+                </svg>
+                <span class="nav-label">Каталог</span>
             </button>
-            <div style="font-family:var(--fn-body);font-size:12px;color:var(--silver-dim);margin-top:2px;letter-spacing:0.04em;">Размер: ${esc(item.size || '—')}</div>
-            <div style="font-family:var(--fn-display);font-weight:800;font-size:20px;letter-spacing:0.04em;color:var(--silver);margin-top:4px;line-height:1;">${formatPrice(item.price)}</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0;">
-            <button onclick="removeFromCart(${esc(JSON.stringify(item.cartKey))})"
-              style="font-family:var(--fn-body);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--silver-faint);background:none;border:none;cursor:pointer;padding:2px 0;">Удалить</button>
-          </div>
-        </article>
-      `).join('');
-    }
+            <button id="navFavorites" class="site-nav__tab">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 21s-7.2-4.4-9.6-8.4C.7 9.8 2.1 5.8 6 4.8c2.1-.5 4.1.2 6 2.1 1.9-1.9 3.9-2.6 6-2.1 3.9 1 5.3 5 3.6 7.8C19.2 16.6 12 21 12 21Z"
+                    />
+                </svg>
+                <span class="nav-label">Избранное</span>
+                <span id="favoritesBadge" class="badge hidden"></span>
+            </button>
+            <button id="navCart" class="site-nav__tab">
+                <svg
+                    class="nav-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                >
+                    <circle cx="9" cy="20" r="1.5"></circle>
+                    <circle cx="18" cy="20" r="1.5"></circle>
+                    <path
+                        d="M3 4h2l2.4 10.2A2 2 0 0 0 9.35 16H18a2 2 0 0 0 1.94-1.5L21 8H7"
+                    ></path>
+                </svg>
+                <span class="nav-label">Корзина</span>
+                <span id="cartBadge" class="badge hidden"></span>
+            </button>
+            <button id="navOrders" class="site-nav__tab">
+                <svg
+                    class="nav-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                >
+                    <path d="M6 4h12v16H6z"></path>
+                    <path d="M9 8h6"></path>
+                    <path d="M9 12h6"></path>
+                    <path d="M9 16h4"></path>
+                </svg>
+                <span class="nav-label">Заказы</span>
+            </button>
+        </nav>
 
-    function renderMyOrders() {
-      ordersEmpty.classList.toggle('hidden', state.myOrders.length > 0);
-
-      ordersList.innerHTML = state.myOrders.map((order) => `
-        <article style="
-          background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);
-          border:1px solid var(--m-border);border-top-color:var(--m-top);
-          box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
-          border-radius:4px;padding:16px;
-        ">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
-            <div>
-              <div style="font-family:var(--fn-display);font-weight:800;font-size:26px;letter-spacing:0.06em;color:var(--silver);line-height:1;">Заказ #${order.order_number}</div>
-              <div style="font-family:var(--fn-body);font-size:12px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--brass-dim);margin-top:5px;">${statusLabel(order.status)}</div>
-              <div style="font-family:var(--fn-body);font-size:12px;color:var(--silver-faint);margin-top:3px;letter-spacing:0.03em;">${esc(formatDate(order.created_at))}</div>
+        <!-- Экран товара (fullscreen) -->
+        <div id="productScreen" class="hidden">
+            <div class="max-w-lg mx-auto px-3 modal-safe-top pb-8">
+                <!-- Фото с каруселью -->
+                <div
+                    class="relative w-full modal-img-wrap"
+                    id="modalImgWrap"
+                    style="margin-top: 12px"
+                >
+                    <img
+                        id="productModalImage"
+                        alt=""
+                        onerror="
+                            this.onerror = null;
+                            this.src = PLACEHOLDER_IMG;
+                            this.classList.add('img-ready');
+                            document
+                                .getElementById('modalImgWrap')
+                                .classList.add('loaded');
+                        "
+                    />
+                    <button
+                        id="carouselPrev"
+                        class="hidden absolute top-1/2 -translate-y-1/2 flex items-center justify-center"
+                        style="
+                            left: 10px;
+                            width: 36px;
+                            height: 36px;
+                            background: rgba(7, 7, 12, 0.62);
+                            border: 1px solid rgba(155, 155, 180, 0.28);
+                            color: var(--silver);
+                            font-size: 20px;
+                            border-radius: 3px;
+                            cursor: pointer;
+                        "
+                    >
+                        ‹
+                    </button>
+                    <button
+                        id="carouselNext"
+                        class="hidden absolute top-1/2 -translate-y-1/2 flex items-center justify-center"
+                        style="
+                            right: 10px;
+                            width: 36px;
+                            height: 36px;
+                            background: rgba(7, 7, 12, 0.62);
+                            border: 1px solid rgba(155, 155, 180, 0.28);
+                            color: var(--silver);
+                            font-size: 20px;
+                            border-radius: 3px;
+                            cursor: pointer;
+                        "
+                    >
+                        ›
+                    </button>
+                    <div
+                        id="carouselCounter"
+                        class="hidden absolute"
+                        style="
+                            bottom: 10px;
+                            right: 10px;
+                            background: rgba(7, 7, 12, 0.65);
+                            border: 1px solid rgba(155, 155, 180, 0.22);
+                            color: var(--silver-dim);
+                            font-family: var(--fn-body);
+                            font-size: 11px;
+                            letter-spacing: 0.08em;
+                            padding: 3px 8px;
+                            border-radius: 3px;
+                        "
+                    ></div>
+                </div>
+                <!-- Инфо-блок -->
+                <div
+                    class="glass"
+                    style="
+                        margin-top: 12px;
+                        border-radius: 4px;
+                        padding: 18px 16px;
+                    "
+                >
+                    <div class="engraved" id="productModalCategory"></div>
+                    <div
+                        style="
+                            display: flex;
+                            align-items: flex-start;
+                            justify-content: space-between;
+                            gap: 12px;
+                            margin-top: 6px;
+                        "
+                    >
+                        <h2
+                            id="productModalTitle"
+                            style="
+                                font-family: var(--fn-display);
+                                font-size: 30px;
+                                letter-spacing: 0.08em;
+                                color: var(--silver);
+                                line-height: 1.1;
+                                flex: 1;
+                                min-width: 0;
+                            "
+                        ></h2>
+                        <button
+                            id="modalFavBtn"
+                            data-fav-btn="modal"
+                            data-fav-size="24"
+                            style="
+                                width: 40px;
+                                height: 40px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                cursor: pointer;
+                                background: none;
+                                border: none;
+                                padding: 0;
+                                transition: opacity 0.14s ease;
+                                flex-shrink: 0;
+                                margin-top: 2px;
+                            "
+                        ></button>
+                    </div>
+                    <div
+                        id="productModalPrice"
+                        style="
+                            font-family: var(--fn-display);
+                            font-weight: 800;
+                            font-size: 36px;
+                            letter-spacing: 0.04em;
+                            color: var(--silver);
+                            line-height: 1;
+                            margin-top: 10px;
+                        "
+                    ></div>
+                    <p
+                        id="productModalDescription"
+                        style="
+                            color: var(--silver-dim);
+                            font-size: 14px;
+                            letter-spacing: 0.02em;
+                            line-height: 1.6;
+                            white-space: pre-wrap;
+                            margin-top: 12px;
+                        "
+                    ></p>
+                    <div
+                        id="measurementsBlock"
+                        class="hidden"
+                        style="margin-top: 12px"
+                    >
+                        <button
+                            id="measurementsToggle"
+                            style="
+                                width: 100%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                padding: 10px 14px;
+                                background: rgba(255, 255, 255, 0.04);
+                                border: 1px solid rgba(155, 157, 160, 0.15);
+                                border-radius: 3px;
+                                cursor: pointer;
+                            "
+                        >
+                            <span
+                                style="
+                                    font-family: var(--fn-body);
+                                    font-size: 11px;
+                                    font-weight: 700;
+                                    letter-spacing: 0.14em;
+                                    text-transform: uppercase;
+                                    color: var(--silver-dim);
+                                "
+                                >Замеры</span
+                            >
+                            <svg
+                                id="measurementsChevron"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                style="
+                                    color: var(--silver-faint);
+                                    transition: transform 0.2s ease;
+                                    flex-shrink: 0;
+                                "
+                            >
+                                <path d="M9 18l6-6-6-6" />
+                            </svg>
+                        </button>
+                        <div
+                            id="measurementsBody"
+                            class="hidden"
+                            style="
+                                padding: 12px 14px;
+                                border: 1px solid rgba(155, 157, 160, 0.15);
+                                border-top: none;
+                                border-radius: 0 0 3px 3px;
+                                background: rgba(255, 255, 255, 0.02);
+                            "
+                        >
+                            <p
+                                id="measurementsText"
+                                style="
+                                    font-family: var(--fn-body);
+                                    font-size: 13px;
+                                    color: var(--silver-dim);
+                                    line-height: 1.7;
+                                    white-space: pre-wrap;
+                                    margin: 0;
+                                    letter-spacing: 0.02em;
+                                "
+                            ></p>
+                        </div>
+                    </div>
+                    <hr class="metal-divider" style="margin-top: 16px" />
+                    <div
+                        id="modalSoldBadge"
+                        class="hidden"
+                        style="
+                            font-family: var(--fn-body);
+                            font-size: 11px;
+                            font-weight: 700;
+                            letter-spacing: 0.18em;
+                            text-transform: uppercase;
+                            color: var(--silver-faint);
+                            margin-bottom: 4px;
+                        "
+                    >
+                        Продано
+                    </div>
+                    <div id="modalPurchaseBlock">
+                        <div class="engraved mb-3">Размер</div>
+                        <div
+                            id="productModalSizes"
+                            class="flex flex-wrap gap-2"
+                        ></div>
+                        <div style="margin-top: 20px">
+                            <button id="addProductFromModal" class="btn-cta">
+                                В корзину
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
+        </div>
 
-          <div style="border-top:1px solid rgba(155,157,160,0.14);margin-top:14px;padding-top:14px;">
-            ${order.items.map((item) => `
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid rgba(155,157,160,0.08);">
-                <div style="min-width:0;">
-                  <div style="font-family:var(--fn-body);font-size:14px;font-weight:600;color:var(--silver);letter-spacing:0.02em;">${esc(item.title)}</div>
-                  <div style="font-family:var(--fn-body);font-size:12px;color:var(--silver-dim);margin-top:2px;letter-spacing:0.03em;">
-                    ${item.quantity} шт.${item.size ? ` · Размер ${esc(item.size)}` : ''}
+        <!-- Checkout modal -->
+        <div
+            id="checkoutModal"
+            class="hidden fixed inset-0 z-[60] p-4 overflow-auto modal-safe-top"
+            style="
+                background: rgba(4, 4, 8, 0.74);
+                backdrop-filter: blur(3px);
+                -webkit-backdrop-filter: blur(3px);
+            "
+        >
+            <div class="max-w-lg mx-auto mt-6 mb-28 glass rounded-[28px] p-5">
+                <div class="flex items-center justify-between gap-3 mb-5">
+                    <h2
+                        style="
+                            font-family: var(--fn-display);
+                            font-size: 28px;
+                            letter-spacing: 0.1em;
+                            color: var(--silver);
+                            line-height: 1;
+                        "
+                    >
+                        Оформление заказа
+                    </h2>
+                    <button
+                        id="closeModal"
+                        style="
+                            color: var(--silver-dim);
+                            font-size: 20px;
+                            line-height: 1;
+                            background: none;
+                            border: none;
+                            cursor: pointer;
+                            padding: 4px;
+                        "
+                    >
+                        ✕
+                    </button>
+                </div>
+                <div
+                    id="checkoutItemsPreview"
+                    class="glass rounded-2xl p-4 mb-5"
+                    style="
+                        font-size: 13px;
+                        color: var(--silver-dim);
+                        letter-spacing: 0.03em;
+                    "
+                ></div>
+                <div class="space-y-3">
+                    <textarea
+                        id="comment"
+                        class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none min-h-[100px]"
+                        placeholder="Комментарий к заказу"
+                    ></textarea>
+                </div>
+                <div
+                    class="mt-5"
+                    style="display: flex; flex-direction: column; gap: 10px"
+                >
+                    <button
+                        id="sendOrder"
+                        class="w-full rounded-2xl bg-white text-slate-900 px-5 py-3 font-semibold"
+                    >
+                        Отправить заказ
+                    </button>
+                    <button
+                        id="askQuestionBtn"
+                        onclick="openManager()"
+                        style="
+                            width: 100%;
+                            font-family: var(--fn-body);
+                            font-size: 11px;
+                            font-weight: 700;
+                            letter-spacing: 0.13em;
+                            text-transform: uppercase;
+                            padding: 13px 0;
+                            border-radius: 3px;
+                            cursor: pointer;
+                            transition: filter 0.12s ease;
+                            background: linear-gradient(
+                                180deg,
+                                #1e1e1e 0%,
+                                #181818 100%
+                            );
+                            border: 1px solid rgba(140, 141, 143, 0.18);
+                            border-top-color: rgba(192, 195, 198, 0.22);
+                            color: var(--silver-dim);
+                        "
+                    >
+                        Задать вопрос
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const tg = window.Telegram?.WebApp;
+            tg?.ready();
+            tg?.expand();
+            tg?.disableVerticalSwipes?.();
+            tg?.requestFullscreen?.();
+            const _scrollTop = () => window.scrollTo({ top: 0, behavior: 'instant' });
+            tg?.onEvent?.('fullscreenChanged', () => { requestAnimationFrame(_scrollTop); });
+            tg?.onEvent?.('fullscreenFailed', () => { requestAnimationFrame(_scrollTop); });
+            requestAnimationFrame(_scrollTop);
+
+            // Скрываем навбар когда клавиатура открыта (visualViewport shrinks on iOS)
+            const _navbar = document.getElementById('bottomNavWrap');
+            if (window.visualViewport) {
+              window.visualViewport.addEventListener('resize', () => {
+                const keyboardHeight = window.innerHeight - window.visualViewport.height;
+                _navbar.style.transform = keyboardHeight > 100 ? `translateY(${keyboardHeight}px)` : '';
+              });
+            }
+
+            // Закрытие клавиатуры по тапу: первый тап только закрывает, клик не срабатывает
+            let _kbOpen = false;
+            document.addEventListener('touchstart', (e) => {
+              const active = document.activeElement;
+              const isInput = active && active.matches('input, textarea, select');
+              if (isInput && !e.target.closest('input, textarea, select')) {
+                active.blur();
+                e.preventDefault();
+              }
+            }, { passive: false });
+
+            const HEART_MASK = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M12 21s-7.2-4.4-9.6-8.4C.7 9.8 2.1 5.8 6 4.8c2.1-.5 4.1.2 6 2.1 1.9-1.9 3.9-2.6 6-2.1 3.9 1 5.3 5 3.6 7.8C19.2 16.6 12 21 12 21Z"/></svg>');
+
+            const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect width='400' height='400' fill='%231a1a1a'/%3E%3Crect x='150' y='152' width='100' height='82' rx='4' fill='none' stroke='%23383838' stroke-width='2'/%3E%3Ccircle cx='200' cy='190' r='17' fill='none' stroke='%23383838' stroke-width='2'/%3E%3Ccircle cx='200' cy='190' r='7' fill='%23383838'/%3E%3Crect x='161' y='144' width='22' height='11' rx='2' fill='%23383838'/%3E%3Ctext x='200' y='262' text-anchor='middle' font-family='Arial' font-size='11' fill='%23444444' letter-spacing='3'%3EНЕТ%20ФОТО%3C/text%3E%3C/svg%3E";
+
+            function esc(str) {
+              return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+            }
+
+            function renderCarousel() {
+              const product = state.selectedProduct;
+              const images = (product?.images?.length ? product.images : [product?.image]).filter(Boolean);
+              const idx = state.selectedImageIndex;
+
+              const img = document.getElementById('productModalImage');
+              const wrap = document.getElementById('modalImgWrap');
+              img.classList.remove('img-ready');
+              wrap.classList.remove('loaded');
+              img.onload = () => { img.classList.add('img-ready'); wrap.classList.add('loaded'); };
+              img.src = esc(images[idx] || '');
+              img.alt = esc(product?.title || '');
+
+              const multi = images.length > 1;
+              document.getElementById('carouselPrev').classList.toggle('hidden', !multi);
+              document.getElementById('carouselNext').classList.toggle('hidden', !multi);
+              document.getElementById('carouselCounter').classList.toggle('hidden', !multi);
+              if (multi) {
+                document.getElementById('carouselCounter').textContent = `${idx + 1} / ${images.length}`;
+              }
+            }
+
+            function carouselStep(delta) {
+              const images = (state.selectedProduct?.images?.length
+                ? state.selectedProduct.images
+                : [state.selectedProduct?.image]
+              ).filter(Boolean);
+              if (!images.length) return;
+              state.selectedImageIndex = (state.selectedImageIndex + delta + images.length) % images.length;
+              renderCarousel();
+            }
+
+            const CATALOG_PAGE_SIZE = 16;
+
+            const state = {
+              products: [],
+              categories: [],
+              category: 'Все',
+              search: '',
+              catalogPage: 1,
+              activeTab: 'catalog',
+              // Таб, с которого открыли экран товара — нужен для корректного возврата
+              prevTab: 'catalog',
+              prevScrollY: 0,
+              promoCode: '',
+              promoDiscount: 0,
+              cart: loadJson('mini_shop_cart', {}),
+              favorites: loadJson('mini_shop_favorites', []),
+              selectedProduct: null,
+              selectedSize: '',
+              selectedImageIndex: 0,
+              myOrders: [],
+            };
+
+            const catalogScreen = document.getElementById('catalogScreen');
+            const favoritesScreen = document.getElementById('favoritesScreen');
+            const cartScreen = document.getElementById('cartScreen');
+            const ordersScreen = document.getElementById('ordersScreen');
+            const favoritesGrid = document.getElementById('favoritesGrid');
+            const favoritesEmpty = document.getElementById('favoritesEmpty');
+            const cartList = document.getElementById('cartList');
+            const cartEmpty = document.getElementById('cartEmpty');
+            const cartSummary = document.getElementById('cartSummary');
+            const cartSummaryTotal = document.getElementById('cartSummaryTotal');
+            const categoriesEl = document.getElementById('categories');
+            const checkoutModal = document.getElementById('checkoutModal');
+            const productScreen = document.getElementById('productScreen');
+            const checkoutItemsPreview = document.getElementById('checkoutItemsPreview');
+            const catalogFilters = document.getElementById('catalogFilters');
+            const ordersList = document.getElementById('ordersList');
+            const ordersEmpty = document.getElementById('ordersEmpty');
+
+            const navCatalog = document.getElementById('navCatalog');
+            const navFavorites = document.getElementById('navFavorites');
+            const navCart = document.getElementById('navCart');
+            const navOrders = document.getElementById('navOrders');
+            const cartBadge = document.getElementById('cartBadge');
+            const favoritesBadge = document.getElementById('favoritesBadge');
+
+            async function applyPromo() {
+              const input = document.getElementById('promoInput');
+              const msg = document.getElementById('promoMsg');
+              const code = input.value.trim().toUpperCase();
+              if (!code) return;
+
+              msg.style.display = 'none';
+              const rawTotal = getRawTotal();
+
+              try {
+                const res = await fetch('/api/promo/validate', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ code, cart_total: rawTotal }),
+                });
+                const data = await res.json();
+
+                if (data.ok) {
+                  state.promoCode = code;
+                  state.promoDiscount = data.discount_amount;
+                  msg.textContent = '✓ ' + data.message;
+                  msg.style.display = 'block';
+                  msg.style.color = '#6fcf6f';
+                  document.getElementById('promoClearBtn').style.display = 'block';
+                  document.getElementById('promoApplyBtn').style.display = 'none';
+                  input.disabled = true;
+                } else {
+                  state.promoCode = '';
+                  state.promoDiscount = 0;
+                  msg.textContent = '✕ ' + data.error;
+                  msg.style.display = 'block';
+                  msg.style.color = '#e07070';
+                }
+              } catch {
+                state.promoCode = '';
+                state.promoDiscount = 0;
+                msg.textContent = '✕ Ошибка соединения';
+                msg.style.display = 'block';
+                msg.style.color = '#e07070';
+              }
+
+              renderCart();
+              updateCounters();
+            }
+
+            function clearPromo() {
+              state.promoCode = '';
+              state.promoDiscount = 0;
+              const input = document.getElementById('promoInput');
+              const msg = document.getElementById('promoMsg');
+              input.value = '';
+              input.disabled = false;
+              msg.style.display = 'none';
+              document.getElementById('promoClearBtn').style.display = 'none';
+              document.getElementById('promoApplyBtn').style.display = 'block';
+              renderCart();
+              updateCounters();
+            }
+
+            document.getElementById('promoApplyBtn').addEventListener('click', applyPromo);
+            document.getElementById('promoClearBtn').addEventListener('click', clearPromo);
+            document.getElementById('promoInput').addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') applyPromo();
+            });
+
+            function telegramHeaders() {
+              return {
+                'Content-Type': 'application/json',
+                'X-Telegram-Init-Data': tg?.initData || '',
+              };
+            }
+
+            function loadJson(key, fallback) {
+              try {
+                const raw = localStorage.getItem(key);
+                return raw ? JSON.parse(raw) : fallback;
+              } catch {
+                return fallback;
+              }
+            }
+
+            function saveJson(key, value) {
+              localStorage.setItem(key, JSON.stringify(value));
+            }
+
+            let activeCurrency = 'RUB';
+            let currencyRates = { usd: 90.0, byn: 28.0 };
+            const CURRENCIES = ['RUB', 'BYN', 'USD'];
+            const CURRENCY_LABELS = { RUB: 'RUB', BYN: 'BYN', USD: 'USD' };
+
+            function formatPrice(rub) {
+              if (activeCurrency === 'USD') return '$' + Math.ceil(rub / currencyRates.usd);
+              if (activeCurrency === 'BYN') return Math.ceil(rub / currencyRates.byn) + ' BYN';
+              return new Intl.NumberFormat('ru-RU').format(rub) + ' ₽';
+            }
+
+            async function loadCurrencyRates() {
+              try {
+                const resp = await fetch('/api/currency-rates');
+                const data = await resp.json();
+                if (data.ok) currencyRates = { usd: data.usd, byn: data.byn };
+              } catch(e) { /* keep defaults */ }
+            }
+
+            function formatDate(value) {
+              if (!value) return '—';
+              const date = new Date(value);
+              if (Number.isNaN(date.getTime())) return String(value).replace('T', ' ');
+              return date.toLocaleString('ru-RU');
+            }
+
+            function getCartKey(productId, size) {
+              return `${productId}::${size || ''}`;
+            }
+
+            function getItems() {
+              return Object.values(state.cart);
+            }
+
+            function getTotal() {
+              const raw = getItems().reduce((sum, item) => sum + item.price * item.quantity, 0);
+              return Math.max(0, raw - state.promoDiscount);
+            }
+
+            function getRawTotal() {
+              return getItems().reduce((sum, item) => sum + item.price * item.quantity, 0);
+            }
+
+            function getCount() {
+              return getItems().reduce((sum, item) => sum + item.quantity, 0);
+            }
+
+            function isFavorite(productId) {
+              return state.favorites.includes(productId);
+            }
+
+            function toggleFavorite(productId) {
+              if (isFavorite(productId)) {
+                state.favorites = state.favorites.filter((id) => id !== productId);
+              } else {
+                state.favorites.push(productId);
+              }
+              saveJson('mini_shop_favorites', state.favorites);
+              updateCounters();
+
+              const fav = isFavorite(productId);
+              document.querySelectorAll(`[data-fav-btn="${productId}"]`).forEach(btn => {
+                const size = btn.dataset.favSize || '14';
+                btn.innerHTML = fav
+                  ? `<span style="display:block;width:${size}px;height:${size}px;background:url(/static/button-bg.jpg) center/cover;-webkit-mask-image:url(${HEART_MASK});-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;mask-image:url(${HEART_MASK});mask-size:contain;mask-repeat:no-repeat;"></span>`
+                  : `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="rgba(148,150,158,0.40)" stroke-width="1.8"><path d="M12 21s-7.2-4.4-9.6-8.4C.7 9.8 2.1 5.8 6 4.8c2.1-.5 4.1.2 6 2.1 1.9-1.9 3.9-2.6 6-2.1 3.9 1 5.3 5 3.6 7.8C19.2 16.6 12 21 12 21Z"/></svg>`;
+              });
+
+              renderFavorites();
+            }
+
+            function updateCounters() {
+              const cartCount = getCount();
+              const existingIds = new Set(state.products.map(p => p.id));
+              state.favorites = state.favorites.filter(id => existingIds.has(id));
+              saveJson('mini_shop_favorites', state.favorites);
+              const favCount = state.favorites.length;
+
+              cartSummaryTotal.textContent = formatPrice(getTotal());
+
+              if (cartCount > 0) {
+                cartBadge.textContent = cartCount;
+                cartBadge.classList.remove('hidden');
+              } else {
+                cartBadge.classList.add('hidden');
+              }
+
+              if (favCount > 0) {
+                favoritesBadge.textContent = favCount;
+                favoritesBadge.classList.remove('hidden');
+              } else {
+                favoritesBadge.classList.add('hidden');
+              }
+            }
+
+            function addToCart(productId, size) {
+              const product = state.products.find((item) => item.id === productId);
+              if (!product) return;
+
+              const chosenSize = size || '';
+              if ((product.sizes || []).length && !chosenSize) {
+                tg?.showAlert?.('Сначала выбери размер');
+                return;
+              }
+
+              const key = getCartKey(productId, chosenSize);
+              if (!state.cart[key]) {
+                state.cart[key] = { ...product, size: chosenSize, quantity: 1, cartKey: key };
+              } else {
+                tg?.showAlert?.('Этот товар уже в корзине');
+                return;
+              }
+
+              saveJson('mini_shop_cart', state.cart);
+              updateCounters();
+              renderAll();
+            }
+
+            function removeFromCart(cartKey) {
+              delete state.cart[cartKey];
+              saveJson('mini_shop_cart', state.cart);
+              updateCounters();
+              renderAll();
+            }
+
+            function setCategory(name) {
+              state.category = name;
+              state.catalogPage = 1;
+              renderCategories();
+              renderCatalog();
+            }
+
+            function setTab(tab) {
+              // Если экран товара открыт и нажали таб напрямую — закрываем без вызова setTab рекурсии
+              if (!productScreen.classList.contains('hidden')) {
+                productScreen.classList.add('hidden');
+                state.selectedProduct = null;
+                if (tg?.BackButton) {
+                  tg.BackButton.hide();
+                  tg.BackButton.offClick(closeProductScreen);
+                }
+              }
+
+              state.activeTab = tab;
+              window.scrollTo({ top: 0, behavior: 'instant' });
+              if (tab !== 'catalog') {
+                state.search = '';
+                const si = document.getElementById('catalogSearch');
+                if (si) si.value = '';
+              }
+
+              catalogScreen.classList.toggle('hidden', tab !== 'catalog');
+              favoritesScreen.classList.toggle('hidden', tab !== 'favorites');
+              cartScreen.classList.toggle('hidden', tab !== 'cart');
+              ordersScreen.classList.toggle('hidden', tab !== 'orders');
+              catalogFilters.classList.toggle('hidden', tab !== 'catalog');
+
+              [navCatalog, navFavorites, navCart, navOrders].forEach((el) => el.classList.remove('active'));
+              if (tab === 'catalog') navCatalog.classList.add('active');
+              if (tab === 'favorites') navFavorites.classList.add('active');
+              if (tab === 'cart') navCart.classList.add('active');
+              if (tab === 'orders') navOrders.classList.add('active');
+
+              updateCounters();
+              renderAll();
+
+              if (tab === 'orders') loadMyOrders();
+            }
+
+            function renderCategories() {
+              const categories = ['Все', ...state.categories];
+              categoriesEl.innerHTML = categories.map((name) => {
+                const active = state.category === name;
+                return `
+                  <button
+                    onclick="setCategory(${esc(JSON.stringify(name))})"
+                    style="
+                      font-family:var(--fn-body);
+                      font-size:11px;font-weight:700;
+                      letter-spacing:0.13em;text-transform:uppercase;
+                      padding:7px 14px;border-radius:3px;
+                      white-space:nowrap;cursor:pointer;
+                      transition:filter .12s ease;
+                      ${active
+                        ? `background:linear-gradient(180deg,#2c2c2c 0%,#202020 100%);border:1px solid rgba(195,210,238,0.45);border-top-color:rgba(210,224,244,0.62);color:var(--brass);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);`
+                        : `background:linear-gradient(180deg,#1e1e1e 0%,#181818 100%);border:1px solid rgba(140,141,143,0.18);border-top-color:rgba(192,195,198,0.22);color:var(--silver-dim);`
+                      }
+                    "
+                  >${esc(name)}</button>
+                `;
+              }).join('');
+            }
+
+            function productCardFavorite(product) {
+              const favorite = isFavorite(product.id);
+              const sizes = product.sizes || [];
+              const favIcon = favorite
+                ? `<span style="display:block;width:16px;height:16px;background:url(/static/button-bg.jpg) center/cover;-webkit-mask-image:url(${HEART_MASK});-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;mask-image:url(${HEART_MASK});mask-size:contain;mask-repeat:no-repeat;"></span>`
+                : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(148,150,158,0.40)" stroke-width="1.8"><path d="M12 21s-7.2-4.4-9.6-8.4C.7 9.8 2.1 5.8 6 4.8c2.1-.5 4.1.2 6 2.1 1.9-1.9 3.9-2.6 6-2.1 3.9 1 5.3 5 3.6 7.8C19.2 16.6 12 21 12 21Z"/></svg>`;
+
+              return `
+                <article style="
+                  background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);
+                  border:1px solid var(--m-border);border-top-color:var(--m-top);
+                  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+                  overflow:hidden;border-radius:4px;
+                ">
+                  <button onclick="openProductModal(${product.id})" style="display:block;width:100%;text-align:left;">
+                    <img src="${esc(product.image)}" alt="${esc(product.title)}"
+                      onerror="this.onerror=null;this.src=PLACEHOLDER_IMG"
+                      style="width:100%;height:260px;object-fit:cover;display:block;border-bottom:1px solid rgba(155,157,160,0.12);" />
+                  </button>
+                  <div style="padding:14px;display:flex;flex-direction:column;">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+                      <div style="min-width:0;">
+                        <div style="font-family:var(--fn-body);font-size:9px;font-weight:600;letter-spacing:0.24em;text-transform:uppercase;color:var(--brass-dim);">
+                          ${esc(product.category)}
+                        </div>
+                        <h3 style="font-family:var(--fn-body);font-size:16px;font-weight:600;margin-top:4px;line-height:1.25;color:var(--silver);letter-spacing:0.01em;">
+                          ${esc(product.title)}
+                        </h3>
+                      </div>
+                      ${product.sold ? `<div style="flex-shrink:0;width:32px;height:32px;"></div>` : `<button onclick="toggleFavorite(${product.id})" data-fav-btn="${product.id}" data-fav-size="16"
+                        style="flex-shrink:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;border:none;padding:0;transition:opacity .14s ease;"
+                      >${favIcon}</button>`}
+                    </div>
+                    <div style="margin-top:auto;display:flex;flex-direction:column;gap:0;">
+                      <div style="font-family:var(--fn-display);font-weight:800;font-size:22px;letter-spacing:0.04em;color:var(--silver);margin-top:8px;line-height:1.1;">
+                        ${formatPrice(product.price)}
+                      </div>
+                      ${product.sold
+                        ? `<div style="margin-top:8px;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--silver-faint);">Продано</div>`
+                        : `<button onclick="quickAdd(${product.id})" class="btn-cta" style="margin-top:8px;">В корзину</button>`
+                      }
+                    </div>
+                  </div>
+                </article>
+              `;
+            }
+
+            function productCard(product) {
+              const favorite = isFavorite(product.id);
+              const sizes = product.sizes || [];
+              const favIcon = favorite
+                ? `<span style="display:block;width:14px;height:14px;background:url(/static/button-bg.jpg) center/cover;-webkit-mask-image:url(${HEART_MASK});-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;mask-image:url(${HEART_MASK});mask-size:contain;mask-repeat:no-repeat;"></span>`
+                : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(148,150,158,0.40)" stroke-width="1.8"><path d="M12 21s-7.2-4.4-9.6-8.4C.7 9.8 2.1 5.8 6 4.8c2.1-.5 4.1.2 6 2.1 1.9-1.9 3.9-2.6 6-2.1 3.9 1 5.3 5 3.6 7.8C19.2 16.6 12 21 12 21Z"/></svg>`;
+
+              return `
+                <article style="
+                  background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);
+                  border:1px solid var(--m-border);border-top-color:var(--m-top);
+                  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+                  overflow:hidden;border-radius:4px;
+                  display:flex;flex-direction:column;
+                ">
+                  <button onclick="openProductModal(${product.id})" style="display:block;width:100%;text-align:left;flex-shrink:0;">
+                    <img src="${esc(product.image)}" alt="${esc(product.title)}"
+                      onerror="this.onerror=null;this.src=PLACEHOLDER_IMG"
+                      style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block;border-bottom:1px solid rgba(155,157,160,0.12);" />
+                  </button>
+                  <div style="padding:10px;flex:1;display:flex;flex-direction:column;">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;">
+                      <div style="min-width:0;flex:1;">
+                        <div style="font-family:var(--fn-body);font-size:9px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:var(--brass-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                          ${esc(product.category)}
+                        </div>
+                        <h3 style="font-family:var(--fn-body);font-size:13px;font-weight:600;margin-top:3px;line-height:1.3;color:var(--silver);letter-spacing:0.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                          ${esc(product.title)}
+                        </h3>
+                      </div>
+                      ${product.sold ? `<div style="flex-shrink:0;width:28px;height:28px;"></div>` : `<button onclick="toggleFavorite(${product.id})" data-fav-btn="${product.id}" data-fav-size="14"
+                        style="flex-shrink:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;border:none;padding:0;transition:opacity .14s ease;"
+                      >${favIcon}</button>`}
+                    </div>
+                    <div style="margin-top:auto;display:flex;flex-direction:column;gap:0;">
+                      <div style="font-family:var(--fn-display);font-weight:800;font-size:19px;letter-spacing:0.04em;color:var(--silver);margin-top:8px;line-height:1;">
+                        ${formatPrice(product.price)}
+                      </div>
+                      ${product.sold
+                        ? `<div style="margin-top:6px;font-family:var(--fn-body);font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--silver-faint);">Продано</div>`
+                        : `<div style="font-family:var(--fn-body);font-size:11px;color:var(--silver-faint);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.02em;">
+                            ${sizes.length ? sizes.map(esc).join(' · ') : 'без размеров'}
+                          </div>
+                          <button onclick="quickAdd(${product.id})" class="btn-cta" style="margin-top:8px;">В корзину</button>`
+                      }
+                    </div>
+                  </div>
+                </article>
+              `;
+            }
+
+            function renderCatalogSkeleton() {
+              catalogScreen.innerHTML = Array.from({length: 6}).map(() => `
+                <div class="skeleton-card">
+                  <div class="skeleton-img"></div>
+                  <div style="padding:10px;display:flex;flex-direction:column;gap:8px;">
+                    <div class="skeleton-line" style="width:60%;"></div>
+                    <div class="skeleton-line" style="width:85%;"></div>
+                    <div class="skeleton-line" style="width:40%;margin-top:4px;height:14px;"></div>
+                    <div class="skeleton-line" style="height:34px;margin-top:4px;border-radius:3px;"></div>
                   </div>
                 </div>
-                <div style="font-family:var(--fn-display);font-weight:800;font-size:18px;letter-spacing:0.04em;color:var(--silver);white-space:nowrap;">${formatPrice(item.subtotal)}</div>
-              </div>
-            `).join('')}
-            <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(155,157,160,0.14);">
-              ${order.discount_amount > 0 ? `
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                  <span style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--silver-faint);">Скидка${order.promo_code ? ` (${esc(order.promo_code)})` : ''}</span>
-                  <span style="font-family:var(--fn-body);font-size:13px;font-weight:700;color:#6fcf6f;">−${formatPrice(order.discount_amount)}</span>
-                </div>
-              ` : ''}
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--silver-faint);">Итого</span>
-                <span style="font-family:var(--fn-display);font-weight:800;font-size:22px;letter-spacing:0.04em;color:var(--silver);">${formatPrice(order.total)}</span>
-              </div>
-            </div>
-          </div>
-        </article>
-      `).join('');
-    }
+              `).join('');
+            }
 
-    function statusLabel(status) {
-      const labels = {
-        new: 'Новый',
-        confirmed: 'Подтвержден',
-        processing: 'В обработке',
-        shipped: 'Отправлен',
-        done: 'Завершен',
-        cancelled: 'Отменен',
-      };
-      return labels[status] || status;
-    }
+            function renderCatalog() {
+              const words = state.search.toLowerCase().split(/\s+/).filter(Boolean);
+              const list = state.products.filter((item) => {
+                const matchCat = state.category === 'Все'
+                  ? !item.sold
+                  : item.category === state.category;
+                const tokens = (item.title + ' ' + item.category).toLowerCase().split(/\s+/);
+                const matchSearch = words.length === 0 || words.every(w => {
+                  const stem = w.length > 3 ? w.slice(0, -1) : w;
+                  return tokens.some(t => t.startsWith(stem));
+                });
+                return matchCat && matchSearch;
+              });
 
-    function renderCheckoutPreview() {
-      const items = getItems();
-      if (!items.length) {
-        checkoutItemsPreview.textContent = 'Корзина пуста.';
-        return;
-      }
+              const totalPages = Math.max(1, Math.ceil(list.length / CATALOG_PAGE_SIZE));
+              if (state.catalogPage > totalPages) state.catalogPage = totalPages;
+              if (state.catalogPage < 1) state.catalogPage = 1;
 
-      checkoutItemsPreview.innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          ${items.map(item => `
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;font-family:var(--fn-body);font-size:13px;letter-spacing:0.03em;">
-              <span style="color:var(--silver);">${esc(item.title)} × ${item.quantity}${item.size ? ` | ${esc(item.size)}` : ''}</span>
-              <span style="color:var(--silver-dim);white-space:nowrap;">${formatPrice(item.price * item.quantity)}</span>
-            </div>
-          `).join('')}
-          <div style="border-top:1px solid rgba(155,157,160,0.18);padding-top:8px;margin-top:4px;">
-            ${state.promoDiscount > 0 ? `
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-                <span style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--silver-faint);">Скидка (${esc(state.promoCode)})</span>
-                <span style="font-family:var(--fn-body);font-size:13px;font-weight:700;color:#6fcf6f;">−${formatPrice(state.promoDiscount)}</span>
-              </div>` : ''}
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <span style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--silver-faint);">Итого</span>
-              <span style="font-family:var(--fn-display);font-weight:800;font-size:22px;letter-spacing:0.04em;color:var(--silver);">${formatPrice(getTotal())}</span>
-            </div>
-          </div>
-        </div>
-      `;
-    }
+              const start = (state.catalogPage - 1) * CATALOG_PAGE_SIZE;
+              const pageItems = list.slice(start, start + CATALOG_PAGE_SIZE);
 
-    function renderAll() {
-      renderCatalog();
-      renderFavorites();
-      renderCart();
-      renderMyOrders();
-      renderCheckoutPreview();
-      updateCounters();
-    }
+              const empty = words.length > 0
+                ? 'Ничего не найдено.'
+                : 'В этой категории товаров пока нет.';
 
-    async function loadProducts() {
-      try {
-        const response = await fetch('/api/products');
-        if (!response.ok) throw new Error('server error');
-        state.products = await response.json();
-      } catch {
-        state.products = [];
-        document.getElementById('catalogScreen').innerHTML =
-          `<div class="glass rounded-[22px] p-6 col-span-2" style="color:var(--silver-dim);font-size:14px;">Не удалось загрузить товары. Попробуй позже.</div>`;
-      }
-    }
+              catalogScreen.innerHTML = list.length
+                ? pageItems.map(productCard).join('')
+                : `<div class="glass rounded-[28px] p-6 col-span-full" style="color:var(--silver-dim);">${empty}</div>`;
 
-    async function loadCategories() {
-      try {
-        const response = await fetch('/api/categories');
-        if (!response.ok) throw new Error('server error');
-        state.categories = await response.json();
-      } catch {
-        state.categories = [];
-      }
-    }
+              renderCatalogPagination(totalPages);
+            }
 
-    async function loadMyOrders() {
-      try {
-        const response = await fetch('/api/my-orders', { headers: telegramHeaders() });
-        const data = await response.json();
-        state.myOrders = data.items || [];
-      } catch {
-        state.myOrders = [];
-      }
-      renderMyOrders();
-    }
-
-    function validateCheckoutForm() {
-      return null;
-    }
-
-    function openCheckout() {
-      if (!getItems().length) return;
-      renderCheckoutPreview();
-      checkoutModal.classList.remove('hidden');
-    }
-
-    function openProductModal(productId) {
-      const product = state.products.find((item) => item.id === productId);
-      if (!product) return;
-
-      // Запоминаем таб, с которого открыли, для возврата
-      state.prevTab = state.activeTab;
-      state.selectedProduct = product;
-      state.selectedSize = (product.sizes || [])[0] || '';
-      state.selectedImageIndex = 0;
-
-      document.getElementById('productModalTitle').textContent = product.title;
-      document.getElementById('productModalCategory').textContent = product.category;
-      document.getElementById('productModalPrice').textContent = formatPrice(product.price);
-      document.getElementById('productModalDescription').textContent = product.description;
-
-      const measurementsBlock = document.getElementById('measurementsBlock');
-      const measurementsBody = document.getElementById('measurementsBody');
-      const measurementsChevron = document.getElementById('measurementsChevron');
-      if (product.measurements) {
-        document.getElementById('measurementsText').textContent = product.measurements;
-        measurementsBlock.classList.remove('hidden');
-        measurementsBody.classList.add('hidden');
-        measurementsChevron.style.transform = '';
-      } else {
-        measurementsBlock.classList.add('hidden');
-      }
-
-      const favBtn = document.getElementById('modalFavBtn');
-      favBtn.dataset.favBtn = String(productId);
-      const fav = isFavorite(productId);
-      favBtn.innerHTML = fav
-        ? `<span style="display:block;width:20px;height:20px;background:url(/static/button-bg.jpg) center/cover;-webkit-mask-image:url(${HEART_MASK});-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;mask-image:url(${HEART_MASK});mask-size:contain;mask-repeat:no-repeat;"></span>`
-        : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(148,150,158,0.60)" stroke-width="1.8"><path d="M12 21s-7.2-4.4-9.6-8.4C.7 9.8 2.1 5.8 6 4.8c2.1-.5 4.1.2 6 2.1 1.9-1.9 3.9-2.6 6-2.1 3.9 1 5.3 5 3.6 7.8C19.2 16.6 12 21 12 21Z"/></svg>`;
-
-      const isSold = !!product.sold;
-      document.getElementById('modalSoldBadge').classList.toggle('hidden', !isSold);
-      document.getElementById('modalPurchaseBlock').classList.toggle('hidden', isSold);
-      favBtn.style.display = isSold ? 'none' : '';
-
-      renderCarousel();
-      renderProductSizes();
-
-      // Запоминаем позицию скролла перед открытием
-      state.prevScrollY = window.scrollY;
-
-      // Показываем экран товара
-      productScreen.classList.remove('hidden');
-      productScreen.scrollTop = 0;
-
-      // Показываем BackButton Telegram и вешаем обработчик
-      if (tg?.BackButton) {
-        tg.BackButton.show();
-        tg.BackButton.onClick(closeProductScreen);
-      }
-    }
-
-    function closeProductScreen() {
-      productScreen.classList.add('hidden');
-      state.selectedProduct = null;
-
-      // Скрываем BackButton Telegram
-      if (tg?.BackButton) {
-        tg.BackButton.hide();
-        tg.BackButton.offClick(closeProductScreen);
-      }
-
-      // Возвращаемся на таб и восстанавливаем позицию скролла
-      setTab(state.prevTab || 'catalog');
-      requestAnimationFrame(() => {
-        window.scrollTo({ top: state.prevScrollY || 0, behavior: 'instant' });
-      });
-    }
-
-    function renderProductSizes() {
-      const product = state.selectedProduct;
-      const root = document.getElementById('productModalSizes');
-      const sizes = product?.sizes || [];
-
-      if (!sizes.length) {
-        root.innerHTML = '<div style="font-family:var(--fn-body);font-size:13px;color:var(--silver-faint);letter-spacing:0.04em;">Размер не требуется</div>';
-        return;
-      }
-
-      root.innerHTML = sizes.map(size => {
-        const active = state.selectedSize === size;
-        return `
-          <button onclick="selectProductSize(${esc(JSON.stringify(size))})"
-            style="
-              font-family:var(--fn-body);font-weight:700;letter-spacing:0.12em;font-size:13px;
-              padding:8px 16px;border-radius:3px;cursor:pointer;transition:filter .12s ease;
-              ${active
-                ? `background:linear-gradient(180deg,#2c2c2c 0%,#202020 100%);border:1px solid rgba(195,210,238,0.48);border-top-color:rgba(210,224,244,0.65);color:var(--brass);box-shadow:inset 0 1px 0 rgba(255,255,255,0.08);`
-                : `background:linear-gradient(180deg,#1e1e1e 0%,#181818 100%);border:1px solid rgba(140,141,143,0.22);color:var(--silver-dim);`
+            function renderCatalogPagination(totalPages) {
+              const el = document.getElementById('catalogPagination');
+              if (totalPages <= 1) {
+                el.style.display = 'none';
+                return;
               }
-            "
-          >${esc(size)}</button>
-        `;
-      }).join('');
-    }
+              const page = state.catalogPage;
+              el.style.display = 'flex';
 
-    function selectProductSize(size) {
-      state.selectedSize = size;
-      renderProductSizes();
-    }
+              const btnStyle = (disabled) => `
+                font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
+                padding:9px 18px;border-radius:3px;cursor:${disabled ? 'default' : 'pointer'};
+                transition:filter .12s ease;
+                background:linear-gradient(180deg,#1e1e1e 0%,#181818 100%);
+                border:1px solid rgba(140,141,143,${disabled ? '0.10' : '0.22'});
+                border-top-color:rgba(192,195,198,${disabled ? '0.10' : '0.24'});
+                color:${disabled ? 'var(--silver-faint)' : 'var(--silver-dim)'};
+                opacity:${disabled ? '0.40' : '1'};
+              `;
 
-    function quickAdd(productId) {
-      const product = state.products.find((item) => item.id === productId);
-      if (!product) return;
+              el.innerHTML = `
+                <button onclick="setCatalogPage(${page - 1})" ${page <= 1 ? 'disabled' : ''} style="${btnStyle(page <= 1)}">←</button>
+                <span style="font-family:var(--fn-body);font-size:12px;font-weight:600;letter-spacing:0.10em;color:var(--silver-faint);padding:0 4px;">${page} / ${totalPages}</span>
+                <button onclick="setCatalogPage(${page + 1})" ${page >= totalPages ? 'disabled' : ''} style="${btnStyle(page >= totalPages)}">→</button>
+              `;
+            }
 
-      const sizes = product.sizes || [];
-      if (sizes.length === 1) {
-        addToCart(product.id, sizes[0]);
-        return;
-      }
+            function setCatalogPage(n) {
+              state.catalogPage = n;
+              renderCatalog();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
 
-      openProductModal(productId);
-    }
+            function renderFavorites() {
+              const list = state.products.filter((item) => state.favorites.includes(item.id));
+              favoritesEmpty.classList.toggle('hidden', list.length > 0);
+              favoritesGrid.innerHTML = list.map(productCardFavorite).join('');
+            }
 
-    function openManager() {
-      const link = {{ manager_link | tojson }};
-      if (tg?.openTelegramLink) {
-        tg.openTelegramLink(link);
-        return;
-      }
-      window.open(link, '_blank');
-    }
+            function renderCart() {
+              const items = getItems();
 
-    document.getElementById('currencyBtn').addEventListener('click', () => {
-      const idx = CURRENCIES.indexOf(activeCurrency);
-      activeCurrency = CURRENCIES[(idx + 1) % CURRENCIES.length];
-      document.getElementById('currencySymbol').textContent = CURRENCY_LABELS[activeCurrency];
-      renderAll();
-      if (state.selectedProduct) {
-        const el = document.getElementById('productModalPrice');
-        if (el) el.textContent = formatPrice(state.selectedProduct.price);
-      }
-    });
+              cartEmpty.classList.toggle('hidden', items.length > 0);
+              cartSummary.classList.toggle('hidden', items.length === 0);
+              document.getElementById('promoBlock').classList.toggle('hidden', items.length === 0);
 
-    const ADMIN_IDS = new Set({{ admin_ids | tojson }});
-    const currentUserId = tg?.initDataUnsafe?.user?.id;
-    const managerBtn = document.getElementById('managerBtn');
+              const discountRow = document.getElementById('cartDiscountRow');
+              const discountAmt = document.getElementById('cartDiscountAmt');
+              if (state.promoDiscount > 0) {
+                discountRow.style.display = 'flex';
+                discountAmt.textContent = '−' + formatPrice(state.promoDiscount);
+              } else {
+                discountRow.style.display = 'none';
+              }
 
-    if (currentUserId && ADMIN_IDS.has(currentUserId)) {
-      managerBtn.textContent = 'Админка';
-      managerBtn.addEventListener('click', () => { window.location.href = '/?mode=admin'; });
-    } else {
-      managerBtn.addEventListener('click', openManager);
-    }
+              cartList.innerHTML = items.map((item) => `
+                <article style="
+                  background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);
+                  border:1px solid var(--m-border);border-top-color:var(--m-top);
+                  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+                  border-radius:4px;padding:14px;display:flex;gap:14px;align-items:center;
+                ">
+                  <button onclick="openProductModal(${item.id})" style="background:none;border:none;padding:0;cursor:pointer;flex-shrink:0;">
+                    <img src="${esc(item.image)}" alt="${esc(item.title)}"
+                      onerror="this.onerror=null;this.src=PLACEHOLDER_IMG"
+                      style="width:76px;height:76px;border-radius:3px;object-fit:cover;display:block;border:1px solid rgba(155,157,160,0.14);" />
+                  </button>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-family:var(--fn-body);font-size:9px;font-weight:700;letter-spacing:0.24em;text-transform:uppercase;color:var(--brass-dim);">${esc(item.category)}</div>
+                    <button onclick="openProductModal(${item.id})" style="background:none;border:none;padding:0;cursor:pointer;text-align:left;width:100%;">
+                      <div style="font-family:var(--fn-body);font-size:16px;font-weight:700;color:var(--silver);letter-spacing:0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(item.title)}</div>
+                    </button>
+                    <div style="font-family:var(--fn-body);font-size:12px;color:var(--silver-dim);margin-top:2px;letter-spacing:0.04em;">Размер: ${esc(item.size || '—')}</div>
+                    <div style="font-family:var(--fn-display);font-weight:800;font-size:20px;letter-spacing:0.04em;color:var(--silver);margin-top:4px;line-height:1;">${formatPrice(item.price)}</div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0;">
+                    <button onclick="removeFromCart(${esc(JSON.stringify(item.cartKey))})"
+                      style="font-family:var(--fn-body);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--silver-faint);background:none;border:none;cursor:pointer;padding:2px 0;">Удалить</button>
+                  </div>
+                </article>
+              `).join('');
+            }
 
-    document.getElementById('addProductFromModal').addEventListener('click', () => {
-      if (!state.selectedProduct) return;
-      addToCart(state.selectedProduct.id, state.selectedSize);
-      closeProductScreen();
-    });
+            function renderMyOrders() {
+              ordersEmpty.classList.toggle('hidden', state.myOrders.length > 0);
 
-    document.getElementById('modalFavBtn').addEventListener('click', () => {
-      const id = parseInt(document.getElementById('modalFavBtn').dataset.favBtn);
-      if (!isNaN(id)) toggleFavorite(id);
-    });
+              ordersList.innerHTML = state.myOrders.map((order) => `
+                <article style="
+                  background:var(--scratch-a),var(--scratch-b),linear-gradient(160deg,#1e1e1e 0%,#181818 100%);
+                  border:1px solid var(--m-border);border-top-color:var(--m-top);
+                  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+                  border-radius:4px;padding:16px;
+                ">
+                  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+                    <div>
+                      <div style="font-family:var(--fn-display);font-weight:800;font-size:26px;letter-spacing:0.06em;color:var(--silver);line-height:1;">Заказ #${order.order_number}</div>
+                      <div style="font-family:var(--fn-body);font-size:12px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--brass-dim);margin-top:5px;">${statusLabel(order.status)}</div>
+                      <div style="font-family:var(--fn-body);font-size:12px;color:var(--silver-faint);margin-top:3px;letter-spacing:0.03em;">${esc(formatDate(order.created_at))}</div>
+                    </div>
+                  </div>
 
-    navCatalog.addEventListener('click', () => setTab('catalog'));
-    navFavorites.addEventListener('click', () => setTab('favorites'));
-    navCart.addEventListener('click', () => setTab('cart'));
-    navOrders.addEventListener('click', () => setTab('orders'));
+                  <div style="border-top:1px solid rgba(155,157,160,0.14);margin-top:14px;padding-top:14px;">
+                    ${order.items.map((item) => `
+                      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid rgba(155,157,160,0.08);">
+                        <div style="min-width:0;">
+                          <div style="font-family:var(--fn-body);font-size:14px;font-weight:600;color:var(--silver);letter-spacing:0.02em;">${esc(item.title)}</div>
+                          <div style="font-family:var(--fn-body);font-size:12px;color:var(--silver-dim);margin-top:2px;letter-spacing:0.03em;">
+                            ${item.quantity} шт.${item.size ? ` · Размер ${esc(item.size)}` : ''}
+                          </div>
+                        </div>
+                        <div style="font-family:var(--fn-display);font-weight:800;font-size:18px;letter-spacing:0.04em;color:var(--silver);white-space:nowrap;">${formatPrice(item.subtotal)}</div>
+                      </div>
+                    `).join('')}
+                    <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(155,157,160,0.14);">
+                      ${order.discount_amount > 0 ? `
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                          <span style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--silver-faint);">Скидка${order.promo_code ? ` (${esc(order.promo_code)})` : ''}</span>
+                          <span style="font-family:var(--fn-body);font-size:13px;font-weight:700;color:#6fcf6f;">−${formatPrice(order.discount_amount)}</span>
+                        </div>
+                      ` : ''}
+                      <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--silver-faint);">Итого</span>
+                        <span style="font-family:var(--fn-display);font-weight:800;font-size:22px;letter-spacing:0.04em;color:var(--silver);">${formatPrice(order.total)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              `).join('');
+            }
 
-    document.getElementById('goCheckoutFromCart').addEventListener('click', openCheckout);
-    document.getElementById('closeModal').addEventListener('click', () => {
-      checkoutModal.classList.add('hidden');
-    });
+            function statusLabel(status) {
+              const labels = {
+                new: 'Новый',
+                confirmed: 'Подтвержден',
+                processing: 'В обработке',
+                shipped: 'Отправлен',
+                done: 'Завершен',
+                cancelled: 'Отменен',
+              };
+              return labels[status] || status;
+            }
+
+            function renderCheckoutPreview() {
+              const items = getItems();
+              if (!items.length) {
+                checkoutItemsPreview.textContent = 'Корзина пуста.';
+                return;
+              }
+
+              checkoutItemsPreview.innerHTML = `
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  ${items.map(item => `
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;font-family:var(--fn-body);font-size:13px;letter-spacing:0.03em;">
+                      <span style="color:var(--silver);">${esc(item.title)} × ${item.quantity}${item.size ? ` | ${esc(item.size)}` : ''}</span>
+                      <span style="color:var(--silver-dim);white-space:nowrap;">${formatPrice(item.price * item.quantity)}</span>
+                    </div>
+                  `).join('')}
+                  <div style="border-top:1px solid rgba(155,157,160,0.18);padding-top:8px;margin-top:4px;">
+                    ${state.promoDiscount > 0 ? `
+                      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                        <span style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--silver-faint);">Скидка (${esc(state.promoCode)})</span>
+                        <span style="font-family:var(--fn-body);font-size:13px;font-weight:700;color:#6fcf6f;">−${formatPrice(state.promoDiscount)}</span>
+                      </div>` : ''}
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                      <span style="font-family:var(--fn-body);font-size:11px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--silver-faint);">Итого</span>
+                      <span style="font-family:var(--fn-display);font-weight:800;font-size:22px;letter-spacing:0.04em;color:var(--silver);">${formatPrice(getTotal())}</span>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }
+
+            function renderAll() {
+              renderCatalog();
+              renderFavorites();
+              renderCart();
+              renderMyOrders();
+              renderCheckoutPreview();
+              updateCounters();
+            }
+
+            async function loadProducts() {
+              try {
+                const response = await fetch('/api/products');
+                if (!response.ok) throw new Error('server error');
+                state.products = await response.json();
+              } catch {
+                state.products = [];
+                document.getElementById('catalogScreen').innerHTML =
+                  `<div class="glass rounded-[22px] p-6 col-span-2" style="color:var(--silver-dim);font-size:14px;">Не удалось загрузить товары. Попробуй позже.</div>`;
+              }
+            }
+
+            async function loadCategories() {
+              try {
+                const response = await fetch('/api/categories');
+                if (!response.ok) throw new Error('server error');
+                state.categories = await response.json();
+              } catch {
+                state.categories = [];
+              }
+            }
+
+            async function loadMyOrders() {
+              try {
+                const response = await fetch('/api/my-orders', { headers: telegramHeaders() });
+                const data = await response.json();
+                state.myOrders = data.items || [];
+              } catch {
+                state.myOrders = [];
+              }
+              renderMyOrders();
+            }
+
+            function validateCheckoutForm() {
+              return null;
+            }
+
+            function openCheckout() {
+              if (!getItems().length) return;
+              renderCheckoutPreview();
+              checkoutModal.classList.remove('hidden');
+            }
+
+            function openProductModal(productId) {
+              const product = state.products.find((item) => item.id === productId);
+              if (!product) return;
+
+              // Запоминаем таб, с которого открыли, для возврата
+              state.prevTab = state.activeTab;
+              state.selectedProduct = product;
+              state.selectedSize = (product.sizes || [])[0] || '';
+              state.selectedImageIndex = 0;
+
+              document.getElementById('productModalTitle').textContent = product.title;
+              document.getElementById('productModalCategory').textContent = product.category;
+              document.getElementById('productModalPrice').textContent = formatPrice(product.price);
+              document.getElementById('productModalDescription').textContent = product.description;
+
+              const measurementsBlock = document.getElementById('measurementsBlock');
+              const measurementsBody = document.getElementById('measurementsBody');
+              const measurementsChevron = document.getElementById('measurementsChevron');
+              if (product.measurements) {
+                document.getElementById('measurementsText').textContent = product.measurements;
+                measurementsBlock.classList.remove('hidden');
+                measurementsBody.classList.add('hidden');
+                measurementsChevron.style.transform = '';
+              } else {
+                measurementsBlock.classList.add('hidden');
+              }
+
+              const favBtn = document.getElementById('modalFavBtn');
+              favBtn.dataset.favBtn = String(productId);
+              const fav = isFavorite(productId);
+              favBtn.innerHTML = fav
+                ? `<span style="display:block;width:20px;height:20px;background:url(/static/button-bg.jpg) center/cover;-webkit-mask-image:url(${HEART_MASK});-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;mask-image:url(${HEART_MASK});mask-size:contain;mask-repeat:no-repeat;"></span>`
+                : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(148,150,158,0.60)" stroke-width="1.8"><path d="M12 21s-7.2-4.4-9.6-8.4C.7 9.8 2.1 5.8 6 4.8c2.1-.5 4.1.2 6 2.1 1.9-1.9 3.9-2.6 6-2.1 3.9 1 5.3 5 3.6 7.8C19.2 16.6 12 21 12 21Z"/></svg>`;
+
+              const isSold = !!product.sold;
+              document.getElementById('modalSoldBadge').classList.toggle('hidden', !isSold);
+              document.getElementById('modalPurchaseBlock').classList.toggle('hidden', isSold);
+              favBtn.style.display = isSold ? 'none' : '';
+
+              renderCarousel();
+              renderProductSizes();
+
+              // Запоминаем позицию скролла перед открытием
+              state.prevScrollY = window.scrollY;
+
+              // Показываем экран товара
+              productScreen.classList.remove('hidden');
+              productScreen.scrollTop = 0;
+
+              // Показываем BackButton Telegram и вешаем обработчик
+              if (tg?.BackButton) {
+                tg.BackButton.show();
+                tg.BackButton.onClick(closeProductScreen);
+              }
+            }
+
+            function closeProductScreen() {
+              productScreen.classList.add('hidden');
+              state.selectedProduct = null;
+
+              // Скрываем BackButton Telegram
+              if (tg?.BackButton) {
+                tg.BackButton.hide();
+                tg.BackButton.offClick(closeProductScreen);
+              }
+
+              // Возвращаемся на таб и восстанавливаем позицию скролла
+              setTab(state.prevTab || 'catalog');
+              requestAnimationFrame(() => {
+                window.scrollTo({ top: state.prevScrollY || 0, behavior: 'instant' });
+              });
+            }
+
+            function renderProductSizes() {
+              const product = state.selectedProduct;
+              const root = document.getElementById('productModalSizes');
+              const sizes = product?.sizes || [];
+
+              if (!sizes.length) {
+                root.innerHTML = '<div style="font-family:var(--fn-body);font-size:13px;color:var(--silver-faint);letter-spacing:0.04em;">Размер не требуется</div>';
+                return;
+              }
+
+              root.innerHTML = sizes.map(size => {
+                const active = state.selectedSize === size;
+                return `
+                  <button onclick="selectProductSize(${esc(JSON.stringify(size))})"
+                    style="
+                      font-family:var(--fn-body);font-weight:700;letter-spacing:0.12em;font-size:13px;
+                      padding:8px 16px;border-radius:3px;cursor:pointer;transition:filter .12s ease;
+                      ${active
+                        ? `background:linear-gradient(180deg,#2c2c2c 0%,#202020 100%);border:1px solid rgba(195,210,238,0.48);border-top-color:rgba(210,224,244,0.65);color:var(--brass);box-shadow:inset 0 1px 0 rgba(255,255,255,0.08);`
+                        : `background:linear-gradient(180deg,#1e1e1e 0%,#181818 100%);border:1px solid rgba(140,141,143,0.22);color:var(--silver-dim);`
+                      }
+                    "
+                  >${esc(size)}</button>
+                `;
+              }).join('');
+            }
+
+            function selectProductSize(size) {
+              state.selectedSize = size;
+              renderProductSizes();
+            }
+
+            function quickAdd(productId) {
+              const product = state.products.find((item) => item.id === productId);
+              if (!product) return;
+
+              const sizes = product.sizes || [];
+              if (sizes.length === 1) {
+                addToCart(product.id, sizes[0]);
+                return;
+              }
+
+              openProductModal(productId);
+            }
+
+            function openManager() {
+              const link = {{ manager_link | tojson }};
+              if (tg?.openTelegramLink) {
+                tg.openTelegramLink(link);
+                return;
+              }
+              window.open(link, '_blank');
+            }
+
+            document.getElementById('currencyBtn').addEventListener('click', () => {
+              const idx = CURRENCIES.indexOf(activeCurrency);
+              activeCurrency = CURRENCIES[(idx + 1) % CURRENCIES.length];
+              document.getElementById('currencySymbol').textContent = CURRENCY_LABELS[activeCurrency];
+              renderAll();
+              if (state.selectedProduct) {
+                const el = document.getElementById('productModalPrice');
+                if (el) el.textContent = formatPrice(state.selectedProduct.price);
+              }
+            });
+
+            const ADMIN_IDS = new Set({{ admin_ids | tojson }});
+            const currentUserId = tg?.initDataUnsafe?.user?.id;
+            const managerBtn = document.getElementById('managerBtn');
+
+            if (currentUserId && ADMIN_IDS.has(currentUserId)) {
+              managerBtn.textContent = 'Админка';
+              managerBtn.addEventListener('click', () => { window.location.href = '/?mode=admin'; });
+            } else {
+              managerBtn.addEventListener('click', openManager);
+            }
+
+            document.getElementById('addProductFromModal').addEventListener('click', () => {
+              if (!state.selectedProduct) return;
+              addToCart(state.selectedProduct.id, state.selectedSize);
+              closeProductScreen();
+            });
+
+            document.getElementById('modalFavBtn').addEventListener('click', () => {
+              const id = parseInt(document.getElementById('modalFavBtn').dataset.favBtn);
+              if (!isNaN(id)) toggleFavorite(id);
+            });
+
+            navCatalog.addEventListener('click', () => setTab('catalog'));
+            navFavorites.addEventListener('click', () => setTab('favorites'));
+            navCart.addEventListener('click', () => setTab('cart'));
+            navOrders.addEventListener('click', () => setTab('orders'));
+
+            document.getElementById('goCheckoutFromCart').addEventListener('click', openCheckout);
+            document.getElementById('closeModal').addEventListener('click', () => {
+              checkoutModal.classList.add('hidden');
+            });
 
 
-    document.getElementById('sendOrder').addEventListener('click', async () => {
-      const items = getItems().map((item) => ({
-        id: item.id,
-        quantity: item.quantity,
-        size: item.size || '',
-      }));
+            document.getElementById('sendOrder').addEventListener('click', async () => {
+              const items = getItems().map((item) => ({
+                id: item.id,
+                quantity: item.quantity,
+                size: item.size || '',
+              }));
 
-      if (!items.length) {
-        tg?.showAlert?.('Корзина пуста');
-        return;
-      }
+              if (!items.length) {
+                tg?.showAlert?.('Корзина пуста');
+                return;
+              }
 
-      const formError = validateCheckoutForm();
-      if (formError) {
-        tg?.showAlert?.(formError);
-        return;
-      }
+              const formError = validateCheckoutForm();
+              if (formError) {
+                tg?.showAlert?.(formError);
+                return;
+              }
 
-      const payload = {
-        customer: {
-          comment: document.getElementById('comment').value.trim(),
-        },
-        promo_code: state.promoCode || undefined,
-        items,
-      };
+              const payload = {
+                customer: {
+                  comment: document.getElementById('comment').value.trim(),
+                },
+                promo_code: state.promoCode || undefined,
+                items,
+              };
 
-      const response = await fetch('/api/order', {
-        method: 'POST',
-        headers: telegramHeaders(),
-        body: JSON.stringify(payload),
-      });
+              const response = await fetch('/api/order', {
+                method: 'POST',
+                headers: telegramHeaders(),
+                body: JSON.stringify(payload),
+              });
 
-      const data = await response.json();
-      if (!response.ok || !data.ok) {
-        tg?.showAlert?.(data.error || 'Не удалось отправить заказ');
-        return;
-      }
+              const data = await response.json();
+              if (!response.ok || !data.ok) {
+                tg?.showAlert?.(data.error || 'Не удалось отправить заказ');
+                return;
+              }
 
-      tg?.showAlert?.(`Спасибо за заказ ❤️\n\nЗаказ #${data.order_number} принят.\nСкоро с вами свяжется менеджер.`);
-      state.cart = {};
-      saveJson('mini_shop_cart', state.cart);
-      clearPromo();
-      renderAll();
-      checkoutModal.classList.add('hidden');
+              tg?.showAlert?.(`Спасибо за заказ ❤️\n\nЗаказ #${data.order_number} принят.\nСкоро с вами свяжется менеджер.`);
+              state.cart = {};
+              saveJson('mini_shop_cart', state.cart);
+              clearPromo();
+              renderAll();
+              checkoutModal.classList.add('hidden');
 
-      document.getElementById('comment').value = '';
+              document.getElementById('comment').value = '';
 
-      await loadMyOrders();
-      setTab('orders');
-    });
+              await loadMyOrders();
+              setTab('orders');
+            });
 
-    window.setCategory = setCategory;
-    window.toggleFavorite = toggleFavorite;
-    window.removeFromCart = removeFromCart;
-    window.openProductModal = openProductModal;
-    window.selectProductSize = selectProductSize;
-    window.quickAdd = quickAdd;
+            window.setCategory = setCategory;
+            window.toggleFavorite = toggleFavorite;
+            window.removeFromCart = removeFromCart;
+            window.openProductModal = openProductModal;
+            window.selectProductSize = selectProductSize;
+            window.quickAdd = quickAdd;
+            window.setCatalogPage = setCatalogPage;
 
-    document.getElementById('catalogSearch').addEventListener('input', (e) => {
-      state.search = e.target.value.trim();
-      renderCatalog();
-    });
+            document.getElementById('catalogSearch').addEventListener('input', (e) => {
+              state.search = e.target.value.trim();
+              state.catalogPage = 1;
+              renderCatalog();
+            });
 
-    document.getElementById('measurementsToggle').addEventListener('click', () => {
-      const body = document.getElementById('measurementsBody');
-      const chevron = document.getElementById('measurementsChevron');
-      const isOpen = !body.classList.contains('hidden');
-      body.classList.toggle('hidden', isOpen);
-      chevron.style.transform = isOpen ? '' : 'rotate(90deg)';
-    });
+            document.getElementById('measurementsToggle').addEventListener('click', () => {
+              const body = document.getElementById('measurementsBody');
+              const chevron = document.getElementById('measurementsChevron');
+              const isOpen = !body.classList.contains('hidden');
+              body.classList.toggle('hidden', isOpen);
+              chevron.style.transform = isOpen ? '' : 'rotate(90deg)';
+            });
 
-    document.getElementById('carouselPrev').addEventListener('click', () => carouselStep(-1));
-    document.getElementById('carouselNext').addEventListener('click', () => carouselStep(1));
+            document.getElementById('carouselPrev').addEventListener('click', () => carouselStep(-1));
+            document.getElementById('carouselNext').addEventListener('click', () => carouselStep(1));
 
-    // Свайп по области фото для перелистывания карусели
-    let _swipeStartX = 0;
-    const _carouselEl = document.getElementById('modalImgWrap');
-    _carouselEl.addEventListener('touchstart', (e) => {
-      _swipeStartX = e.touches[0].clientX;
-    }, { passive: true });
-    _carouselEl.addEventListener('touchend', (e) => {
-      const delta = e.changedTouches[0].clientX - _swipeStartX;
-      if (Math.abs(delta) > 50) carouselStep(delta < 0 ? 1 : -1);
-    }, { passive: true });
+            // Свайп по области фото для перелистывания карусели
+            let _swipeStartX = 0;
+            const _carouselEl = document.getElementById('modalImgWrap');
+            _carouselEl.addEventListener('touchstart', (e) => {
+              _swipeStartX = e.touches[0].clientX;
+            }, { passive: true });
+            _carouselEl.addEventListener('touchend', (e) => {
+              const delta = e.changedTouches[0].clientX - _swipeStartX;
+              if (Math.abs(delta) > 50) carouselStep(delta < 0 ? 1 : -1);
+            }, { passive: true });
 
-    categoriesEl.addEventListener('wheel', (e) => {
-      if (e.deltaY === 0) return;
-      e.preventDefault();
-      categoriesEl.scrollLeft += e.deltaY + e.deltaX;
-    }, { passive: false });
+            categoriesEl.addEventListener('wheel', (e) => {
+              if (e.deltaY === 0) return;
+              e.preventDefault();
+              categoriesEl.scrollLeft += e.deltaY + e.deltaX;
+            }, { passive: false });
 
-    (async function init() {
-      renderCatalogSkeleton();
-      await Promise.all([loadProducts(), loadCategories(), loadCurrencyRates()]);
-      renderCategories();
-      renderAll();
-      setTab('catalog');
-    })();
-  </script>
-</body>
+            (async function init() {
+              renderCatalogSkeleton();
+              await Promise.all([loadProducts(), loadCategories(), loadCurrencyRates()]);
+              renderCategories();
+              renderAll();
+              setTab('catalog');
+            })();
+        </script>
+    </body>
 </html>

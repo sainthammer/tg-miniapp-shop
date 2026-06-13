@@ -211,8 +211,6 @@ def save_telegram_photo(message) -> str:
     return f"/static/uploads/{filename}"
 
 
-
-
 @app.route("/")
 def index():
     mode = (request.args.get("mode") or "").strip().lower()

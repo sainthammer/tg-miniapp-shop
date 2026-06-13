@@ -25,44 +25,43 @@ from aiogram.types import (
     WebAppInfo,
 )
 from aiogram.utils.web_app import check_webapp_signature
-from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template, request
-
 from db import (
     activate_product,
     add_category,
     add_order,
     add_product,
     calculate_discount,
+    count_orders,
     create_promo_code,
     deactivate_product,
     delete_category,
     delete_order,
     delete_product,
     delete_promo_code,
-    get_product_image_paths,
     get_active_products,
     get_all_products,
     get_all_user_ids,
     get_categories,
-    count_orders,
+    get_currency_rates,
     get_order,
     get_order_status_keys,
+    get_product_image_paths,
     get_product_map,
     get_promo_code,
     get_user_orders,
     init_db,
     list_orders,
     list_promo_codes,
+    mark_product_sold,
+    set_currency_rates,
     set_promo_active,
+    unmark_product_sold,
     update_order_status,
     update_product,
     upsert_user,
-    get_currency_rates,
-    set_currency_rates,
-    mark_product_sold,
-    unmark_product_sold,
 )
+from dotenv import load_dotenv
+from flask import Flask, jsonify, render_template, request
 
 # =========================================================
 # Paths and environment
@@ -377,8 +376,8 @@ def api_admin_set_currency_rates():
 def api_admin_fetch_currency_rates():
     try:
         require_admin_context()
-        import urllib.request
         import ssl
+        import urllib.request
         import xml.etree.ElementTree as ET
 
         ctx = ssl.create_default_context()
