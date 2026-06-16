@@ -2004,7 +2004,7 @@
 
             function renderCatalogPagination(totalPages) {
               const el = document.getElementById('catalogPagination');
-              if (totalPages <= 1) {
+              if (totalPages <= 1 || state.activeTab !== 'catalog') {
                 el.style.display = 'none';
                 return;
               }
