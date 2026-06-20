@@ -126,3 +126,4 @@ pip-delete-this-directory.txt
 /docs/
 /SPEC.md
 /static/header-preview.html
+data/

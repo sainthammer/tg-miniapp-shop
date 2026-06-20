@@ -1022,18 +1022,18 @@ def api_admin_broadcast():
         if BOT_LOOP is None or not BOT_LOOP.is_running():
             return json_error("Bot loop is not running", 503)
 
-        future = asyncio.run_coroutine_threadsafe(
+        user_count = len(get_all_user_ids())
+        asyncio.run_coroutine_threadsafe(
             _broadcast(text, photo_bytes, photo_name), BOT_LOOP
         )
-        result = future.result(timeout=180)
-        return jsonify({"ok": True, **result})
+        return jsonify({"ok": True, "message": "Рассылка запущена", "total": user_count})
     except Exception as exc:
         return json_error(str(exc), 500)
 
 
 async def _broadcast(
     text: str, photo_bytes: bytes | None, photo_name: str | None
-) -> dict:
+) -> None:
     safe_text = html.escape(text) if text else ""
     user_ids = get_all_user_ids()
     sent = 0
@@ -1053,7 +1053,16 @@ async def _broadcast(
         except Exception:
             failed += 1
         await asyncio.sleep(0.05)
-    return {"sent": sent, "failed": failed, "total": len(user_ids)}
+    await asyncio.gather(
+        *[
+            bot.send_message(
+                admin_id,
+                f"✅ Рассылка завершена: отправлено {sent} из {len(user_ids)} ({failed} ошибок)",
+            )
+            for admin_id in ADMIN_CHAT_IDS
+        ],
+        return_exceptions=True,
+    )
 
 
 # =========================================================
