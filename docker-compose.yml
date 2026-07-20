@@ -3,6 +3,8 @@ services:
     build: .
     container_name: telegram-shop
     restart: unless-stopped
+    labels:
+      - "autoheal=true"
     env_file:
       - .env
     ports:
@@ -16,6 +18,18 @@ services:
       timeout: 10s
       retries: 3
       start_period: 15s
+
+  autoheal:
+    image: willfarrell/autoheal
+    container_name: autoheal
+    restart: unless-stopped
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=autoheal
+      - AUTOHEAL_INTERVAL=30
+      - AUTOHEAL_START_PERIOD=60
+      - AUTOHEAL_DEFAULT_STOP_TIMEOUT=10
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   shop_data:
